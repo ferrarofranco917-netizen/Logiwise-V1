@@ -1,0 +1,7 @@
+
+body { margin:0; font-family:Arial; background:#0F1720; color:#E8EEF2; }
+.sidebar { width:220px; position:fixed; height:100%; background:#111A23; padding:20px; }
+.logo { width:100px; margin-bottom:20px; }
+button { display:block; width:100%; margin:10px 0; padding:10px; background:#16212B; color:#AAB7C2; border:none; cursor:pointer; }
+button:hover { background:#3C7A89; color:white; }
+main { margin-left:240px; padding:20px; }
