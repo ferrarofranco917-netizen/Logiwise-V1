@@ -25,12 +25,22 @@ window.KedrixOneUtils = (() => {
     return String(value || '').trim().toUpperCase();
   }
 
+  function slugify(value) {
+    return String(value || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-zA-Z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .toLowerCase();
+  }
+
   function nextPracticeId(practices) {
+    const year = new Date().getFullYear();
     const max = practices.reduce((acc, item) => {
       const match = String(item.id).match(/PR-\d{4}-(\d+)/);
       return Math.max(acc, match ? Number(match[1]) : 0);
     }, 0);
-    return `PR-2026-${String(max + 1).padStart(3, '0')}`;
+    return `PR-${year}-${String(max + 1).padStart(3, '0')}`;
   }
 
   function nextLogId(logs) {
@@ -55,6 +65,7 @@ window.KedrixOneUtils = (() => {
     escapeHtml,
     formatDate,
     normalize,
+    slugify,
     nextPracticeId,
     nextLogId,
     nowStamp

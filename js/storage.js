@@ -3,15 +3,32 @@ window.KedrixOneStorage = (() => {
 
   const KEY = 'kedrix-one.repo.complete';
 
+  function normalizeExpandedModules(value) {
+    return Array.isArray(value)
+      ? value.filter((item) => typeof item === 'string' && item.trim())
+      : [];
+  }
+
   function load(fallbackFactory) {
+    const fallback = fallbackFactory();
+
     try {
       const raw = localStorage.getItem(KEY);
-      if (!raw) return fallbackFactory();
+      if (!raw) return fallback;
+
       const parsed = JSON.parse(raw);
-      if (!parsed || !Array.isArray(parsed.practices)) return fallbackFactory();
-      return parsed;
+      if (!parsed || !Array.isArray(parsed.practices)) return fallback;
+
+      return {
+        ...fallback,
+        ...parsed,
+        practices: Array.isArray(parsed.practices) ? parsed.practices : fallback.practices,
+        operatorLogs: Array.isArray(parsed.operatorLogs) ? parsed.operatorLogs : fallback.operatorLogs,
+        contacts: Array.isArray(parsed.contacts) ? parsed.contacts : fallback.contacts,
+        expandedModules: normalizeExpandedModules(parsed.expandedModules)
+      };
     } catch {
-      return fallbackFactory();
+      return fallback;
     }
   }
 

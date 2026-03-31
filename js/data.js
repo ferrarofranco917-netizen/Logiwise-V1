@@ -7,6 +7,7 @@ window.KedrixOneData = (() => {
       selectedPracticeId: 'PR-2026-001',
       filterText: '',
       statusFilter: 'Tutti',
+      expandedModules: ['practices', 'master-data', 'documents'],
       practices: [
         {
           id: 'PR-2026-001',

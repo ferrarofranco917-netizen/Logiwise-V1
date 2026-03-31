@@ -4,6 +4,7 @@
   const Storage = window.KedrixOneStorage;
   const Data = window.KedrixOneData;
   const Utils = window.KedrixOneUtils;
+  const Modules = window.KedrixOneModules;
   const Templates = window.KedrixOneTemplates;
 
   const state = Storage.load(() => Data.initialState());
@@ -11,6 +12,7 @@
   const main = document.getElementById('mainContent');
   const title = document.getElementById('pageTitle');
   const toastRegion = document.getElementById('toastRegion');
+  const sidebarNav = document.getElementById('sidebarNav');
 
   function save() {
     Storage.save(state);
@@ -40,6 +42,61 @@
 
   function selectedPractice() {
     return state.practices.find((practice) => practice.id === state.selectedPracticeId) || null;
+  }
+
+  function currentRoute() {
+    return Modules.normalizeRoute(state.currentRoute);
+  }
+
+  function currentRouteMeta() {
+    return Modules.getRouteMeta(currentRoute());
+  }
+
+  function expandedModules() {
+    const set = new Set(Array.isArray(state.expandedModules) ? state.expandedModules : []);
+    set.add(Modules.getModuleKeyFromRoute(currentRoute()));
+    return Array.from(set);
+  }
+
+  function syncHash(replace = false) {
+    const target = `#/${currentRoute()}`;
+    if (window.location.hash === target) return;
+
+    if (replace) {
+      window.history.replaceState(null, '', target);
+    } else {
+      window.location.hash = target;
+    }
+  }
+
+  function navigate(route, options = {}) {
+    const normalized = Modules.normalizeRoute(route);
+    const changed = normalized !== state.currentRoute;
+
+    state.currentRoute = normalized;
+    save();
+    render();
+
+    if (options.syncHash !== false) {
+      syncHash(Boolean(options.replaceHash));
+    }
+
+    if (changed) {
+      main.focus({ preventScroll: true });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
+
+  function toggleModule(moduleKey) {
+    const current = new Set(Array.isArray(state.expandedModules) ? state.expandedModules : []);
+    if (current.has(moduleKey)) {
+      current.delete(moduleKey);
+    } else {
+      current.add(moduleKey);
+    }
+    state.expandedModules = Array.from(current);
+    save();
+    renderSidebar();
   }
 
   function bindPracticeEvents() {
@@ -103,41 +160,62 @@
     });
   }
 
-  function render() {
-    document.querySelectorAll('.nav-tab').forEach((button) => {
-      button.classList.toggle('active', button.dataset.route === state.currentRoute);
-    });
+  function renderSidebar() {
+    sidebarNav.innerHTML = Templates.sidebar(Modules.list(), currentRoute(), expandedModules());
+  }
 
-    if (state.currentRoute === 'dashboard') {
-      title.textContent = 'Dashboard';
-      main.innerHTML = Templates.dashboard(state);
-    } else if (state.currentRoute === 'practices') {
-      title.textContent = 'Pratiche';
+  function renderMain() {
+    const route = currentRoute();
+    const routeMeta = currentRouteMeta();
+    const module = Modules.getModule(routeMeta.moduleKey);
+
+    title.textContent = routeMeta.fullTitle;
+
+    if (route === 'dashboard') {
+      main.innerHTML = Templates.dashboard(state, Modules.summary());
+      return;
+    }
+
+    if (route === 'practices' || route === 'practices/elenco-pratiche') {
       main.innerHTML = Templates.practices(state, selectedPractice(), filteredPractices());
       bindPracticeEvents();
-    } else if (state.currentRoute === 'contacts') {
-      title.textContent = 'Anagrafiche';
-      main.innerHTML = Templates.contacts(state);
-    } else {
-      title.textContent = state.currentRoute.charAt(0).toUpperCase() + state.currentRoute.slice(1);
-      main.innerHTML = Templates.placeholder(title.textContent);
+      return;
     }
+
+    if (route === 'master-data') {
+      main.innerHTML = Templates.contacts(state, module);
+      return;
+    }
+
+    if (routeMeta.type === 'module') {
+      main.innerHTML = Templates.moduleOverview(module);
+      return;
+    }
+
+    main.innerHTML = Templates.submodulePlaceholder(module, routeMeta);
+  }
+
+  function render() {
+    renderSidebar();
+    renderMain();
   }
 
   document.addEventListener('click', (event) => {
-    const nav = event.target.closest('.nav-tab');
+    const nav = event.target.closest('[data-route]');
     if (nav) {
-      state.currentRoute = nav.dataset.route;
-      save();
-      render();
+      navigate(nav.dataset.route);
       return;
     }
 
     const routeAction = event.target.closest('[data-route-action]');
     if (routeAction) {
-      state.currentRoute = routeAction.dataset.routeAction;
-      save();
-      render();
+      navigate(routeAction.dataset.routeAction);
+      return;
+    }
+
+    const toggle = event.target.closest('[data-module-toggle]');
+    if (toggle) {
+      toggleModule(toggle.dataset.moduleToggle);
       return;
     }
 
@@ -151,12 +229,23 @@
 
     if (action.dataset.action === 'reset-demo') {
       const fresh = Data.initialState();
-      Object.assign(state, fresh);
+      Object.assign(state, fresh, { currentRoute: currentRoute() });
       save();
       render();
       toast('Dati demo ripristinati');
     }
   });
 
+  window.addEventListener('hashchange', () => {
+    const routeFromHash = Modules.normalizeRoute(window.location.hash);
+    if (routeFromHash === currentRoute()) return;
+    state.currentRoute = routeFromHash;
+    save();
+    render();
+  });
+
+  state.currentRoute = Modules.normalizeRoute(window.location.hash || state.currentRoute);
+  save();
   render();
+  syncHash(true);
 })();
