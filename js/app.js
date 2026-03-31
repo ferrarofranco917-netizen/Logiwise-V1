@@ -53,9 +53,18 @@
   }
 
   function expandedModules() {
-    const set = new Set(Array.isArray(state.expandedModules) ? state.expandedModules : []);
-    set.add(Modules.getModuleKeyFromRoute(currentRoute()));
-    return Array.from(set);
+    return Array.isArray(state.expandedModules) ? [...state.expandedModules] : [];
+  }
+
+  function ensureCurrentModuleExpanded() {
+    const moduleKey = Modules.getModuleKeyFromRoute(currentRoute());
+    if (!moduleKey) return;
+
+    const current = new Set(Array.isArray(state.expandedModules) ? state.expandedModules : []);
+    if (!current.has(moduleKey)) {
+      current.add(moduleKey);
+      state.expandedModules = Array.from(current);
+    }
   }
 
   function syncHash(replace = false) {
@@ -74,6 +83,7 @@
     const changed = normalized !== state.currentRoute;
 
     state.currentRoute = normalized;
+    ensureCurrentModuleExpanded();
     save();
     render();
 
@@ -240,11 +250,13 @@
     const routeFromHash = Modules.normalizeRoute(window.location.hash);
     if (routeFromHash === currentRoute()) return;
     state.currentRoute = routeFromHash;
+    ensureCurrentModuleExpanded();
     save();
     render();
   });
 
   state.currentRoute = Modules.normalizeRoute(window.location.hash || state.currentRoute);
+  ensureCurrentModuleExpanded();
   save();
   render();
   syncHash(true);
