@@ -5,6 +5,7 @@ window.KedrixOneTemplates = (() => {
   const W = window.KedrixOneWiseMind;
   const L = window.KedrixOneLicensing;
   const T = window.KedrixOneI18N;
+  const PracticeVerification = window.KedrixOnePracticeVerification;
 
   function sidebar(modules, activeRoute, expandedModules) {
     const expanded = new Set(expandedModules || []);
@@ -161,13 +162,9 @@ window.KedrixOneTemplates = (() => {
           return String(value || '').trim();
         }).slice(0, 8)
       : [];
-    const verificationKeys = Array.from(new Set(['inspectionFlags', 'warehouseFlag', 'verificationFlags'].flatMap((key) => {
-      const entry = draft.dynamicData?.[key];
-      if (Array.isArray(entry)) return entry;
-      const textValue = String(entry || '').trim();
-      return textValue ? textValue.split(',').map((item) => item.trim()).filter(Boolean) : [];
-    }).concat(String(draft.status || '').trim().toLowerCase() === 'sdoganamento' ? ['ui.verifyCustoms'] : []).filter(Boolean)));
-    const verificationLabels = verificationKeys.map((key) => T.t(key, key));
+    const verificationLabels = PracticeVerification && typeof PracticeVerification.collectLabels === 'function'
+      ? PracticeVerification.collectLabels(draft)
+      : [];
     const isEditing = Boolean(draft.editingPracticeId);
     const editSourceLabel = state.practiceOpenSource === 'search'
       ? T.t('ui.openedFromSearch', 'Aperta da ricerca')

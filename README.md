@@ -60,3 +60,14 @@ Sostituisci integralmente il contenuto del repo con questo pacchetto oppure appl
 - completamento sicuro dello schema mare con inserimento **solo dei campi mancanti** e skip automatico dei duplicati già presenti
 - nuovi campi mare aggiunti: corrispondente, assicurazione, fatt. estera, deposito, terminal ritiro/consegna, effettuata, scarico, fumigazione, importo fattura, commerciale, sezione doganale, figure aggiuntive, trasportatore, bolla, perizia/cessione, collega a, città consegna, rif. aggiuntivo, tags
 - ricerca base ampliata ai nuovi riferimenti operativi/documentali mare e CTA esplicita `Apri e modifica` anche dall'anteprima risultato
+
+## STEP 5C.5E — base anti-monolite
+
+Da questo step ogni nuova feature autonoma deve uscire in file dedicati. Base introdotta:
+
+- `js/data/ports.js` → archivio porti e dataset autonomi
+- `js/practices/form-renderer.js` → rendering campi dinamici Pratiche
+- `js/practices/draft-validator.js` → validazione Pratiche
+- `js/practices/verification.js` → banner/stati verifica Pratiche
+
+Regola: niente nuova logica autonoma in `app.js` se può vivere in un modulo dedicato.
