@@ -24,6 +24,7 @@ window.KedrixOneData = (() => {
         generatedReference: '',
         dynamicData: {}
       },
+      practiceDuplicateSource: null,
       companyConfig: {
         id: 'CMP-001',
         name: 'Kedrix Demo Logistics',

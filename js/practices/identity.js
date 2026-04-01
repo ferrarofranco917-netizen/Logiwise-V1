@@ -45,6 +45,8 @@ window.KedrixOnePracticeIdentity = (() => {
     state._practiceValidationErrors = [];
     state.practiceSearchPreviewId = '';
     state.practiceOpenSource = '';
+    state.practiceDuplicateSource = null;
+    state.selectedPracticeId = '';
     return state.draftPractice;
   }
 
@@ -84,6 +86,7 @@ window.KedrixOnePracticeIdentity = (() => {
     state.selectedPracticeId = practice.id;
     state.practiceTab = 'practice';
     state._practiceValidationErrors = [];
+    state.practiceDuplicateSource = null;
     state.draftPractice = createEmptyDraft({
       editingPracticeId: practice.id,
       practiceType: practice.practiceType || '',

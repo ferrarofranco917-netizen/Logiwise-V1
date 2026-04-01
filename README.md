@@ -87,3 +87,13 @@ Regola: niente nuova logica autonoma in `app.js` se può vivere in un modulo ded
 - `index.html` aggiornato per caricare i nuovi moduli practices prima di `app.js`.
 - `js/app.js` alleggerito: identity, persistence e save pipeline passano a moduli dedicati mantenendo il comportamento esistente.
 - Base pronta per i prossimi step: duplicazione pratica, controlli container/pre-save, allegati pratica e ulteriori regole di integrità dati.
+
+
+
+## STEP 5C.7 — Duplica pratica / copia pratica simile
+- `js/practices/duplicate.js` introdotto come modulo dedicato per la duplicazione pratica, senza stratificare nuova logica autonoma in `app.js`.
+- Pulsante `Duplica pratica` disponibile quando una pratica esistente è aperta in modifica.
+- La copia apre subito un nuovo draft editabile con nuova identity pulita: nessuna collisione con `id`, `editingPracticeId` o `generatedReference`.
+- La copia reimposta lo stato a `In attesa documenti` e svuota i riferimenti operativi/documentali che non devono ereditarsi in modo cieco (es. booking, container, MBL/HBL, MAWB/HAWB, CMR, bolla, alcune date operative e flag di verifica).
+- Banner dedicato per distinguere chiaramente la copia non ancora salvata dalla pratica origine.
+- Base pronta per step successivi: controlli container, pesi, allegati pratica e ulteriori regole di integrità dati.

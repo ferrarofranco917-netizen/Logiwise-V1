@@ -17,6 +17,7 @@
   const PracticeIdentity = window.KedrixOnePracticeIdentity;
   const PracticePersistence = window.KedrixOnePracticePersistence;
   const PracticeSavePipeline = window.KedrixOnePracticeSavePipeline;
+  const PracticeDuplicate = window.KedrixOnePracticeDuplicate;
   const PracticeSearchUI = window.KedrixOnePracticeSearchUI;
 
   const state = Storage.load(() => Data.initialState());
@@ -283,6 +284,35 @@
     }
   }
 
+  function duplicatePracticeDraft(practiceId = '') {
+    const sourcePracticeId = practiceId || ensureDraftPractice().editingPracticeId || state.selectedPracticeId || '';
+    if (!sourcePracticeId) {
+      toast(I18N.t('ui.duplicateUnavailable', 'Apri prima una pratica esistente da duplicare.'));
+      return { ok: false, reason: 'missing-practice-id' };
+    }
+
+    if (PracticeDuplicate && typeof PracticeDuplicate.duplicatePracticeToDraft === 'function') {
+      return PracticeDuplicate.duplicatePracticeToDraft(sourcePracticeId, {
+        state,
+        i18n: I18N,
+        buildCurrentPracticeReference,
+        createDuplicateSafeDraft: PracticeIdentity && typeof PracticeIdentity.createDuplicateSafeDraft === 'function'
+          ? PracticeIdentity.createDuplicateSafeDraft
+          : (PracticeSavePipeline && typeof PracticeSavePipeline.createDuplicateSafeDraft === 'function'
+            ? PracticeSavePipeline.createDuplicateSafeDraft
+            : null),
+        extractPracticeDynamicData,
+        save,
+        render,
+        toast,
+        focusPracticeEditor
+      });
+    }
+
+    toast(I18N.t('ui.duplicateUnavailable', 'Apri prima una pratica esistente da duplicare.'));
+    return { ok: false, reason: 'duplicate-module-unavailable' };
+  }
+
   function practiceTypeLabel(value) {
     const map = {
       sea_import: I18N.t('ui.typeSeaImport', 'Mare Import'),
@@ -352,6 +382,8 @@
     state._practiceValidationErrors = [];
     state.practiceSearchPreviewId = '';
     state.practiceOpenSource = '';
+    state.practiceDuplicateSource = null;
+    state.selectedPracticeId = '';
   }
 
   function syncClientMatch(clientName) {
@@ -390,6 +422,7 @@
     state.selectedPracticeId = practice.id;
     state.practiceTab = 'practice';
     state._practiceValidationErrors = [];
+    state.practiceDuplicateSource = null;
     state.draftPractice = {
       editingPracticeId: practice.id,
       practiceType: practice.practiceType || '',
@@ -1124,6 +1157,10 @@
     if (action.dataset.action === 'save-backup') {
       save();
       toast(I18N.t('ui.backupUpdated', 'Backup locale aggiornato'));
+    }
+
+    if (action.dataset.action === 'duplicate-practice-draft') {
+      duplicatePracticeDraft();
     }
 
     if (action.dataset.action === 'reset-demo') {

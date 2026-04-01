@@ -762,6 +762,23 @@ Object.assign(dictionary.en.ui, {
   searchPreviewHint: 'The selected practice opens in the form above in edit mode and can be updated immediately.'
 });
 
+
+Object.assign(dictionary.it.ui, {
+  duplicatePractice: 'Duplica pratica',
+  duplicatePracticeBannerKicker: 'Copia generata da pratica esistente',
+  duplicateDraftReady: 'Copia pronta da personalizzare',
+  practiceDuplicatedDraftReady: 'Copia pratica pronta',
+  duplicateUnavailable: 'Apri prima una pratica esistente da duplicare.'
+});
+
+Object.assign(dictionary.en.ui, {
+  duplicatePractice: 'Duplicate practice',
+  duplicatePracticeBannerKicker: 'Copy generated from an existing practice',
+  duplicateDraftReady: 'Copy ready to customize',
+  practiceDuplicatedDraftReady: 'Practice copy ready',
+  duplicateUnavailable: 'Open an existing practice before duplicating it.'
+});
+
   return {
     dictionary,
     setLanguage,

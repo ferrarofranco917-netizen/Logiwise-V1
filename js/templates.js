@@ -166,6 +166,7 @@ window.KedrixOneTemplates = (() => {
       ? PracticeVerification.collectLabels(draft)
       : [];
     const isEditing = Boolean(draft.editingPracticeId);
+    const duplicateSource = state.practiceDuplicateSource || null;
     const editSourceLabel = state.practiceOpenSource === 'search'
       ? T.t('ui.openedFromSearch', 'Aperta da ricerca')
       : state.practiceOpenSource === 'list'
@@ -219,6 +220,16 @@ window.KedrixOneTemplates = (() => {
                 <div class="edit-session-meta">
                   ${editSourceLabel ? `<span class="badge info">${U.escapeHtml(editSourceLabel)}</span>` : ''}
                   <span class="badge info">${U.escapeHtml(T.t('ui.editingReady', 'Modificabile subito'))}</span>
+                </div>
+              </div>` : duplicateSource ? `
+              <div class="edit-session-banner" id="practiceEditBanner">
+                <div>
+                  <div class="summary-kicker">${U.escapeHtml(T.t('ui.duplicatePracticeBannerKicker', 'Copia generata da pratica esistente'))}</div>
+                  <div class="edit-session-title">${U.escapeHtml(duplicateSource.reference || draft.generatedReference || '—')}</div>
+                  <div class="edit-session-subtitle">${U.escapeHtml(duplicateSource.clientName || draft.clientName || '—')}</div>
+                </div>
+                <div class="edit-session-meta">
+                  <span class="badge info">${U.escapeHtml(T.t('ui.duplicateDraftReady', 'Copia pronta da personalizzare'))}</span>
                 </div>
               </div>` : ''}
             <div class="form-grid three">
@@ -300,6 +311,7 @@ window.KedrixOneTemplates = (() => {
 
             <div class="action-row">
               <button class="btn" type="submit">${U.escapeHtml(draft.editingPracticeId ? T.t('ui.updatePractice', 'Aggiorna pratica') : T.t('ui.saveAndGenerate', 'Salva pratica'))}</button>
+              ${isEditing ? `<button class="btn secondary" type="button" data-action="duplicate-practice-draft">${U.escapeHtml(T.t('ui.duplicatePractice', 'Duplica pratica'))}</button>` : ''}
               <button class="btn secondary" type="button" data-action="reset-practice-draft">${U.escapeHtml(T.t('ui.newDraft', 'Nuova pratica'))}</button>
               <button class="btn secondary" type="button" data-action="reset-demo">${U.escapeHtml(T.t('ui.resetDemo', 'Reset demo'))}</button>
             </div>

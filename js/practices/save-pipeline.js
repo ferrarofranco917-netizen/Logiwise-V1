@@ -212,6 +212,7 @@ window.KedrixOnePracticeSavePipeline = (() => {
     if (typeof toast === 'function') toast(isEditing ? logTexts.updatedToast : logTexts.createdToast);
 
     state.selectedPracticeId = record.id;
+    state.practiceDuplicateSource = null;
     if (typeof loadPracticeIntoDraft === 'function') loadPracticeIntoDraft(record.id);
     state.practiceOpenSource = 'save';
 
