@@ -1,14 +1,16 @@
-# Kedrix One — STEP 4B FULL
+# Kedrix One — STEP 4C FULL
 
-Pacchetto completo di replace totale basato sul repo STEP 4A approvato.
+Pacchetto completo di replace totale basato sul repo STEP 4B approvato.
 
 ## Contenuto
-- licensing engine base
-- piano azienda (base / pro / enterprise)
-- moduli acquistati a livello azienda
-- assegnazione moduli a livello utente
-- sidebar dinamica basata sul profilo attivo
-- dashboard, pratiche, anagrafiche e routing STEP 4A mantenuti
+- licensing esteso ai sottomoduli
+- attivazione/disattivazione modulo per azienda
+- attivazione/disattivazione modulo per utente
+- attivazione/disattivazione sottomodulo per azienda
+- attivazione/disattivazione sottomodulo per utente
+- sidebar filtrata anche sui sottomoduli
+- blocco route se sottomodulo disabilitato
+- dashboard, pratiche, anagrafiche e routing mantenuti
 
 ## Deploy
 GitHub Pages:

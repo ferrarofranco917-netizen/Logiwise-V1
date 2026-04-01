@@ -8,17 +8,70 @@ window.KedrixOneData = (() => {
       filterText: '',
       statusFilter: 'Tutti',
       expandedModules: ['practices', 'master-data', 'documents', 'tracking'],
+      settingsModuleKey: 'practices',
       companyConfig: {
         id: 'CMP-001',
         name: 'Kedrix Demo Logistics',
         plan: 'base',
         purchasedModules: ['crm', 'tracking', 'administration', 'bi'],
-        disabledModules: []
+        disabledModules: [],
+        purchasedSubmodules: [
+          'crm/agenda-crm',
+          'tracking/container-tracking',
+          'tracking/vessel-tracking',
+          'administration/fatture-attive',
+          'administration/fatture-passive',
+          'administration/scadenziario-clienti'
+        ],
+        disabledSubmodules: [
+          'practices/richiesta-fondi',
+          'practices/delivery-order'
+        ]
       },
       users: [
-        { id: 'USR-001', name: 'Franco', role: 'sales_manager', extraModules: ['crm', 'tracking', 'bi'], disabledModules: [] },
-        { id: 'USR-002', name: 'Operativo 1', role: 'operator', extraModules: ['tracking'], disabledModules: ['crm', 'administration', 'bi'] },
-        { id: 'USR-003', name: 'Amministrazione', role: 'finance', extraModules: ['administration'], disabledModules: ['crm'] }
+        {
+          id: 'USR-001',
+          name: 'Franco',
+          role: 'sales_manager',
+          extraModules: ['crm', 'tracking', 'bi'],
+          disabledModules: [],
+          extraSubmodules: [
+            'practices/booking-d-imbarco',
+            'practices/notifica-arrivo-merce',
+            'crm/indicatori'
+          ],
+          disabledSubmodules: ['practices/buono-consegna-merce-aerea']
+        },
+        {
+          id: 'USR-002',
+          name: 'Operativo 1',
+          role: 'operator',
+          extraModules: ['tracking'],
+          disabledModules: ['crm', 'administration', 'bi'],
+          extraSubmodules: [
+            'practices/elenco-pratiche',
+            'tracking/container-tracking'
+          ],
+          disabledSubmodules: [
+            'practices/booking-d-imbarco',
+            'practices/viaggi-nave',
+            'tracking/air-cargo-tracking'
+          ]
+        },
+        {
+          id: 'USR-003',
+          name: 'Amministrazione',
+          role: 'finance',
+          extraModules: ['administration'],
+          disabledModules: ['crm'],
+          extraSubmodules: [
+            'administration/fatture-attive',
+            'administration/fatture-passive',
+            'administration/scadenziario-clienti',
+            'administration/scadenziario-fornitori'
+          ],
+          disabledSubmodules: []
+        }
       ],
       activeUserId: 'USR-001',
       practices: [
