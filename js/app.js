@@ -444,13 +444,13 @@
     practiceSearchQuery?.addEventListener('input', (event) => {
       state.practiceSearchQuery = event.target.value || '';
       save();
-      render();
+      rerenderPreservingInput('practiceSearchQuery', event.target.selectionStart, event.target.selectionEnd);
     });
 
     filter?.addEventListener('input', (event) => {
       state.filterText = event.target.value || '';
       save();
-      render();
+      rerenderPreservingInput('filterText', event.target.selectionStart, event.target.selectionEnd);
     });
 
     status?.addEventListener('change', (event) => {
@@ -646,6 +646,147 @@
     updateStaticLabels();
     renderSidebar();
     renderMain();
+  }
+
+  function rerenderPreservingInput(inputId, selectionStart = null, selectionEnd = null) {
+    const scrollY = window.scrollY || window.pageYOffset || 0;
+    render();
+    window.requestAnimationFrame(() => {
+      window.scrollTo(0, scrollY);
+      const field = document.getElementById(inputId);
+      if (!field || typeof field.focus !== 'function') return;
+      field.focus({ preventScroll: true });
+      if (typeof field.setSelectionRange === 'function' && selectionStart !== null && selectionEnd !== null) {
+        try {
+          field.setSelectionRange(selectionStart, selectionEnd);
+        } catch (error) {
+          // ignore selection restore errors on unsupported input types
+        }
+      }
+    });
+  }
+
+  function bindSettingsEvents() {
+    const companyPlan = document.getElementById('companyPlan');
+    const activeUserId = document.getElementById('activeUserId');
+    const languageSelect = document.getElementById('languageSelect');
+    const settingsModuleKey = document.getElementById('settingsModuleKey');
+    const numberingClientId = document.getElementById('numberingClientId');
+    const numberingPrefix = document.getElementById('numberingPrefix');
+    const numberingSeparator = document.getElementById('numberingSeparator');
+    const numberingNextNumber = document.getElementById('numberingNextNumber');
+    const numberingIncludeYear = document.getElementById('numberingIncludeYear');
+    const numberingPreview = document.getElementById('numberingPreview');
+    const saveNumberingRule = document.getElementById('saveNumberingRule');
+
+    function refreshSettingsStateAfterAccessChange() {
+      state.currentRoute = safeRoute(state.currentRoute);
+      ensureCurrentModuleExpanded();
+      save();
+      render();
+    }
+
+    function updateNumberingPreview() {
+      if (!numberingPreview) return;
+      const prefix = String(numberingPrefix?.value || '').trim().toUpperCase();
+      const separator = String(numberingSeparator?.value || '-');
+      const nextNumber = Math.max(1, Number(numberingNextNumber?.value || 1) || 1);
+      const includeYear = Boolean(numberingIncludeYear?.checked);
+      const year = new Date().getFullYear();
+      const parts = [];
+      if (prefix) parts.push(prefix);
+      if (includeYear) parts.push(String(year));
+      parts.push(String(nextNumber));
+      numberingPreview.value = parts.join(separator);
+    }
+
+    companyPlan?.addEventListener('change', (event) => {
+      Licensing.setCompanyPlan(state, event.target.value || 'base');
+      refreshSettingsStateAfterAccessChange();
+      toast(I18N.t('ui.settingsSaved', 'Impostazioni aggiornate'));
+    });
+
+    activeUserId?.addEventListener('change', (event) => {
+      Licensing.setActiveUser(state, event.target.value || '');
+      refreshSettingsStateAfterAccessChange();
+      toast(I18N.t('ui.settingsSaved', 'Impostazioni aggiornate'));
+    });
+
+    languageSelect?.addEventListener('change', (event) => {
+      state.language = event.target.value || 'it';
+      I18N.setLanguage(state.language);
+      save();
+      render();
+      toast(I18N.t('ui.languageUpdated', 'Language updated'));
+    });
+
+    settingsModuleKey?.addEventListener('change', (event) => {
+      state.settingsModuleKey = event.target.value || 'practices';
+      save();
+      render();
+    });
+
+    numberingClientId?.addEventListener('change', (event) => {
+      state.settingsClientId = event.target.value || '';
+      save();
+      render();
+    });
+
+    [numberingPrefix, numberingSeparator, numberingNextNumber, numberingIncludeYear].forEach((field) => {
+      if (!field) return;
+      field.addEventListener(field.type === 'checkbox' ? 'change' : 'input', updateNumberingPreview);
+    });
+
+    saveNumberingRule?.addEventListener('click', () => {
+      const client = getClientById(state.settingsClientId);
+      if (!client) return;
+      client.numberingRule = {
+        ...(client.numberingRule || {}),
+        prefix: String(numberingPrefix?.value || '').trim().toUpperCase(),
+        separator: String(numberingSeparator?.value || '-'),
+        includeYear: Boolean(numberingIncludeYear?.checked),
+        resetEveryYear: true,
+        nextNumber: Math.max(1, Number(numberingNextNumber?.value || 1) || 1),
+        lastYear: Number(client.numberingRule?.lastYear || new Date().getFullYear())
+      };
+      save();
+      render();
+      toast(I18N.t('ui.settingsSaved', 'Impostazioni aggiornate'));
+    });
+
+    main.querySelectorAll('[data-toggle-company-module]').forEach((button) => {
+      button.addEventListener('click', () => {
+        Licensing.toggleCompanyModule(state, button.dataset.toggleCompanyModule);
+        refreshSettingsStateAfterAccessChange();
+      });
+    });
+
+    main.querySelectorAll('[data-toggle-user-module]').forEach((button) => {
+      button.addEventListener('click', () => {
+        Licensing.toggleUserModule(state, button.dataset.toggleUserModule);
+        refreshSettingsStateAfterAccessChange();
+      });
+    });
+
+    main.querySelectorAll('[data-toggle-company-submodule]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const module = Modules.getModule(state.settingsModuleKey);
+        if (!module) return;
+        Licensing.toggleCompanySubmodule(state, module, button.dataset.toggleCompanySubmodule);
+        refreshSettingsStateAfterAccessChange();
+      });
+    });
+
+    main.querySelectorAll('[data-toggle-user-submodule]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const module = Modules.getModule(state.settingsModuleKey);
+        if (!module) return;
+        Licensing.toggleUserSubmodule(state, module, button.dataset.toggleUserSubmodule);
+        refreshSettingsStateAfterAccessChange();
+      });
+    });
+
+    updateNumberingPreview();
   }
 
   document.addEventListener('click', (event) => {
