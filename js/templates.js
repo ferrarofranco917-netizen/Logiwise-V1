@@ -154,7 +154,7 @@ window.KedrixOneTemplates = (() => {
       <section class="kpi-grid compact-kpi-grid">
         <article class="kpi-card">
           <div class="kpi-label">${U.escapeHtml(T.t('ui.practiceType', 'Tipo pratica'))}</div>
-          <div class="kpi-value">${draft.practiceType ? U.escapeHtml(practiceTypeLabel(draft.practiceType)) : '—'}</div>
+          <div class="kpi-value">${draft.practiceType ? U.escapeHtml(T.t(`ui.type_${draft.practiceType}`, draft.practiceType)) : '—'}</div>
           <div class="kpi-hint">${U.escapeHtml(T.t('ui.dynamicSchemaIntro', ''))}</div>
         </article>
         <article class="kpi-card">
