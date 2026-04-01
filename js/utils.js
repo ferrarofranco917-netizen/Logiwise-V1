@@ -61,6 +61,28 @@ window.KedrixOneUtils = (() => {
     return sequence;
   }
 
+
+  function deriveClientPrefix(clientName) {
+    const normalized = String(clientName || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^A-Za-z0-9 ]+/g, ' ')
+      .trim()
+      .toUpperCase();
+    if (!normalized) return 'PR';
+    const compact = normalized.split(/\s+/).join('');
+    return compact.slice(0, 3) || 'PR';
+  }
+
+  function buildFallbackPracticeReference(clientName, practices, dateValue) {
+    const date = new Date((dateValue || new Date().toISOString().slice(0, 10)) + 'T00:00:00');
+    const year = date.getFullYear();
+    const prefix = deriveClientPrefix(clientName);
+    const seq = (practices || []).filter((practice) => String(practice.reference || '').startsWith(`${prefix}-${year}-`)).length + 1;
+    return `${prefix}-${year}-${seq}`;
+  }
+
+
   function nextPracticeId(practices) {
     const year = new Date().getFullYear();
     const max = practices.reduce((acc, item) => {
@@ -95,6 +117,8 @@ window.KedrixOneUtils = (() => {
     slugify,
     buildPracticeReference,
     commitPracticeNumber,
+    deriveClientPrefix,
+    buildFallbackPracticeReference,
     nextPracticeId,
     nextLogId,
     nowStamp

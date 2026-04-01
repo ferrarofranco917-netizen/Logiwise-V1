@@ -602,6 +602,30 @@ Object.assign(dictionary.en.ui, {
 
 
 
+
+
+Object.assign(dictionary.it.ui, {
+  clientEditable: 'Cliente (editabile)',
+  editPractice: 'Modifica pratica',
+  updatePractice: 'Aggiorna pratica',
+  practiceUpdated: 'Pratica aggiornata',
+  reopenHint: 'Clicca una riga per riaprire la pratica in modifica.',
+  clientSuggestionHint: 'Il campo cliente suggerisce le anagrafiche esistenti ma resta editabile.',
+  manualClient: 'Cliente manuale',
+  newDraft: 'Nuova pratica'
+});
+
+Object.assign(dictionary.en.ui, {
+  clientEditable: 'Client (editable)',
+  editPractice: 'Edit practice',
+  updatePractice: 'Update practice',
+  practiceUpdated: 'Practice updated',
+  reopenHint: 'Click a row to reopen the practice for editing.',
+  clientSuggestionHint: 'The client field suggests existing records but remains editable.',
+  manualClient: 'Manual client',
+  newDraft: 'New practice'
+});
+
   return {
     dictionary,
     setLanguage,

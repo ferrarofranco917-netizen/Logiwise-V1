@@ -126,6 +126,74 @@
   }
 
 
+
+  function ensureDraftPractice() {
+    if (!state.draftPractice) {
+      state.draftPractice = {
+        editingPracticeId: '',
+        practiceType: '',
+        clientId: '',
+        clientName: '',
+        practiceDate: new Date().toISOString().slice(0, 10),
+        category: '',
+        status: 'In attesa documenti',
+        generatedReference: '',
+        dynamicData: {}
+      };
+    }
+    return state.draftPractice;
+  }
+
+  function resetPracticeDraft() {
+    state.draftPractice = {
+      editingPracticeId: '',
+      practiceType: '',
+      clientId: '',
+      clientName: '',
+      practiceDate: new Date().toISOString().slice(0, 10),
+      category: '',
+      status: 'In attesa documenti',
+      generatedReference: '',
+      dynamicData: {}
+    };
+    state.practiceTab = 'practice';
+  }
+
+  function syncClientMatch(clientName) {
+    const clean = String(clientName || '').trim().toUpperCase();
+    const match = (state.clients || []).find((client) => String(client.name || '').trim().toUpperCase() === clean) || null;
+    const draft = ensureDraftPractice();
+    draft.clientId = match ? match.id : '';
+    draft.clientName = clientName;
+    return match;
+  }
+
+  function buildCurrentPracticeReference() {
+    const draft = ensureDraftPractice();
+    const matchedClient = getClientById(draft.clientId);
+    if (matchedClient) return Utils.buildPracticeReference(matchedClient.numberingRule, draft.practiceDate);
+    return Utils.buildFallbackPracticeReference(draft.clientName || 'PR', state.practices, draft.practiceDate);
+  }
+
+  function loadPracticeIntoDraft(practiceId) {
+    const practice = state.practices.find((item) => item.id === practiceId);
+    if (!practice) return;
+    state.selectedPracticeId = practice.id;
+    state.practiceTab = 'practice';
+    state.draftPractice = {
+      editingPracticeId: practice.id,
+      practiceType: practice.practiceType || '',
+      clientId: practice.clientId || '',
+      clientName: practice.clientName || practice.client || '',
+      practiceDate: practice.practiceDate || practice.eta || new Date().toISOString().slice(0, 10),
+      category: practice.category || '',
+      status: practice.status || 'Operativa',
+      generatedReference: practice.reference || '',
+      dynamicData: { ...(practice.dynamicData || {}) }
+    };
+  }
+
+
   function currentRoute() {
     return Modules.normalizeRoute(state.currentRoute);
   }
@@ -197,12 +265,16 @@
   }
 
   function bindPracticeEvents() {
+    const draft = ensureDraftPractice();
     const form = document.getElementById('practiceForm');
     const filter = document.getElementById('filterText');
     const status = document.getElementById('statusFilter');
     const practiceType = document.getElementById('practiceType');
+    const clientName = document.getElementById('clientName');
     const clientId = document.getElementById('clientId');
     const practiceDate = document.getElementById('practiceDate');
+    const category = document.getElementById('category');
+    const practiceStatus = document.getElementById('status');
     const generatedReference = document.getElementById('generatedReference');
     const lockedBanner = document.getElementById('practiceLockedBanner');
     const dynamicFields = document.getElementById('practiceDynamicFields');
@@ -211,34 +283,68 @@
       return Array.from(node.querySelectorAll('input, select, textarea, button'));
     });
 
+    function renderDynamicPanels() {
+      if (!dynamicFields) return;
+      dynamicFields.innerHTML = renderDynamicFieldsHTML(draft.practiceType || '', state.practiceTab || 'practice');
+      Object.entries(draft.dynamicData || {}).forEach(([key, value]) => {
+        const nodes = Array.from(dynamicFields.querySelectorAll(`[name="${key}"]`));
+        if (!nodes.length) return;
+        if (nodes[0].type === 'checkbox') {
+          const values = Array.isArray(value) ? value : [];
+          nodes.forEach((node) => {
+            node.checked = values.includes(node.value) || values.includes(I18N.t(node.value, node.value));
+          });
+        } else {
+          nodes[0].value = value || '';
+        }
+      });
+      bindDynamicPersistence();
+    }
+
     function syncPracticeLock() {
-      const unlocked = Boolean(practiceType?.value);
+      const unlocked = Boolean(draft.practiceType);
       dependentFields.forEach((field) => {
         if (field.id !== 'practiceType') field.disabled = !unlocked;
       });
       if (lockedBanner) lockedBanner.style.display = unlocked ? 'none' : 'block';
       if (!unlocked) {
+        draft.generatedReference = '';
         if (generatedReference) generatedReference.value = '';
-        if (dynamicFields) dynamicFields.innerHTML = renderDynamicFieldsHTML('', state.practiceTab);
       } else {
-        updatePracticeReference();
+        draft.generatedReference = buildCurrentPracticeReference();
+        if (generatedReference) generatedReference.value = draft.generatedReference;
         renderDynamicPanels();
       }
     }
 
-    function updatePracticeReference() {
-      const client = getClientById(clientId?.value);
-      const dateValue = practiceDate?.value || new Date().toISOString().slice(0, 10);
-      if (!practiceType?.value || !client || !generatedReference) {
-        if (generatedReference) generatedReference.value = '';
-        return;
-      }
-      generatedReference.value = Utils.buildPracticeReference(client.numberingRule, dateValue);
+    function persistIdentity() {
+      draft.practiceType = practiceType?.value || '';
+      draft.clientName = clientName?.value || '';
+      draft.clientId = clientId?.value || '';
+      draft.practiceDate = practiceDate?.value || new Date().toISOString().slice(0, 10);
+      draft.category = category?.value || '';
+      draft.status = practiceStatus?.value || 'In attesa documenti';
+      draft.generatedReference = buildCurrentPracticeReference();
+      if (generatedReference) generatedReference.value = draft.generatedReference;
+      save();
     }
 
-    function renderDynamicPanels() {
+    function bindDynamicPersistence() {
       if (!dynamicFields) return;
-      dynamicFields.innerHTML = renderDynamicFieldsHTML(practiceType?.value || '', state.practiceTab || 'practice');
+      dynamicFields.querySelectorAll('input, select, textarea').forEach((node) => {
+        if (node.dataset.boundDraft === '1') return;
+        node.dataset.boundDraft = '1';
+        const handler = () => {
+          if (node.type === 'checkbox') {
+            draft.dynamicData[node.name] = Array.from(dynamicFields.querySelectorAll(`[name="${node.name}"]:checked`)).map((item) => item.value);
+          } else {
+            draft.dynamicData[node.name] = node.value;
+          }
+          save();
+        };
+        node.addEventListener('input', handler);
+        node.addEventListener('change', handler);
+      });
     }
 
     filter?.addEventListener('input', (event) => {
@@ -254,11 +360,22 @@
     });
 
     practiceType?.addEventListener('change', () => {
+      draft.practiceType = practiceType.value || '';
+      draft.dynamicData = {};
       state.practiceTab = 'practice';
-      syncPracticeLock();
+      persistIdentity();
+      render();
     });
-    clientId?.addEventListener('change', updatePracticeReference);
-    practiceDate?.addEventListener('change', updatePracticeReference);
+
+    clientName?.addEventListener('input', () => {
+      const match = syncClientMatch(clientName.value || '');
+      if (clientId) clientId.value = match ? match.id : '';
+      persistIdentity();
+    });
+
+    practiceDate?.addEventListener('change', persistIdentity);
+    category?.addEventListener('change', persistIdentity);
+    practiceStatus?.addEventListener('change', persistIdentity);
 
     main.querySelectorAll('[data-practice-tab]').forEach((button) => {
       button.addEventListener('click', () => {
@@ -270,88 +387,89 @@
 
     form?.addEventListener('submit', (event) => {
       event.preventDefault();
+      persistIdentity();
 
-      const fd = new FormData(form);
-      const selectedClient = getClientById(String(fd.get('clientId') || '').trim());
-      const typeValue = String(fd.get('practiceType') || '').trim();
-      const dateValue = String(fd.get('practiceDate') || '').trim();
-
-      if (!typeValue || !selectedClient || !dateValue) {
+      if (!draft.practiceType || !draft.clientName || !draft.practiceDate) {
         toast(I18N.t('ui.mandatoryFieldsMissing', 'Compila i campi obbligatori bloccanti prima di salvare la pratica.'));
         return;
       }
 
-      const schema = getPracticeSchema(typeValue);
-      const reference = Utils.buildPracticeReference(selectedClient.numberingRule, dateValue);
-      Utils.commitPracticeNumber(selectedClient.numberingRule, dateValue);
-
-      const dynamicData = {};
+      const schema = getPracticeSchema(draft.practiceType);
       const dynamicLabels = {};
-      if (schema && schema.tabs) {
-        Object.values(schema.tabs).flat().forEach((field) => {
-          if (field.type === 'derived' || field.type === 'select-derived') return;
-          if (field.type === 'checkbox-group') {
-            dynamicData[field.name] = fd.getAll(field.name).map((item) => I18N.t(item, item));
-          } else {
-            dynamicData[field.name] = String(fd.get(field.name) || '').trim();
-          }
-          dynamicLabels[field.name] = I18N.t(field.labelKey, field.name);
-        });
-      }
+      const schemaFields = schema ? Object.values(schema.tabs).flat() : [];
+      schemaFields.forEach((field) => {
+        if (field.type !== 'derived' && field.type !== 'select-derived') dynamicLabels[field.name] = I18N.t(field.labelKey, field.name);
+      });
 
-      const practice = {
-        id: Utils.nextPracticeId(state.practices),
-        reference,
-        clientId: selectedClient.id,
-        client: selectedClient.name,
-        practiceType: typeValue,
-        practiceTypeLabel: practiceTypeLabel(typeValue),
+      const record = {
+        id: draft.editingPracticeId || Utils.nextPracticeId(state.practices),
+        reference: draft.generatedReference || buildCurrentPracticeReference(),
+        clientId: draft.clientId || '',
+        client: draft.clientName,
+        clientName: draft.clientName,
+        practiceType: draft.practiceType,
+        practiceTypeLabel: practiceTypeLabel(draft.practiceType),
         schemaGroup: schema ? schema.group : '',
-        category: String(fd.get('category') || '').trim(),
-        practiceDate: dateValue,
-        status: String(fd.get('status') || '').trim() || 'Operativa',
+        category: draft.category,
+        practiceDate: draft.practiceDate,
+        status: draft.status || 'Operativa',
         priority: 'Media',
-        importer: dynamicData.importer || '',
-        consignee: dynamicData.consignee || '',
-        portLoading: dynamicData.portLoading || dynamicData.airportDeparture || '',
-        portDischarge: dynamicData.portDischarge || dynamicData.airportDestination || '',
-        containerCode: dynamicData.containerCode || '',
-        packageCount: dynamicData.packageCount || '',
-        grossWeight: dynamicData.grossWeight || '',
-        goodsDescription: dynamicData.goodsDescription || '',
-        booking: dynamicData.booking || '',
-        customsOffice: dynamicData.customsOffice || '',
-        eta: dynamicData.arrivalDate || dateValue,
-        type: typeValue.includes('export') ? 'Export' : typeValue.includes('import') ? 'Import' : 'Magazzino',
-        port: dynamicData.portDischarge || dynamicData.airportDestination || dynamicData.deliveryPlace || '',
-        notes: dynamicData.internalNotes || '',
-        dynamicData,
+        importer: draft.dynamicData.importer || '',
+        consignee: draft.dynamicData.consignee || '',
+        portLoading: draft.dynamicData.portLoading || draft.dynamicData.airportDeparture || '',
+        portDischarge: draft.dynamicData.portDischarge || draft.dynamicData.airportDestination || '',
+        containerCode: draft.dynamicData.containerCode || '',
+        packageCount: draft.dynamicData.packageCount || '',
+        grossWeight: draft.dynamicData.grossWeight || '',
+        goodsDescription: draft.dynamicData.goodsDescription || '',
+        booking: draft.dynamicData.booking || '',
+        customsOffice: draft.dynamicData.customsOffice || draft.dynamicData.customsOperator || '',
+        eta: draft.dynamicData.arrivalDate || draft.practiceDate,
+        type: draft.practiceType.includes('export') ? 'Export' : draft.practiceType.includes('import') ? 'Import' : 'Magazzino',
+        port: draft.dynamicData.portDischarge || draft.dynamicData.airportDestination || draft.dynamicData.deliveryPlace || '',
+        notes: draft.dynamicData.internalNotes || '',
+        dynamicData: { ...(draft.dynamicData || {}) },
         dynamicLabels
       };
 
-      state.practices.unshift(practice);
-      state.selectedPracticeId = practice.id;
-      state.operatorLogs.unshift({
-        id: Utils.nextLogId(state.operatorLogs),
-        when: Utils.nowStamp(),
-        practiceId: practice.id,
-        text: `${I18N.getLanguage() === 'en' ? 'Practice created' : 'Creata pratica'} ${practice.reference}.`
-      });
+      const matchedClient = getClientById(draft.clientId);
+      if (matchedClient && !draft.editingPracticeId) Utils.commitPracticeNumber(matchedClient.numberingRule, draft.practiceDate);
 
+      if (draft.editingPracticeId) {
+        const index = state.practices.findIndex((item) => item.id === draft.editingPracticeId);
+        if (index >= 0) state.practices[index] = record;
+        state.operatorLogs.unshift({
+          id: Utils.nextLogId(state.operatorLogs),
+          when: Utils.nowStamp(),
+          practiceId: record.id,
+          text: `${I18N.getLanguage() === 'en' ? 'Practice updated' : 'Pratica aggiornata'} ${record.reference}.`
+        });
+        toast(I18N.t('ui.practiceUpdated', 'Pratica aggiornata'));
+      } else {
+        state.practices.unshift(record);
+        state.operatorLogs.unshift({
+          id: Utils.nextLogId(state.operatorLogs),
+          when: Utils.nowStamp(),
+          practiceId: record.id,
+          text: `${I18N.getLanguage() === 'en' ? 'Practice created' : 'Creata pratica'} ${record.reference}.`
+        });
+        toast(I18N.t('ui.practiceSaved', 'Pratica salvata'));
+      }
+
+      state.selectedPracticeId = record.id;
+      loadPracticeIntoDraft(record.id);
       save();
       render();
-      toast(I18N.t('ui.practiceSaved', 'Pratica salvata'));
     });
 
     main.querySelectorAll('tbody tr[data-practice-id]').forEach((row) => {
       row.addEventListener('click', () => {
-        state.selectedPracticeId = row.dataset.practiceId;
+        loadPracticeIntoDraft(row.dataset.practiceId);
         save();
         render();
       });
     });
 
-    if (dynamicFields) dynamicFields.innerHTML = renderDynamicFieldsHTML('', state.practiceTab || 'practice');
     syncPracticeLock();
   }
 
@@ -561,6 +679,13 @@
       render();
       toast(I18N.t('ui.demoReset', 'Dati demo ripristinati'));
     }
+
+    if (action.dataset.action === 'reset-practice-draft') {
+      resetPracticeDraft();
+      save();
+      render();
+      toast(I18N.t('ui.newDraft', 'Nuova pratica'));
+    }
   });
 
   window.addEventListener('hashchange', () => {
@@ -572,6 +697,7 @@
     render();
   });
 
+  ensureDraftPractice();
   I18N.setLanguage(state.language || 'it');
   state.currentRoute = safeRoute(window.location.hash || state.currentRoute);
   ensureCurrentModuleExpanded();
