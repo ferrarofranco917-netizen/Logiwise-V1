@@ -304,8 +304,10 @@
     function syncPracticeLock() {
       const unlocked = Boolean(draft.practiceType);
       dependentFields.forEach((field) => {
-        if (field.id !== 'practiceType') field.disabled = !unlocked;
-      });
+  if (field.id === 'practiceType') return;
+  if (field.type === 'hidden') return;
+  field.disabled = !unlocked;
+});
       if (lockedBanner) lockedBanner.style.display = unlocked ? 'none' : 'block';
       if (!unlocked) {
         draft.generatedReference = '';
@@ -360,13 +362,20 @@
     });
 
     practiceType?.addEventListener('change', () => {
-      draft.practiceType = practiceType.value || '';
-      draft.dynamicData = {};
-      state.practiceTab = 'practice';
-      persistIdentity();
-      render();
-    });
+  draft.practiceType = practiceType.value || '';
+  draft.dynamicData = {};
+  state.practiceTab = 'practice';
 
+  persistIdentity();
+
+  if (clientName) clientName.disabled = !draft.practiceType;
+  if (practiceDate) practiceDate.disabled = !draft.practiceType;
+  if (category) category.disabled = !draft.practiceType;
+  if (practiceStatus) practiceStatus.disabled = !draft.practiceType;
+  if (generatedReference) generatedReference.disabled = !draft.practiceType;
+
+  syncPracticeLock();
+});
     clientName?.addEventListener('input', () => {
       const match = syncClientMatch(clientName.value || '');
       if (clientId) clientId.value = match ? match.id : '';
