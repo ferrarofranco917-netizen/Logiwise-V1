@@ -9,6 +9,7 @@ window.KedrixOneData = (() => {
       statusFilter: 'Tutti',
       expandedModules: ['practices', 'master-data', 'documents', 'tracking'],
       settingsModuleKey: 'practices',
+      settingsClientId: 'CL-001',
       language: 'it',
       companyConfig: {
         id: 'CMP-001',
@@ -75,10 +76,126 @@ window.KedrixOneData = (() => {
         }
       ],
       activeUserId: 'USR-001',
+      clients: [
+        {
+          id: 'CL-001',
+          name: 'Michelin Italia',
+          code: 'MI',
+          city: 'Torino',
+          numberingRule: {
+            prefix: 'MI',
+            separator: '-',
+            includeYear: true,
+            resetEveryYear: true,
+            nextNumber: 2,
+            lastYear: 2026
+          }
+        },
+        {
+          id: 'CL-002',
+          name: 'Aprica S.p.A.',
+          code: 'AP',
+          city: 'Milano',
+          numberingRule: {
+            prefix: 'AP',
+            separator: '-',
+            includeYear: true,
+            resetEveryYear: true,
+            nextNumber: 4,
+            lastYear: 2026
+          }
+        },
+        {
+          id: 'CL-003',
+          name: 'Monge & C. S.p.A.',
+          code: 'MO',
+          city: 'Fossano',
+          numberingRule: {
+            prefix: 'MO',
+            separator: '-',
+            includeYear: true,
+            resetEveryYear: true,
+            nextNumber: 3,
+            lastYear: 2026
+          }
+        }
+      ],
       practices: [
-        { id: 'PR-2026-001', reference: 'KX-IMP-0001', client: 'Michelin Italia', type: 'Import', port: 'Genova', eta: '2026-04-01', priority: 'Alta', status: 'In attesa documenti', notes: 'Packing list aggiornata da richiedere al fornitore.' },
-        { id: 'PR-2026-002', reference: 'KX-EXP-0002', client: 'Monge & C. S.p.A.', type: 'Export', port: 'Fossano', eta: '2026-04-03', priority: 'Media', status: 'Operativa', notes: 'Verificare ritiro e conferma mezzo.' },
-        { id: 'PR-2026-003', reference: 'KX-IMP-0003', client: 'Aprica S.p.A.', type: 'Import', port: 'La Spezia', eta: '2026-03-31', priority: 'Alta', status: 'Sdoganamento', notes: 'Verifica operativa con dogana.' }
+        {
+          id: 'PR-2026-001',
+          reference: 'MI-2026-1',
+          clientId: 'CL-001',
+          client: 'Michelin Italia',
+          practiceType: 'sea_import',
+          category: 'FCL-FULL',
+          practiceDate: '2026-04-01',
+          status: 'In attesa documenti',
+          priority: 'Alta',
+          importer: 'Michelin Italia',
+          consignee: 'Michelin Italia',
+          portLoading: 'Shanghai',
+          portDischarge: 'Genova',
+          containerCode: 'MSCU1234567',
+          packageCount: '18',
+          grossWeight: '22100',
+          goodsDescription: 'Pneumatici automotive',
+          booking: 'BK-SEA-0901',
+          customsOffice: 'Genova Porto',
+          eta: '2026-04-01',
+          type: 'Import',
+          port: 'Genova',
+          notes: 'Packing list aggiornata da richiedere al fornitore.'
+        },
+        {
+          id: 'PR-2026-002',
+          reference: 'MO-2026-2',
+          clientId: 'CL-003',
+          client: 'Monge & C. S.p.A.',
+          practiceType: 'road_export',
+          category: 'GROUPAGE',
+          practiceDate: '2026-04-03',
+          status: 'Operativa',
+          priority: 'Media',
+          importer: 'Monge & C. S.p.A.',
+          consignee: 'Cliente Francia',
+          portLoading: 'Fossano',
+          portDischarge: 'Lione',
+          containerCode: '',
+          packageCount: '12',
+          grossWeight: '8200',
+          goodsDescription: 'Pet food palletizzato',
+          booking: 'BK-RD-4412',
+          customsOffice: 'Torino',
+          eta: '2026-04-03',
+          type: 'Export',
+          port: 'Fossano',
+          notes: 'Verificare ritiro e conferma mezzo.'
+        },
+        {
+          id: 'PR-2026-003',
+          reference: 'AP-2026-3',
+          clientId: 'CL-002',
+          client: 'Aprica S.p.A.',
+          practiceType: 'sea_import',
+          category: 'LCL-GROUPAGE',
+          practiceDate: '2026-03-31',
+          status: 'Sdoganamento',
+          priority: 'Alta',
+          importer: 'Aprica S.p.A.',
+          consignee: 'Aprica S.p.A.',
+          portLoading: 'Ningbo',
+          portDischarge: 'La Spezia',
+          containerCode: 'OOLU7654321',
+          packageCount: '6',
+          grossWeight: '4300',
+          goodsDescription: 'Materiale tecnico',
+          booking: 'BK-SEA-8812',
+          customsOffice: 'La Spezia',
+          eta: '2026-03-31',
+          type: 'Import',
+          port: 'La Spezia',
+          notes: 'Verifica operativa con dogana.'
+        }
       ],
       operatorLogs: [
         { id: 'LOG-001', when: '31/03/2026, 09:15', practiceId: 'PR-2026-001', text: 'Sollecito inviato al fornitore per documentazione mancante.' },

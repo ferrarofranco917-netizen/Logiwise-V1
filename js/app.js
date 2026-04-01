@@ -49,13 +49,30 @@
     const query = Utils.normalize(state.filterText);
     return state.practices.filter((practice) => {
       const okStatus = state.statusFilter === 'Tutti' || practice.status === state.statusFilter;
-      const okQuery = !query || [practice.reference, practice.client, practice.port, practice.id].some((value) => Utils.normalize(value).includes(query));
+      const okQuery = !query || [practice.reference, practice.client, practice.port, practice.id, practice.practiceType, practice.containerCode, practice.goodsDescription].some((value) => Utils.normalize(value).includes(query));
       return okStatus && okQuery;
     });
   }
 
   function selectedPractice() {
     return state.practices.find((practice) => practice.id === state.selectedPracticeId) || null;
+  }
+
+  function getClientById(clientId) {
+    return (state.clients || []).find((client) => client.id === clientId) || null;
+  }
+
+  function practiceTypeLabel(value) {
+    const map = {
+      sea_import: I18N.t('ui.typeSeaImport', 'Mare Import'),
+      sea_export: I18N.t('ui.typeSeaExport', 'Mare Export'),
+      air_import: I18N.t('ui.typeAirImport', 'Aerea Import'),
+      air_export: I18N.t('ui.typeAirExport', 'Aerea Export'),
+      road_import: I18N.t('ui.typeRoadImport', 'Terra Import'),
+      road_export: I18N.t('ui.typeRoadExport', 'Terra Export'),
+      warehouse: I18N.t('ui.typeWarehouse', 'Magazzino')
+    };
+    return map[value] || value || '—';
   }
 
   function currentRoute() {
@@ -132,6 +149,32 @@
     const form = document.getElementById('practiceForm');
     const filter = document.getElementById('filterText');
     const status = document.getElementById('statusFilter');
+    const practiceType = document.getElementById('practiceType');
+    const clientId = document.getElementById('clientId');
+    const practiceDate = document.getElementById('practiceDate');
+    const generatedReference = document.getElementById('generatedReference');
+    const lockedBanner = document.getElementById('practiceLockedBanner');
+    const dependentFields = Array.from(main.querySelectorAll('[data-practice-dependent] input, [data-practice-dependent] select, [data-practice-dependent] textarea'));
+
+    function syncPracticeLock() {
+      const unlocked = Boolean(practiceType?.value);
+      dependentFields.forEach((field) => {
+        if (field.id !== 'practiceType') field.disabled = !unlocked;
+      });
+      if (lockedBanner) lockedBanner.style.display = unlocked ? 'none' : 'block';
+      if (!unlocked && generatedReference) generatedReference.value = '';
+      if (unlocked) updatePracticeReference();
+    }
+
+    function updatePracticeReference() {
+      const client = getClientById(clientId?.value);
+      const dateValue = practiceDate?.value || new Date().toISOString().slice(0, 10);
+      if (!practiceType?.value || !client || !generatedReference) {
+        if (generatedReference) generatedReference.value = '';
+        return;
+      }
+      generatedReference.value = Utils.buildPracticeReference(client.numberingRule, dateValue);
+    }
 
     filter?.addEventListener('input', (event) => {
       state.filterText = event.target.value || '';
@@ -145,26 +188,51 @@
       render();
     });
 
+    practiceType?.addEventListener('change', syncPracticeLock);
+    clientId?.addEventListener('change', updatePracticeReference);
+    practiceDate?.addEventListener('change', updatePracticeReference);
+
     form?.addEventListener('submit', (event) => {
       event.preventDefault();
 
       const fd = new FormData(form);
-      const practice = {
-        id: Utils.nextPracticeId(state.practices),
-        reference: String(fd.get('reference') || '').trim(),
-        client: String(fd.get('client') || '').trim(),
-        type: String(fd.get('type') || '').trim(),
-        port: String(fd.get('port') || '').trim(),
-        eta: String(fd.get('eta') || '').trim(),
-        priority: String(fd.get('priority') || '').trim(),
-        status: String(fd.get('status') || '').trim(),
-        notes: String(fd.get('notes') || '').trim()
-      };
+      const selectedClient = getClientById(String(fd.get('clientId') || '').trim());
+      const typeValue = String(fd.get('practiceType') || '').trim();
+      const dateValue = String(fd.get('practiceDate') || '').trim();
 
-      if (!practice.reference || !practice.client || !practice.port || !practice.eta) {
-        toast(I18N.t('ui.search', 'Compila i campi obbligatori.'));
+      if (!typeValue || !selectedClient || !dateValue) {
+        toast(I18N.t('ui.mandatoryFieldsMissing', 'Compila i campi obbligatori bloccanti prima di salvare la pratica.'));
         return;
       }
+
+      const reference = Utils.buildPracticeReference(selectedClient.numberingRule, dateValue);
+      Utils.commitPracticeNumber(selectedClient.numberingRule, dateValue);
+
+      const practice = {
+        id: Utils.nextPracticeId(state.practices),
+        reference,
+        clientId: selectedClient.id,
+        client: selectedClient.name,
+        practiceType: typeValue,
+        category: String(fd.get('category') || '').trim(),
+        practiceDate: dateValue,
+        status: String(fd.get('status') || '').trim() || 'Operativa',
+        priority: 'Media',
+        importer: String(fd.get('importer') || '').trim(),
+        consignee: String(fd.get('consignee') || '').trim(),
+        portLoading: String(fd.get('portLoading') || '').trim(),
+        portDischarge: String(fd.get('portDischarge') || '').trim(),
+        containerCode: String(fd.get('containerCode') || '').trim(),
+        packageCount: String(fd.get('packageCount') || '').trim(),
+        grossWeight: String(fd.get('grossWeight') || '').trim(),
+        goodsDescription: String(fd.get('goodsDescription') || '').trim(),
+        booking: String(fd.get('booking') || '').trim(),
+        customsOffice: String(fd.get('customsOffice') || '').trim(),
+        eta: dateValue,
+        type: typeValue.includes('export') ? 'Export' : typeValue.includes('import') ? 'Import' : 'Magazzino',
+        port: String(fd.get('portDischarge') || fd.get('portLoading') || '').trim(),
+        notes: String(fd.get('notes') || '').trim()
+      };
 
       state.practices.unshift(practice);
       state.selectedPracticeId = practice.id;
@@ -172,12 +240,12 @@
         id: Utils.nextLogId(state.operatorLogs),
         when: Utils.nowStamp(),
         practiceId: practice.id,
-        text: `Creata pratica ${practice.reference}.`
+        text: `${I18N.getLanguage() === 'en' ? 'Practice created' : 'Creata pratica'} ${practice.reference}.`
       });
 
       save();
       render();
-      toast(I18N.getLanguage() === 'en' ? 'Practice saved' : 'Pratica salvata');
+      toast(I18N.t('ui.practiceSaved', 'Pratica salvata'));
     });
 
     main.querySelectorAll('tbody tr[data-practice-id]').forEach((row) => {
@@ -187,6 +255,8 @@
         render();
       });
     });
+
+    syncPracticeLock();
   }
 
   function bindSettingsEvents() {
@@ -194,6 +264,13 @@
     const activeUser = document.getElementById('activeUserId');
     const settingsModule = document.getElementById('settingsModuleKey');
     const languageSelect = document.getElementById('languageSelect');
+    const numberingClientId = document.getElementById('numberingClientId');
+    const numberingPrefix = document.getElementById('numberingPrefix');
+    const numberingSeparator = document.getElementById('numberingSeparator');
+    const numberingNextNumber = document.getElementById('numberingNextNumber');
+    const numberingIncludeYear = document.getElementById('numberingIncludeYear');
+    const numberingPreview = document.getElementById('numberingPreview');
+    const saveNumberingRule = document.getElementById('saveNumberingRule');
 
     plan?.addEventListener('change', (event) => {
       Licensing.setCompanyPlan(state, event.target.value);
@@ -223,6 +300,43 @@
       save();
       render();
       toast(I18N.t('ui.languageUpdated', 'Lingua aggiornata'));
+    });
+
+    function updateNumberingPreview() {
+      const client = getClientById(numberingClientId?.value);
+      if (!client || !numberingPreview) return;
+      const tempRule = {
+        ...client.numberingRule,
+        prefix: numberingPrefix?.value || '',
+        separator: numberingSeparator?.value || '-',
+        nextNumber: Number(numberingNextNumber?.value || 1),
+        includeYear: Boolean(numberingIncludeYear?.checked)
+      };
+      numberingPreview.value = Utils.buildPracticeReference(tempRule, new Date().toISOString().slice(0, 10));
+    }
+
+    numberingClientId?.addEventListener('change', (event) => {
+      state.settingsClientId = event.target.value;
+      save();
+      render();
+    });
+
+    numberingPrefix?.addEventListener('input', updateNumberingPreview);
+    numberingSeparator?.addEventListener('input', updateNumberingPreview);
+    numberingNextNumber?.addEventListener('input', updateNumberingPreview);
+    numberingIncludeYear?.addEventListener('change', updateNumberingPreview);
+
+    saveNumberingRule?.addEventListener('click', () => {
+      const client = getClientById(numberingClientId?.value);
+      if (!client) return;
+      client.numberingRule.prefix = String(numberingPrefix?.value || '').trim().toUpperCase();
+      client.numberingRule.separator = String(numberingSeparator?.value || '-');
+      client.numberingRule.nextNumber = Math.max(1, Number(numberingNextNumber?.value || 1));
+      client.numberingRule.includeYear = Boolean(numberingIncludeYear?.checked);
+      state.settingsClientId = client.id;
+      save();
+      render();
+      toast(I18N.t('ui.numberingSaved', 'Regola numerazione cliente aggiornata'));
     });
 
     main.querySelectorAll('[data-toggle-company-module]').forEach((button) => {

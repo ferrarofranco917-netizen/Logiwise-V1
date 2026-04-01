@@ -686,3 +686,61 @@ img {
 .placeholder-line strong {
   color: var(--text);
 }
+
+
+.practice-form-stack {
+  display: grid;
+  gap: 18px;
+}
+.form-grid.three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.toolbar-grid.four {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.inset-panel {
+  padding: 14px;
+  background: rgba(255,255,255,0.015);
+}
+.subsection-title {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+.locked-banner {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px dashed rgba(199,154,82,0.35);
+  background: rgba(199,154,82,0.08);
+  color: #eed4a6;
+}
+.detail-grid-large .detail-row {
+  grid-template-columns: 180px 1fr;
+}
+.checkbox-field {
+  align-items: end;
+}
+.checkbox-field label {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  min-height: 46px;
+}
+@media (max-width: 1180px) {
+  .form-grid.three,
+  .toolbar-grid.four {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (max-width: 760px) {
+  .form-grid.three,
+  .toolbar-grid.four {
+    grid-template-columns: 1fr;
+  }
+  .detail-grid-large .detail-row {
+    grid-template-columns: 1fr;
+  }
+}

@@ -127,98 +127,200 @@ window.KedrixOneTemplates = (() => {
   }
 
   function practices(state, selected, filtered) {
+    const clients = state.clients || [];
+    const practiceTypes = [
+      { value: 'sea_import', label: T.t('ui.typeSeaImport', 'Mare Import') },
+      { value: 'sea_export', label: T.t('ui.typeSeaExport', 'Mare Export') },
+      { value: 'air_import', label: T.t('ui.typeAirImport', 'Aerea Import') },
+      { value: 'air_export', label: T.t('ui.typeAirExport', 'Aerea Export') },
+      { value: 'road_import', label: T.t('ui.typeRoadImport', 'Terra Import') },
+      { value: 'road_export', label: T.t('ui.typeRoadExport', 'Terra Export') },
+      { value: 'warehouse', label: T.t('ui.typeWarehouse', 'Magazzino') }
+    ];
+
     return `
+      <section class="hero">
+        <div class="hero-meta">STEP 5A · ${U.escapeHtml(T.t('ui.practiceRealCore', 'Pratiche reali base'))}</div>
+        <h2>${U.escapeHtml(T.moduleLabel('practices', 'Pratiche'))}</h2>
+        <p>${U.escapeHtml(T.t('ui.practiceIntro', ''))}</p>
+      </section>
+
+      <section class="kpi-grid compact-kpi-grid">
+        <article class="kpi-card">
+          <div class="kpi-label">${U.escapeHtml(T.t('ui.practiceType', 'Tipo pratica'))}</div>
+          <div class="kpi-value">7</div>
+          <div class="kpi-hint">${U.escapeHtml(T.t('ui.profileByClient', ''))}</div>
+        </article>
+        <article class="kpi-card">
+          <div class="kpi-label">${U.escapeHtml(T.t('ui.generatedNumber', 'Numero pratica'))}</div>
+          <div class="kpi-value">${filtered[0] ? U.escapeHtml(filtered[0].reference) : '—'}</div>
+          <div class="kpi-hint">${U.escapeHtml(T.t('ui.bodyCore', ''))}</div>
+        </article>
+        <article class="kpi-card">
+          <div class="kpi-label">${U.escapeHtml(T.t('ui.practiceList', 'Elenco pratiche'))}</div>
+          <div class="kpi-value">${state.practices.length}</div>
+          <div class="kpi-hint">${U.escapeHtml(T.t('ui.noDeadLinks', ''))}</div>
+        </article>
+      </section>
+
       <section class="panel">
         <div class="panel-head">
           <div>
-            <h3 class="panel-title">${U.escapeHtml(T.t('ui.search', 'Ricerca'))} ${U.escapeHtml(T.moduleLabel('practices', 'Pratiche'))}</h3>
-            <p class="panel-subtitle">${U.escapeHtml(T.t('ui.searchAndFilter', ''))}</p>
+            <h3 class="panel-title">${U.escapeHtml(T.t('ui.practiceIdentity', 'Identità pratica'))}</h3>
+            <p class="panel-subtitle">${U.escapeHtml(T.t('ui.practiceMandatoryGate', ''))}</p>
           </div>
         </div>
-        <div class="toolbar-grid">
-          <div class="field">
-            <label for="filterText">${U.escapeHtml(T.t('ui.search', 'Ricerca'))}</label>
-            <input id="filterText" value="${U.escapeHtml(state.filterText)}" placeholder="${U.escapeHtml(T.t('ui.search', 'Ricerca'))}..." />
-          </div>
-          <div class="field">
-            <label for="statusFilter">${U.escapeHtml(T.t('ui.statusFilter', 'Filtro stato'))}</label>
-            <select id="statusFilter">
-              ${['Tutti', 'In attesa documenti', 'Operativa', 'Sdoganamento'].map((option) => `<option ${state.statusFilter === option ? 'selected' : ''}>${option}</option>`).join('')}
-            </select>
-          </div>
-          <div class="field">
-            <label>&nbsp;</label>
-            <div class="action-row">
-              <button class="btn secondary" type="button" data-action="reset-demo">${U.escapeHtml(T.t('ui.resetDemo', 'Reset demo'))}</button>
-              <button class="btn secondary" type="button" data-route-action="practices/elenco-pratiche">${U.escapeHtml(T.t('ui.practiceList', 'Elenco pratiche'))}</button>
-            </div>
-          </div>
-        </div>
-      </section>
 
-      <section class="practice-layout">
-        <article class="panel">
-          <div class="panel-head">
-            <div>
-              <h3 class="panel-title">${U.escapeHtml(T.t('ui.newPracticePanel', 'Nuova pratica'))}</h3>
-              <p class="panel-subtitle">${U.escapeHtml(T.t('ui.immediateRender', ''))}</p>
+        <form id="practiceForm">
+          <div class="practice-form-stack">
+            <div class="form-grid three">
+              <div class="field">
+                <label for="practiceType">${U.escapeHtml(T.t('ui.practiceType', 'Tipo pratica'))} *</label>
+                <select id="practiceType" name="practiceType" required>
+                  <option value="">—</option>
+                  ${practiceTypes.map((item) => `<option value="${item.value}">${U.escapeHtml(item.label)}</option>`).join('')}
+                </select>
+              </div>
+
+              <div class="field" data-practice-dependent>
+                <label for="clientId">${U.escapeHtml(T.t('ui.clientRequired', 'Cliente'))} *</label>
+                <select id="clientId" name="clientId" required disabled>
+                  <option value="">—</option>
+                  ${clients.map((client) => `<option value="${client.id}">${U.escapeHtml(client.name)}</option>`).join('')}
+                </select>
+              </div>
+
+              <div class="field" data-practice-dependent>
+                <label for="practiceDate">${U.escapeHtml(T.t('ui.practiceDate', 'Data pratica'))} *</label>
+                <input id="practiceDate" name="practiceDate" type="date" value="${new Date().toISOString().slice(0, 10)}" disabled required />
+              </div>
+
+              <div class="field" data-practice-dependent>
+                <label for="generatedReference">${U.escapeHtml(T.t('ui.generatedNumber', 'Numero pratica'))}</label>
+                <input id="generatedReference" name="generatedReference" readonly placeholder="—" disabled />
+              </div>
+
+              <div class="field" data-practice-dependent>
+                <label for="category">${U.escapeHtml(T.t('ui.categoryLabel', 'Categoria'))}</label>
+                <select id="category" name="category" disabled>
+                  <option value="">—</option>
+                  <option>FCL-FULL</option>
+                  <option>LCL-GROUPAGE</option>
+                  <option>TERRA-FULL</option>
+                  <option>GROUPAGE</option>
+                  <option>MAGAZZINO</option>
+                </select>
+              </div>
+
+              <div class="field" data-practice-dependent>
+                <label for="status">${U.escapeHtml(T.t('ui.status', 'Stato'))}</label>
+                <select id="status" name="status" disabled>
+                  <option>In attesa documenti</option>
+                  <option>Operativa</option>
+                  <option>Sdoganamento</option>
+                  <option>Chiusa</option>
+                </select>
+              </div>
             </div>
-          </div>
-          <form id="practiceForm">
+
+            <div class="locked-banner" id="practiceLockedBanner">${U.escapeHtml(T.t('ui.typeBlockedHint', ''))}</div>
+
             <div class="form-grid two">
-              <div class="field"><label for="reference">${U.escapeHtml(T.t('ui.reference', 'Rif.'))}</label><input id="reference" name="reference" required placeholder="Es. KX-IMP-0004" /></div>
-              <div class="field"><label for="client">${U.escapeHtml(T.t('ui.client', 'Cliente'))}</label><input id="client" name="client" required placeholder="Es. Cliente S.r.l." /></div>
-              <div class="field"><label for="type">${U.escapeHtml(T.t('ui.type', 'Tipo'))}</label><select id="type" name="type"><option>Import</option><option>Export</option></select></div>
-              <div class="field"><label for="port">${U.escapeHtml(T.t('ui.port', 'Porto'))}</label><input id="port" name="port" required placeholder="Es. Genova" /></div>
-              <div class="field"><label for="eta">${U.escapeHtml(T.t('ui.eta', 'ETA'))}</label><input id="eta" name="eta" type="date" required /></div>
-              <div class="field"><label for="priority">${U.escapeHtml(T.t('ui.priority', 'Priorità'))}</label><select id="priority" name="priority"><option>Alta</option><option>Media</option><option>Bassa</option></select></div>
-              <div class="field"><label for="status">${U.escapeHtml(T.t('ui.status', 'Stato'))}</label><select id="status" name="status"><option>In attesa documenti</option><option>Operativa</option><option>Sdoganamento</option></select></div>
-              <div class="field full"><label for="notes">${U.escapeHtml(T.t('ui.notesOperational', 'Note operative'))}</label><textarea id="notes" name="notes" placeholder="..."></textarea></div>
-            </div>
-            <div class="action-row" style="margin-top:14px"><button class="btn" type="submit">${U.escapeHtml(T.t('ui.savePractice', 'Salva pratica'))}</button></div>
-          </form>
-        </article>
+              <div class="panel inset-panel" data-practice-dependent>
+                <div class="subsection-title">${U.escapeHtml(T.t('ui.practiceLogistics', 'Flusso logistico'))}</div>
+                <div class="form-grid two">
+                  <div class="field"><label for="importer">${U.escapeHtml(T.t('ui.importer', 'Importatore'))}</label><input id="importer" name="importer" disabled /></div>
+                  <div class="field"><label for="consignee">${U.escapeHtml(T.t('ui.consignee', 'Destinatario'))}</label><input id="consignee" name="consignee" disabled /></div>
+                  <div class="field"><label for="portLoading">${U.escapeHtml(T.t('ui.portLoading', 'Porto imbarco / origine'))}</label><input id="portLoading" name="portLoading" disabled /></div>
+                  <div class="field"><label for="portDischarge">${U.escapeHtml(T.t('ui.portDischarge', 'Porto sbarco / destinazione'))}</label><input id="portDischarge" name="portDischarge" disabled /></div>
+                  <div class="field"><label for="booking">${U.escapeHtml(T.t('ui.booking', 'Booking'))}</label><input id="booking" name="booking" disabled /></div>
+                  <div class="field"><label for="customsOffice">${U.escapeHtml(T.t('ui.customsOffice', 'Dogana / sezione'))}</label><input id="customsOffice" name="customsOffice" disabled /></div>
+                </div>
+              </div>
 
-        <article class="panel">
-          <div class="panel-head">
-            <div>
-              <h3 class="panel-title">${U.escapeHtml(T.t('ui.practiceDetail', 'Dettaglio pratica'))}</h3>
-              <p class="panel-subtitle">${U.escapeHtml(T.t('ui.selectPractice', ''))}</p>
+              <div class="panel inset-panel" data-practice-dependent>
+                <div class="subsection-title">${U.escapeHtml(T.t('ui.practiceCargo', 'Corpo merce'))}</div>
+                <div class="form-grid two">
+                  <div class="field"><label for="containerCode">${U.escapeHtml(T.t('ui.containerCode', 'Container / telaio'))}</label><input id="containerCode" name="containerCode" disabled /></div>
+                  <div class="field"><label for="packageCount">${U.escapeHtml(T.t('ui.packageCount', 'Colli'))}</label><input id="packageCount" name="packageCount" type="number" min="0" disabled /></div>
+                  <div class="field"><label for="grossWeight">${U.escapeHtml(T.t('ui.grossWeight', 'Peso lordo'))}</label><input id="grossWeight" name="grossWeight" type="number" min="0" step="0.01" disabled /></div>
+                  <div class="field full"><label for="goodsDescription">${U.escapeHtml(T.t('ui.goodsDescription', 'Descrizione merce'))}</label><textarea id="goodsDescription" name="goodsDescription" disabled></textarea></div>
+                  <div class="field full"><label for="notes">${U.escapeHtml(T.t('ui.notesOperational', 'Note operative'))}</label><textarea id="notes" name="notes" disabled></textarea></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="action-row">
+              <button class="btn" type="submit">${U.escapeHtml(T.t('ui.savePractice', 'Salva pratica'))}</button>
+              <button class="btn secondary" type="button" data-action="reset-demo">${U.escapeHtml(T.t('ui.resetDemo', 'Reset demo'))}</button>
             </div>
           </div>
-          ${selected ? `
-            <div class="detail-grid">
-              <div class="detail-row"><div class="detail-label">${U.escapeHtml(T.t('ui.id', 'ID'))}</div><div>${U.escapeHtml(selected.id)}</div></div>
-              <div class="detail-row"><div class="detail-label">${U.escapeHtml(T.t('ui.reference', 'Rif.'))}</div><div>${U.escapeHtml(selected.reference)}</div></div>
-              <div class="detail-row"><div class="detail-label">${U.escapeHtml(T.t('ui.client', 'Cliente'))}</div><div>${U.escapeHtml(selected.client)}</div></div>
-              <div class="detail-row"><div class="detail-label">${U.escapeHtml(T.t('ui.port', 'Porto'))}</div><div>${U.escapeHtml(selected.port)}</div></div>
-              <div class="detail-row"><div class="detail-label">${U.escapeHtml(T.t('ui.eta', 'ETA'))}</div><div>${U.formatDate(selected.eta)}</div></div>
-              <div class="detail-row"><div class="detail-label">${U.escapeHtml(T.t('ui.status', 'Stato'))}</div><div><span class="badge ${selected.status === 'In attesa documenti' ? 'warning' : 'info'}">${U.escapeHtml(selected.status)}</span></div></div>
-              <div class="detail-row"><div class="detail-label">${U.escapeHtml(T.t('ui.notes', 'Note'))}</div><div>${U.escapeHtml(selected.notes || '—')}</div></div>
-            </div>` : `<div class="empty-text">${U.escapeHtml(T.t('ui.noSelection', ''))}</div>`}
-        </article>
+        </form>
       </section>
 
       <section class="table-panel">
-        <div class="panel-head"><div><h3 class="panel-title">${U.escapeHtml(T.t('ui.practiceList', 'Elenco pratiche'))}</h3><p class="panel-subtitle">${U.escapeHtml(T.t('ui.clickRow', ''))}</p></div></div>
+        <div class="panel-head">
+          <div>
+            <h3 class="panel-title">${U.escapeHtml(T.t('ui.practiceList', 'Elenco pratiche'))}</h3>
+            <p class="panel-subtitle">${U.escapeHtml(T.t('ui.clickRow', 'Clicca una riga per selezionare il dettaglio.'))}</p>
+          </div>
+        </div>
         <div class="table-wrap">
           <table class="table">
-            <thead><tr><th>${U.escapeHtml(T.t('ui.id', 'ID'))}</th><th>${U.escapeHtml(T.t('ui.reference', 'Rif.'))}</th><th>${U.escapeHtml(T.t('ui.client', 'Cliente'))}</th><th>${U.escapeHtml(T.t('ui.type', 'Tipo'))}</th><th>${U.escapeHtml(T.t('ui.port', 'Porto'))}</th><th>${U.escapeHtml(T.t('ui.eta', 'ETA'))}</th><th>${U.escapeHtml(T.t('ui.priority', 'Priorità'))}</th><th>${U.escapeHtml(T.t('ui.status', 'Stato'))}</th></tr></thead>
+            <thead>
+              <tr>
+                <th>${U.escapeHtml(T.t('ui.id', 'ID'))}</th>
+                <th>${U.escapeHtml(T.t('ui.generatedNumber', 'Numero pratica'))}</th>
+                <th>${U.escapeHtml(T.t('ui.practiceType', 'Tipo pratica'))}</th>
+                <th>${U.escapeHtml(T.t('ui.clientRequired', 'Cliente'))}</th>
+                <th>${U.escapeHtml(T.t('ui.containerCode', 'Container / telaio'))}</th>
+                <th>${U.escapeHtml(T.t('ui.packageCount', 'Colli'))}</th>
+                <th>${U.escapeHtml(T.t('ui.grossWeight', 'Peso lordo'))}</th>
+                <th>${U.escapeHtml(T.t('ui.status', 'Stato'))}</th>
+              </tr>
+            </thead>
             <tbody>
               ${filtered.map((practice) => `
                 <tr data-practice-id="${U.escapeHtml(practice.id)}">
                   <td>${U.escapeHtml(practice.id)}</td>
                   <td>${U.escapeHtml(practice.reference)}</td>
+                  <td>${U.escapeHtml(T.t(`ui.type${practice.practiceType === 'sea_import' ? 'SeaImport' : practice.practiceType === 'sea_export' ? 'SeaExport' : practice.practiceType === 'air_import' ? 'AirImport' : practice.practiceType === 'air_export' ? 'AirExport' : practice.practiceType === 'road_import' ? 'RoadImport' : practice.practiceType === 'road_export' ? 'RoadExport' : 'Warehouse'}`, practice.practiceType))}</td>
                   <td>${U.escapeHtml(practice.client)}</td>
-                  <td>${U.escapeHtml(practice.type)}</td>
-                  <td>${U.escapeHtml(practice.port)}</td>
-                  <td>${U.formatDate(practice.eta)}</td>
-                  <td>${U.escapeHtml(practice.priority)}</td>
+                  <td>${U.escapeHtml(practice.containerCode || '—')}</td>
+                  <td>${U.escapeHtml(practice.packageCount || '—')}</td>
+                  <td>${U.escapeHtml(practice.grossWeight || '—')}</td>
                   <td><span class="badge ${practice.status === 'In attesa documenti' ? 'warning' : 'info'}">${U.escapeHtml(practice.status)}</span></td>
                 </tr>`).join('')}
             </tbody>
           </table>
         </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <div>
+            <h3 class="panel-title">${U.escapeHtml(T.t('ui.practiceDetail', 'Dettaglio pratica'))}</h3>
+            <p class="panel-subtitle">${U.escapeHtml(T.t('ui.selectPractice', 'Seleziona una pratica dalla tabella.'))}</p>
+          </div>
+        </div>
+
+        ${selected ? `
+          <div class="detail-grid detail-grid-large">
+            <div class="detail-row"><div class="detail-label">${U.escapeHtml(T.t('ui.generatedNumber', 'Numero pratica'))}</div><div>${U.escapeHtml(selected.reference)}</div></div>
+            <div class="detail-row"><div class="detail-label">${U.escapeHtml(T.t('ui.practiceType', 'Tipo pratica'))}</div><div>${U.escapeHtml(selected.practiceType)}</div></div>
+            <div class="detail-row"><div class="detail-label">${U.escapeHtml(T.t('ui.clientRequired', 'Cliente'))}</div><div>${U.escapeHtml(selected.client)}</div></div>
+            <div class="detail-row"><div class="detail-label">${U.escapeHtml(T.t('ui.importer', 'Importatore'))}</div><div>${U.escapeHtml(selected.importer || '—')}</div></div>
+            <div class="detail-row"><div class="detail-label">${U.escapeHtml(T.t('ui.consignee', 'Destinatario'))}</div><div>${U.escapeHtml(selected.consignee || '—')}</div></div>
+            <div class="detail-row"><div class="detail-label">${U.escapeHtml(T.t('ui.portLoading', 'Porto imbarco / origine'))}</div><div>${U.escapeHtml(selected.portLoading || '—')}</div></div>
+            <div class="detail-row"><div class="detail-label">${U.escapeHtml(T.t('ui.portDischarge', 'Porto sbarco / destinazione'))}</div><div>${U.escapeHtml(selected.portDischarge || '—')}</div></div>
+            <div class="detail-row"><div class="detail-label">${U.escapeHtml(T.t('ui.containerCode', 'Container / telaio'))}</div><div>${U.escapeHtml(selected.containerCode || '—')}</div></div>
+            <div class="detail-row"><div class="detail-label">${U.escapeHtml(T.t('ui.packageCount', 'Colli'))}</div><div>${U.escapeHtml(selected.packageCount || '—')}</div></div>
+            <div class="detail-row"><div class="detail-label">${U.escapeHtml(T.t('ui.grossWeight', 'Peso lordo'))}</div><div>${U.escapeHtml(selected.grossWeight || '—')}</div></div>
+            <div class="detail-row"><div class="detail-label">${U.escapeHtml(T.t('ui.goodsDescription', 'Descrizione merce'))}</div><div>${U.escapeHtml(selected.goodsDescription || '—')}</div></div>
+            <div class="detail-row"><div class="detail-label">${U.escapeHtml(T.t('ui.booking', 'Booking'))}</div><div>${U.escapeHtml(selected.booking || '—')}</div></div>
+            <div class="detail-row"><div class="detail-label">${U.escapeHtml(T.t('ui.customsOffice', 'Dogana / sezione'))}</div><div>${U.escapeHtml(selected.customsOffice || '—')}</div></div>
+            <div class="detail-row"><div class="detail-label">${U.escapeHtml(T.t('ui.notes', 'Note'))}</div><div>${U.escapeHtml(selected.notes || '—')}</div></div>
+          </div>` : `<div class="empty-text">${U.escapeHtml(T.t('ui.noSelection', 'Nessuna pratica selezionata.'))}</div>`}
       </section>`;
   }
 
@@ -260,11 +362,13 @@ window.KedrixOneTemplates = (() => {
     const visibleModules = L.visibleModules(modules, state);
     const visibleSubmodules = visibleModules.reduce((acc, module) => acc + module.submodules.length, 0);
     const totalSubmodules = modules.reduce((acc, module) => acc + module.submodules.length, 0);
+    const settingsClient = (state.clients || []).find((client) => client.id === state.settingsClientId) || (state.clients || [])[0];
+    const rule = settingsClient ? settingsClient.numberingRule : null;
 
     return `
       <section class="hero">
-        <div class="hero-meta">${U.escapeHtml(T.t('ui.licensingControlPanel', ''))}</div>
-        <h2>${U.escapeHtml(T.t('ui.settingsTitle', ''))}</h2>
+        <div class="hero-meta">${U.escapeHtml(T.t('ui.licensingControlPanel', 'Licensing control panel'))}</div>
+        <h2>${U.escapeHtml(T.t('ui.settingsTitle', 'Impostazioni / Moduli'))}</h2>
         <p>${U.escapeHtml(T.t('ui.moduleSettingsDescription', ''))}</p>
       </section>
 
@@ -277,7 +381,7 @@ window.KedrixOneTemplates = (() => {
 
       <section class="panel">
         <div class="panel-head"><div><h3 class="panel-title">${U.escapeHtml(T.t('ui.quickConfig', 'Configurazione rapida'))}</h3><p class="panel-subtitle">${U.escapeHtml(T.t('ui.founderNamingNote', ''))}</p></div></div>
-        <div class="toolbar-grid">
+        <div class="toolbar-grid four">
           <div class="field">
             <label for="companyPlan">${U.escapeHtml(T.t('ui.companyPlan', 'Piano azienda'))}</label>
             <select id="companyPlan">
@@ -306,6 +410,45 @@ window.KedrixOneTemplates = (() => {
         </div>
       </section>
 
+      <section class="panel">
+        <div class="panel-head">
+          <div>
+            <h3 class="panel-title">${U.escapeHtml(T.t('ui.numberingRules', 'Numerazione pratiche per cliente'))}</h3>
+            <p class="panel-subtitle">${U.escapeHtml(T.t('ui.numberingIntro', ''))}</p>
+          </div>
+        </div>
+        <div class="toolbar-grid four">
+          <div class="field">
+            <label for="numberingClientId">${U.escapeHtml(T.t('ui.numberingClient', 'Cliente da configurare'))}</label>
+            <select id="numberingClientId">
+              ${(state.clients || []).map((client) => `<option value="${client.id}" ${state.settingsClientId === client.id ? 'selected' : ''}>${U.escapeHtml(client.name)}</option>`).join('')}
+            </select>
+          </div>
+          <div class="field">
+            <label for="numberingPrefix">${U.escapeHtml(T.t('ui.numberingPrefix', 'Prefisso'))}</label>
+            <input id="numberingPrefix" value="${U.escapeHtml(rule ? rule.prefix : '')}" />
+          </div>
+          <div class="field">
+            <label for="numberingSeparator">${U.escapeHtml(T.t('ui.numberingSeparator', 'Separatore'))}</label>
+            <input id="numberingSeparator" value="${U.escapeHtml(rule ? rule.separator : '-')}" />
+          </div>
+          <div class="field">
+            <label for="numberingNextNumber">${U.escapeHtml(T.t('ui.numberingNext', 'Prossimo numero'))}</label>
+            <input id="numberingNextNumber" type="number" min="1" value="${U.escapeHtml(String(rule ? rule.nextNumber : 1))}" />
+          </div>
+          <div class="field checkbox-field">
+            <label><input id="numberingIncludeYear" type="checkbox" ${rule && rule.includeYear !== false ? 'checked' : ''} /> ${U.escapeHtml(T.t('ui.numberingIncludeYear', 'Includi anno'))}</label>
+          </div>
+          <div class="field full">
+            <label for="numberingPreview">${U.escapeHtml(T.t('ui.numberingPreview', 'Anteprima'))}</label>
+            <input id="numberingPreview" readonly value="${U.escapeHtml(settingsClient ? `${rule.prefix}${rule.separator}${rule.includeYear !== false ? '2026' + rule.separator : ''}${rule.nextNumber}` : '')}" />
+          </div>
+        </div>
+        <div class="action-row">
+          <button class="btn" type="button" id="saveNumberingRule">${U.escapeHtml(T.t('ui.numberingSave', 'Salva regola numerazione'))}</button>
+        </div>
+      </section>
+
       <section class="table-panel">
         <div class="panel-head"><div><h3 class="panel-title">${U.escapeHtml(T.t('ui.companyMatrix', 'Matrice moduli'))}</h3><p class="panel-subtitle">${U.escapeHtml(T.t('ui.companyModulesHint', ''))}</p></div></div>
         <div class="table-wrap">
@@ -317,7 +460,6 @@ window.KedrixOneTemplates = (() => {
                 const companyButton = status.isBaseIncluded
                   ? `<span class="tag-pill muted">${U.escapeHtml(T.t('ui.includedInPlan', ''))}</span>`
                   : `<button class="btn secondary small-btn" type="button" data-toggle-company-module="${U.escapeHtml(module.key)}">${status.isCompanyPurchased ? U.escapeHtml(T.t('ui.removePurchase', '')) : U.escapeHtml(T.t('ui.buyModule', ''))}</button>`;
-
                 let userButton = '';
                 if (!status.isCompanyVisible && !status.isBaseIncluded) {
                   userButton = `<span class="tag-pill muted">${U.escapeHtml(T.t('ui.notPurchased', ''))}</span>`;
@@ -326,7 +468,6 @@ window.KedrixOneTemplates = (() => {
                 } else {
                   userButton = `<button class="btn secondary small-btn" type="button" data-toggle-user-module="${U.escapeHtml(module.key)}">${status.isExplicitUserExtra ? U.escapeHtml(T.t('ui.removeUserExtra', '')) : U.escapeHtml(T.t('ui.enableForUser', ''))}</button>`;
                 }
-
                 return `<tr>
                   <td><div class="table-title-cell">${U.escapeHtml(module.label)}</div><div class="table-meta-cell">${module.submodules.length} submodules</div></td>
                   <td><span class="badge ${module.tierHint === 'base' ? 'success' : 'info'}">${U.escapeHtml(module.tierHint)}</span></td>
@@ -351,7 +492,6 @@ window.KedrixOneTemplates = (() => {
                 const companyButton = status.isCompanyIncluded
                   ? `<button class="btn secondary small-btn" type="button" data-toggle-company-submodule="${U.escapeHtml(submodule.route)}">${status.isCompanyVisible ? U.escapeHtml(T.t('ui.disableForCompany', '')) : U.escapeHtml(T.t('ui.reenableForCompany', ''))}</button>`
                   : `<button class="btn secondary small-btn" type="button" data-toggle-company-submodule="${U.escapeHtml(submodule.route)}">${status.isCompanyPurchased ? U.escapeHtml(T.t('ui.removeSubPurchase', '')) : U.escapeHtml(T.t('ui.buySubmodule', ''))}</button>`;
-
                 let userButton = '';
                 if (!status.isModuleEnabled) {
                   userButton = `<span class="tag-pill muted">${U.escapeHtml(T.t('ui.parentOff', ''))}</span>`;
@@ -360,7 +500,6 @@ window.KedrixOneTemplates = (() => {
                 } else {
                   userButton = `<button class="btn secondary small-btn" type="button" data-toggle-user-submodule="${U.escapeHtml(submodule.route)}">${status.isExplicitUserExtra ? U.escapeHtml(T.t('ui.removeUserExtra', '')) : U.escapeHtml(T.t('ui.enableForUser', ''))}</button>`;
                 }
-
                 return `<tr>
                   <td><div class="table-title-cell">${U.escapeHtml(submodule.label)}</div><div class="table-meta-cell">${U.escapeHtml(submodule.route)}</div></td>
                   <td>${companyButton}</td>

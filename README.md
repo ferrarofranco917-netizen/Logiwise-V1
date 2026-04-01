@@ -1,17 +1,14 @@
-# Kedrix One — STEP 4D FULL
+# Kedrix One — STEP 5A FULL
 
-Pacchetto completo di replace totale basato sul repo STEP 4C approvato.
+Pacchetto completo di replace totale basato sul repo STEP 4D approvato.
 
 ## Contenuto
-- naming centralizzato founder-controlled
-- piattaforma IT / EN
-- lingua selezionabile da utente
-- moduli e sottomoduli con etichette centralizzate
-- routing, licensing moduli e licensing sottomoduli mantenuti
-- dashboard, pratiche, anagrafiche e impostazioni aggiornati
-
-## Nuovo file
-- /js/i18n.js
+- primo modulo Pratiche reale
+- tipo pratica obbligatorio e bloccante
+- numerazione pratica personalizzabile per cliente
+- campi base reali: cliente, data pratica, categoria, importatore, destinatario, porti, container/telaio, colli, peso lordo, descrizione merce, booking, dogana, note
+- pannello impostazioni con regole di numerazione per cliente
+- dashboard, licensing, IT/EN e routing mantenuti
 
 ## Deploy
 GitHub Pages:

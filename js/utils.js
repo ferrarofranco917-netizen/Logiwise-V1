@@ -34,6 +34,33 @@ window.KedrixOneUtils = (() => {
       .toLowerCase();
   }
 
+
+  function buildPracticeReference(rule, dateValue) {
+    const workingRule = { ...(rule || {}) };
+    const separator = workingRule.separator || '-';
+    const year = new Date((dateValue || new Date().toISOString().slice(0, 10)) + 'T00:00:00').getFullYear();
+    const lastYear = Number(workingRule.lastYear || year);
+    const sequence = workingRule.resetEveryYear && lastYear !== year ? 1 : Number(workingRule.nextNumber || 1);
+
+    const parts = [];
+    if (workingRule.prefix) parts.push(String(workingRule.prefix).trim().toUpperCase());
+    if (workingRule.includeYear !== false) parts.push(String(year));
+    parts.push(String(sequence));
+
+    return parts.join(separator);
+  }
+
+  function commitPracticeNumber(rule, dateValue) {
+    const workingRule = rule || {};
+    const year = new Date((dateValue || new Date().toISOString().slice(0, 10)) + 'T00:00:00').getFullYear();
+    const lastYear = Number(workingRule.lastYear || year);
+    const sequence = workingRule.resetEveryYear && lastYear !== year ? 1 : Number(workingRule.nextNumber || 1);
+
+    workingRule.lastYear = year;
+    workingRule.nextNumber = sequence + 1;
+    return sequence;
+  }
+
   function nextPracticeId(practices) {
     const year = new Date().getFullYear();
     const max = practices.reduce((acc, item) => {
@@ -66,6 +93,8 @@ window.KedrixOneUtils = (() => {
     formatDate,
     normalize,
     slugify,
+    buildPracticeReference,
+    commitPracticeNumber,
     nextPracticeId,
     nextLogId,
     nowStamp
