@@ -8,6 +8,7 @@
   const Licensing = window.KedrixOneLicensing;
   const Templates = window.KedrixOneTemplates;
   const I18N = window.KedrixOneI18N;
+  const PracticeSchemas = window.KedrixOnePracticeSchemas;
 
   const state = Storage.load(() => Data.initialState());
 
@@ -74,6 +75,56 @@
     };
     return map[value] || value || '—';
   }
+
+
+  function getPracticeSchema(type) {
+    return PracticeSchemas.getSchema(type);
+  }
+
+  function practiceTypeLabel(value) {
+    const map = {
+      sea_import: I18N.t('ui.typeSeaImport', 'Mare Import'),
+      sea_export: I18N.t('ui.typeSeaExport', 'Mare Export'),
+      air_import: I18N.t('ui.typeAirImport', 'Aerea Import'),
+      air_export: I18N.t('ui.typeAirExport', 'Aerea Export'),
+      road_import: I18N.t('ui.typeRoadImport', 'Terra Import'),
+      road_export: I18N.t('ui.typeRoadExport', 'Terra Export'),
+      warehouse: I18N.t('ui.typeWarehouse', 'Magazzino')
+    };
+    return map[value] || value || '—';
+  }
+
+  function renderDynamicFieldsHTML(type, tab) {
+    const schema = getPracticeSchema(type);
+    if (!schema) {
+      return `<div class="empty-text">${Utils.escapeHtml(I18N.t('ui.tabInstruction', 'Seleziona una tipologia pratica per caricare i campi corretti.'))}</div>`;
+    }
+
+    const fields = (schema.tabs && schema.tabs[tab]) ? schema.tabs[tab] : [];
+    if (!fields.length) {
+      return `<div class="empty-text">${Utils.escapeHtml(I18N.t('ui.noDataYet', 'Nessun dato'))}</div>`;
+    }
+
+    return `<div class="dynamic-section-grid">` + fields.map((field) => {
+      if (field.type === 'derived') {
+        return `<div class="field"><label>${Utils.escapeHtml(I18N.t(field.labelKey, field.name))}</label><div class="derived-chip">${Utils.escapeHtml(I18N.t('ui.clientRequired', 'Cliente'))}</div></div>`;
+      }
+      if (field.type === 'select-derived') {
+        return '';
+      }
+      if (field.type === 'textarea') {
+        return `<div class="field full"><label for="dyn_${field.name}">${Utils.escapeHtml(I18N.t(field.labelKey, field.name))}</label><textarea id="dyn_${field.name}" name="${field.name}" rows="4"></textarea></div>`;
+      }
+      if (field.type === 'select') {
+        return `<div class="field"><label for="dyn_${field.name}">${Utils.escapeHtml(I18N.t(field.labelKey, field.name))}</label><select id="dyn_${field.name}" name="${field.name}"><option value="">—</option>${(field.options || []).map((option) => `<option value="${Utils.escapeHtml(option)}">${Utils.escapeHtml(option)}</option>`).join('')}</select></div>`;
+      }
+      if (field.type === 'checkbox-group') {
+        return `<div class="field full"><label>${Utils.escapeHtml(I18N.t(field.labelKey, field.name))}</label><div class="checkbox-group">${(field.options || []).map((option) => `<label class="checkbox-chip"><input type="checkbox" name="${field.name}" value="${Utils.escapeHtml(option)}" /> ${Utils.escapeHtml(I18N.t(option, option))}</label>`).join('')}</div></div>`;
+      }
+      return `<div class="field"><label for="dyn_${field.name}">${Utils.escapeHtml(I18N.t(field.labelKey, field.name))}</label><input id="dyn_${field.name}" name="${field.name}" type="${field.type === 'number' ? 'number' : field.type === 'date' ? 'date' : 'text'}" ${field.type === 'number' ? 'step="0.01" min="0"' : ''} /></div>`;
+    }).join('') + `</div>`;
+  }
+
 
   function currentRoute() {
     return Modules.normalizeRoute(state.currentRoute);
@@ -154,7 +205,11 @@
     const practiceDate = document.getElementById('practiceDate');
     const generatedReference = document.getElementById('generatedReference');
     const lockedBanner = document.getElementById('practiceLockedBanner');
-    const dependentFields = Array.from(main.querySelectorAll('[data-practice-dependent] input, [data-practice-dependent] select, [data-practice-dependent] textarea'));
+    const dynamicFields = document.getElementById('practiceDynamicFields');
+    const dependentFields = Array.from(main.querySelectorAll('[data-practice-dependent]')).flatMap((node) => {
+      if (['INPUT','SELECT','TEXTAREA','BUTTON'].includes(node.tagName)) return [node];
+      return Array.from(node.querySelectorAll('input, select, textarea, button'));
+    });
 
     function syncPracticeLock() {
       const unlocked = Boolean(practiceType?.value);
@@ -162,8 +217,13 @@
         if (field.id !== 'practiceType') field.disabled = !unlocked;
       });
       if (lockedBanner) lockedBanner.style.display = unlocked ? 'none' : 'block';
-      if (!unlocked && generatedReference) generatedReference.value = '';
-      if (unlocked) updatePracticeReference();
+      if (!unlocked) {
+        if (generatedReference) generatedReference.value = '';
+        if (dynamicFields) dynamicFields.innerHTML = renderDynamicFieldsHTML('', state.practiceTab);
+      } else {
+        updatePracticeReference();
+        renderDynamicPanels();
+      }
     }
 
     function updatePracticeReference() {
@@ -174,6 +234,11 @@
         return;
       }
       generatedReference.value = Utils.buildPracticeReference(client.numberingRule, dateValue);
+    }
+
+    function renderDynamicPanels() {
+      if (!dynamicFields) return;
+      dynamicFields.innerHTML = renderDynamicFieldsHTML(practiceType?.value || '', state.practiceTab || 'practice');
     }
 
     filter?.addEventListener('input', (event) => {
@@ -188,9 +253,20 @@
       render();
     });
 
-    practiceType?.addEventListener('change', syncPracticeLock);
+    practiceType?.addEventListener('change', () => {
+      state.practiceTab = 'practice';
+      syncPracticeLock();
+    });
     clientId?.addEventListener('change', updatePracticeReference);
     practiceDate?.addEventListener('change', updatePracticeReference);
+
+    main.querySelectorAll('[data-practice-tab]').forEach((button) => {
+      button.addEventListener('click', () => {
+        state.practiceTab = button.dataset.practiceTab;
+        save();
+        render();
+      });
+    });
 
     form?.addEventListener('submit', (event) => {
       event.preventDefault();
@@ -205,8 +281,23 @@
         return;
       }
 
+      const schema = getPracticeSchema(typeValue);
       const reference = Utils.buildPracticeReference(selectedClient.numberingRule, dateValue);
       Utils.commitPracticeNumber(selectedClient.numberingRule, dateValue);
+
+      const dynamicData = {};
+      const dynamicLabels = {};
+      if (schema && schema.tabs) {
+        Object.values(schema.tabs).flat().forEach((field) => {
+          if (field.type === 'derived' || field.type === 'select-derived') return;
+          if (field.type === 'checkbox-group') {
+            dynamicData[field.name] = fd.getAll(field.name).map((item) => I18N.t(item, item));
+          } else {
+            dynamicData[field.name] = String(fd.get(field.name) || '').trim();
+          }
+          dynamicLabels[field.name] = I18N.t(field.labelKey, field.name);
+        });
+      }
 
       const practice = {
         id: Utils.nextPracticeId(state.practices),
@@ -214,24 +305,28 @@
         clientId: selectedClient.id,
         client: selectedClient.name,
         practiceType: typeValue,
+        practiceTypeLabel: practiceTypeLabel(typeValue),
+        schemaGroup: schema ? schema.group : '',
         category: String(fd.get('category') || '').trim(),
         practiceDate: dateValue,
         status: String(fd.get('status') || '').trim() || 'Operativa',
         priority: 'Media',
-        importer: String(fd.get('importer') || '').trim(),
-        consignee: String(fd.get('consignee') || '').trim(),
-        portLoading: String(fd.get('portLoading') || '').trim(),
-        portDischarge: String(fd.get('portDischarge') || '').trim(),
-        containerCode: String(fd.get('containerCode') || '').trim(),
-        packageCount: String(fd.get('packageCount') || '').trim(),
-        grossWeight: String(fd.get('grossWeight') || '').trim(),
-        goodsDescription: String(fd.get('goodsDescription') || '').trim(),
-        booking: String(fd.get('booking') || '').trim(),
-        customsOffice: String(fd.get('customsOffice') || '').trim(),
-        eta: dateValue,
+        importer: dynamicData.importer || '',
+        consignee: dynamicData.consignee || '',
+        portLoading: dynamicData.portLoading || dynamicData.airportDeparture || '',
+        portDischarge: dynamicData.portDischarge || dynamicData.airportDestination || '',
+        containerCode: dynamicData.containerCode || '',
+        packageCount: dynamicData.packageCount || '',
+        grossWeight: dynamicData.grossWeight || '',
+        goodsDescription: dynamicData.goodsDescription || '',
+        booking: dynamicData.booking || '',
+        customsOffice: dynamicData.customsOffice || '',
+        eta: dynamicData.arrivalDate || dateValue,
         type: typeValue.includes('export') ? 'Export' : typeValue.includes('import') ? 'Import' : 'Magazzino',
-        port: String(fd.get('portDischarge') || fd.get('portLoading') || '').trim(),
-        notes: String(fd.get('notes') || '').trim()
+        port: dynamicData.portDischarge || dynamicData.airportDestination || dynamicData.deliveryPlace || '',
+        notes: dynamicData.internalNotes || '',
+        dynamicData,
+        dynamicLabels
       };
 
       state.practices.unshift(practice);
@@ -256,6 +351,7 @@
       });
     });
 
+    if (dynamicFields) dynamicFields.innerHTML = renderDynamicFieldsHTML('', state.practiceTab || 'practice');
     syncPracticeLock();
   }
 
@@ -458,7 +554,7 @@
 
     if (action.dataset.action === 'reset-demo') {
       const fresh = Data.initialState();
-      Object.assign(state, fresh);
+      Object.assign(state, fresh, { practiceTab: 'practice' });
       state.currentRoute = safeRoute(state.currentRoute);
       ensureCurrentModuleExpanded();
       save();

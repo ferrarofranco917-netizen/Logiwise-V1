@@ -1,14 +1,21 @@
-# Kedrix One — STEP 5A FULL
+# Kedrix One — STEP 5B FULL
 
-Pacchetto completo di replace totale basato sul repo STEP 4D approvato.
+Pacchetto completo di replace totale basato sul repo STEP 5A approvato.
 
 ## Contenuto
-- primo modulo Pratiche reale
-- tipo pratica obbligatorio e bloccante
-- numerazione pratica personalizzabile per cliente
-- campi base reali: cliente, data pratica, categoria, importatore, destinatario, porti, container/telaio, colli, peso lordo, descrizione merce, booking, dogana, note
-- pannello impostazioni con regole di numerazione per cliente
-- dashboard, licensing, IT/EN e routing mantenuti
+- modulo Pratiche dinamico per tipologia
+- tipologie supportate:
+  - mare import/export
+  - aerea import/export
+  - terra import/export
+  - magazzino
+- tab dinamiche: Pratica / Dettaglio / Note
+- campi coerenti con ogni tipologia pratica
+- resa con base ufficiale Incoterms® 2020 per mare e aerea
+- dashboard, licensing, IT/EN e numerazione cliente-based mantenuti
+
+## Nuovo file
+- /js/practice-schemas.js
 
 ## Deploy
 GitHub Pages:

@@ -137,29 +137,34 @@ window.KedrixOneTemplates = (() => {
       { value: 'road_export', label: T.t('ui.typeRoadExport', 'Terra Export') },
       { value: 'warehouse', label: T.t('ui.typeWarehouse', 'Magazzino') }
     ];
+    const tabs = [
+      { key: 'practice', label: T.t('ui.tabPractice', 'Pratica') },
+      { key: 'detail', label: T.t('ui.tabDetail', 'Dettaglio') },
+      { key: 'notes', label: T.t('ui.tabNotes', 'Note') }
+    ];
 
     return `
       <section class="hero">
-        <div class="hero-meta">STEP 5A · ${U.escapeHtml(T.t('ui.practiceRealCore', 'Pratiche reali base'))}</div>
+        <div class="hero-meta">STEP 5B · ${U.escapeHtml(T.t('ui.dynamicSchemaReady', 'Schema dinamico per tipologia pratica'))}</div>
         <h2>${U.escapeHtml(T.moduleLabel('practices', 'Pratiche'))}</h2>
-        <p>${U.escapeHtml(T.t('ui.practiceIntro', ''))}</p>
+        <p>${U.escapeHtml(T.t('ui.step5bIntro', ''))}</p>
       </section>
 
       <section class="kpi-grid compact-kpi-grid">
         <article class="kpi-card">
           <div class="kpi-label">${U.escapeHtml(T.t('ui.practiceType', 'Tipo pratica'))}</div>
           <div class="kpi-value">7</div>
-          <div class="kpi-hint">${U.escapeHtml(T.t('ui.profileByClient', ''))}</div>
+          <div class="kpi-hint">${U.escapeHtml(T.t('ui.dynamicSchemaIntro', ''))}</div>
         </article>
         <article class="kpi-card">
-          <div class="kpi-label">${U.escapeHtml(T.t('ui.generatedNumber', 'Numero pratica'))}</div>
-          <div class="kpi-value">${filtered[0] ? U.escapeHtml(filtered[0].reference) : '—'}</div>
-          <div class="kpi-hint">${U.escapeHtml(T.t('ui.bodyCore', ''))}</div>
+          <div class="kpi-label">${U.escapeHtml(T.t('ui.currentTab', 'Tab attiva'))}</div>
+          <div class="kpi-value">${U.escapeHtml(T.t(`ui.tab${state.practiceTab.charAt(0).toUpperCase() + state.practiceTab.slice(1)}`, state.practiceTab))}</div>
+          <div class="kpi-hint">${U.escapeHtml(T.t('ui.tabInstruction', ''))}</div>
         </article>
         <article class="kpi-card">
-          <div class="kpi-label">${U.escapeHtml(T.t('ui.practiceList', 'Elenco pratiche'))}</div>
+          <div class="kpi-label">${U.escapeHtml(T.t('ui.totalSubmodules', 'Sottomoduli'))}</div>
           <div class="kpi-value">${state.practices.length}</div>
-          <div class="kpi-hint">${U.escapeHtml(T.t('ui.noDeadLinks', ''))}</div>
+          <div class="kpi-hint">${U.escapeHtml(T.t('ui.clientRuleHint', ''))}</div>
         </article>
       </section>
 
@@ -225,33 +230,22 @@ window.KedrixOneTemplates = (() => {
 
             <div class="locked-banner" id="practiceLockedBanner">${U.escapeHtml(T.t('ui.typeBlockedHint', ''))}</div>
 
-            <div class="form-grid two">
-              <div class="panel inset-panel" data-practice-dependent>
-                <div class="subsection-title">${U.escapeHtml(T.t('ui.practiceLogistics', 'Flusso logistico'))}</div>
-                <div class="form-grid two">
-                  <div class="field"><label for="importer">${U.escapeHtml(T.t('ui.importer', 'Importatore'))}</label><input id="importer" name="importer" disabled /></div>
-                  <div class="field"><label for="consignee">${U.escapeHtml(T.t('ui.consignee', 'Destinatario'))}</label><input id="consignee" name="consignee" disabled /></div>
-                  <div class="field"><label for="portLoading">${U.escapeHtml(T.t('ui.portLoading', 'Porto imbarco / origine'))}</label><input id="portLoading" name="portLoading" disabled /></div>
-                  <div class="field"><label for="portDischarge">${U.escapeHtml(T.t('ui.portDischarge', 'Porto sbarco / destinazione'))}</label><input id="portDischarge" name="portDischarge" disabled /></div>
-                  <div class="field"><label for="booking">${U.escapeHtml(T.t('ui.booking', 'Booking'))}</label><input id="booking" name="booking" disabled /></div>
-                  <div class="field"><label for="customsOffice">${U.escapeHtml(T.t('ui.customsOffice', 'Dogana / sezione'))}</label><input id="customsOffice" name="customsOffice" disabled /></div>
-                </div>
-              </div>
+            <div class="practice-tab-row" id="practiceTabRow">
+              ${tabs.map((tab) => `<button class="practice-tab ${state.practiceTab === tab.key ? 'active' : ''}" type="button" data-practice-tab="${tab.key}" data-practice-dependent>${U.escapeHtml(tab.label)}</button>`).join('')}
+            </div>
 
-              <div class="panel inset-panel" data-practice-dependent>
-                <div class="subsection-title">${U.escapeHtml(T.t('ui.practiceCargo', 'Corpo merce'))}</div>
-                <div class="form-grid two">
-                  <div class="field"><label for="containerCode">${U.escapeHtml(T.t('ui.containerCode', 'Container / telaio'))}</label><input id="containerCode" name="containerCode" disabled /></div>
-                  <div class="field"><label for="packageCount">${U.escapeHtml(T.t('ui.packageCount', 'Colli'))}</label><input id="packageCount" name="packageCount" type="number" min="0" disabled /></div>
-                  <div class="field"><label for="grossWeight">${U.escapeHtml(T.t('ui.grossWeight', 'Peso lordo'))}</label><input id="grossWeight" name="grossWeight" type="number" min="0" step="0.01" disabled /></div>
-                  <div class="field full"><label for="goodsDescription">${U.escapeHtml(T.t('ui.goodsDescription', 'Descrizione merce'))}</label><textarea id="goodsDescription" name="goodsDescription" disabled></textarea></div>
-                  <div class="field full"><label for="notes">${U.escapeHtml(T.t('ui.notesOperational', 'Note operative'))}</label><textarea id="notes" name="notes" disabled></textarea></div>
+            <div class="panel inset-panel practice-dynamic-panel" data-practice-dependent>
+              <div class="panel-head">
+                <div>
+                  <h3 class="panel-title">${U.escapeHtml(T.t('ui.dynamicPreview', 'Anteprima schema'))}</h3>
+                  <p class="panel-subtitle">${U.escapeHtml(T.t('ui.dynamicSchemaIntro', ''))}</p>
                 </div>
               </div>
+              <div id="practiceDynamicFields"></div>
             </div>
 
             <div class="action-row">
-              <button class="btn" type="submit">${U.escapeHtml(T.t('ui.savePractice', 'Salva pratica'))}</button>
+              <button class="btn" type="submit">${U.escapeHtml(T.t('ui.saveAndGenerate', 'Salva pratica'))}</button>
               <button class="btn secondary" type="button" data-action="reset-demo">${U.escapeHtml(T.t('ui.resetDemo', 'Reset demo'))}</button>
             </div>
           </div>
@@ -271,7 +265,7 @@ window.KedrixOneTemplates = (() => {
               <tr>
                 <th>${U.escapeHtml(T.t('ui.id', 'ID'))}</th>
                 <th>${U.escapeHtml(T.t('ui.generatedNumber', 'Numero pratica'))}</th>
-                <th>${U.escapeHtml(T.t('ui.practiceType', 'Tipo pratica'))}</th>
+                <th>${U.escapeHtml(T.t('ui.practiceTypeDisplay', 'Tipologia'))}</th>
                 <th>${U.escapeHtml(T.t('ui.clientRequired', 'Cliente'))}</th>
                 <th>${U.escapeHtml(T.t('ui.containerCode', 'Container / telaio'))}</th>
                 <th>${U.escapeHtml(T.t('ui.packageCount', 'Colli'))}</th>
@@ -284,7 +278,7 @@ window.KedrixOneTemplates = (() => {
                 <tr data-practice-id="${U.escapeHtml(practice.id)}">
                   <td>${U.escapeHtml(practice.id)}</td>
                   <td>${U.escapeHtml(practice.reference)}</td>
-                  <td>${U.escapeHtml(T.t(`ui.type${practice.practiceType === 'sea_import' ? 'SeaImport' : practice.practiceType === 'sea_export' ? 'SeaExport' : practice.practiceType === 'air_import' ? 'AirImport' : practice.practiceType === 'air_export' ? 'AirExport' : practice.practiceType === 'road_import' ? 'RoadImport' : practice.practiceType === 'road_export' ? 'RoadExport' : 'Warehouse'}`, practice.practiceType))}</td>
+                  <td>${U.escapeHtml(practice.practiceTypeLabel || practice.practiceType || '—')}</td>
                   <td>${U.escapeHtml(practice.client)}</td>
                   <td>${U.escapeHtml(practice.containerCode || '—')}</td>
                   <td>${U.escapeHtml(practice.packageCount || '—')}</td>
@@ -303,22 +297,15 @@ window.KedrixOneTemplates = (() => {
             <p class="panel-subtitle">${U.escapeHtml(T.t('ui.selectPractice', 'Seleziona una pratica dalla tabella.'))}</p>
           </div>
         </div>
-
         ${selected ? `
           <div class="detail-grid detail-grid-large">
             <div class="detail-row"><div class="detail-label">${U.escapeHtml(T.t('ui.generatedNumber', 'Numero pratica'))}</div><div>${U.escapeHtml(selected.reference)}</div></div>
-            <div class="detail-row"><div class="detail-label">${U.escapeHtml(T.t('ui.practiceType', 'Tipo pratica'))}</div><div>${U.escapeHtml(selected.practiceType)}</div></div>
+            <div class="detail-row"><div class="detail-label">${U.escapeHtml(T.t('ui.practiceTypeDisplay', 'Tipologia'))}</div><div>${U.escapeHtml(selected.practiceTypeLabel || selected.practiceType || '—')}</div></div>
             <div class="detail-row"><div class="detail-label">${U.escapeHtml(T.t('ui.clientRequired', 'Cliente'))}</div><div>${U.escapeHtml(selected.client)}</div></div>
-            <div class="detail-row"><div class="detail-label">${U.escapeHtml(T.t('ui.importer', 'Importatore'))}</div><div>${U.escapeHtml(selected.importer || '—')}</div></div>
-            <div class="detail-row"><div class="detail-label">${U.escapeHtml(T.t('ui.consignee', 'Destinatario'))}</div><div>${U.escapeHtml(selected.consignee || '—')}</div></div>
-            <div class="detail-row"><div class="detail-label">${U.escapeHtml(T.t('ui.portLoading', 'Porto imbarco / origine'))}</div><div>${U.escapeHtml(selected.portLoading || '—')}</div></div>
-            <div class="detail-row"><div class="detail-label">${U.escapeHtml(T.t('ui.portDischarge', 'Porto sbarco / destinazione'))}</div><div>${U.escapeHtml(selected.portDischarge || '—')}</div></div>
-            <div class="detail-row"><div class="detail-label">${U.escapeHtml(T.t('ui.containerCode', 'Container / telaio'))}</div><div>${U.escapeHtml(selected.containerCode || '—')}</div></div>
-            <div class="detail-row"><div class="detail-label">${U.escapeHtml(T.t('ui.packageCount', 'Colli'))}</div><div>${U.escapeHtml(selected.packageCount || '—')}</div></div>
-            <div class="detail-row"><div class="detail-label">${U.escapeHtml(T.t('ui.grossWeight', 'Peso lordo'))}</div><div>${U.escapeHtml(selected.grossWeight || '—')}</div></div>
-            <div class="detail-row"><div class="detail-label">${U.escapeHtml(T.t('ui.goodsDescription', 'Descrizione merce'))}</div><div>${U.escapeHtml(selected.goodsDescription || '—')}</div></div>
-            <div class="detail-row"><div class="detail-label">${U.escapeHtml(T.t('ui.booking', 'Booking'))}</div><div>${U.escapeHtml(selected.booking || '—')}</div></div>
-            <div class="detail-row"><div class="detail-label">${U.escapeHtml(T.t('ui.customsOffice', 'Dogana / sezione'))}</div><div>${U.escapeHtml(selected.customsOffice || '—')}</div></div>
+            <div class="detail-row"><div class="detail-label">${U.escapeHtml(T.t('ui.schemaGroup', 'Schema'))}</div><div>${U.escapeHtml(selected.schemaGroup || '—')}</div></div>
+            ${Object.entries(selected.dynamicData || {}).map(([key, value]) => `
+              <div class="detail-row"><div class="detail-label">${U.escapeHtml(selected.dynamicLabels?.[key] || key)}</div><div>${U.escapeHtml(Array.isArray(value) ? value.join(', ') : (value || '—'))}</div></div>
+            `).join('')}
             <div class="detail-row"><div class="detail-label">${U.escapeHtml(T.t('ui.notes', 'Note'))}</div><div>${U.escapeHtml(selected.notes || '—')}</div></div>
           </div>` : `<div class="empty-text">${U.escapeHtml(T.t('ui.noSelection', 'Nessuna pratica selezionata.'))}</div>`}
       </section>`;
