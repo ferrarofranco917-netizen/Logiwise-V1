@@ -57,6 +57,7 @@ window.KedrixOneData = (() => {
             carriers: ['TERCOM', 'BRT', 'DHL Freight', 'DB Schenker'],
             vehicleTypes: ['Bilico centinato', 'Motrice', 'Furgone', 'Container chassis'],
             logisticsLocations: ['Fossano', 'Torino', 'Genova', 'Milano', 'Lione'],
+            seaTerminals: ["PSA Genova Pra\'", 'SECH Genova', 'VTE Voltri', 'Terminal del Golfo La Spezia'],
             deposits: ['Magazzino interno', 'Deposito doganale', 'Transit point'],
             warehouseLinks: ['Pratica import', 'Pratica export', 'Transito interno'],
             customsOffices: ['Genova Porto', 'La Spezia', 'Torino', 'Milano 1']
@@ -180,7 +181,33 @@ window.KedrixOneData = (() => {
           eta: '2026-04-01',
           type: 'Import',
           port: 'Genova',
-          notes: 'Packing list aggiornata da richiedere al fornitore.'
+          notes: 'Packing list aggiornata da richiedere al fornitore.',
+          terminal: "PSA Genova Pra\'",
+          mbl: 'MSCU-MBL-7781',
+          dynamicData: {
+            importer: 'Michelin Italia',
+            consignee: 'Michelin Italia',
+            company: 'MSC',
+            portLoading: 'Shanghai',
+            portDischarge: 'Genova',
+            terminal: "PSA Genova Pra\'",
+            arrivalDate: '2026-04-01',
+            booking: 'BK-SEA-0901',
+            mbl: 'MSCU-MBL-7781',
+            customsOffice: 'Genova Porto',
+            incoterm: 'CIF',
+            goodsDescription: 'Pneumatici automotive',
+            packageCount: '18',
+            grossWeight: '22100',
+            containerCode: 'MSCU1234567'
+          },
+          dynamicLabels: {
+            importer: 'Importatore', consignee: 'Destinatario', company: 'Compagnia marittima',
+            portLoading: 'Porto di imbarco', portDischarge: 'Porto di sbarco', terminal: 'Terminal',
+            arrivalDate: 'Data arrivo', booking: 'Booking', mbl: 'MBL', customsOffice: 'Dogana',
+            incoterm: 'Incoterm', goodsDescription: 'Descrizione merce', packageCount: 'Colli',
+            grossWeight: 'Peso lordo', containerCode: 'Container'
+          }
         },
         {
           id: 'PR-2026-002',
@@ -208,7 +235,31 @@ window.KedrixOneData = (() => {
           eta: '2026-04-03',
           type: 'Export',
           port: 'Fossano',
-          notes: 'Verificare ritiro e conferma mezzo.'
+          notes: 'Verificare ritiro e conferma mezzo.',
+          carrier: 'TERCOM',
+          cmr: 'CMR-EXPORT-4412',
+          dynamicData: {
+            shipper: 'Monge & C. S.p.A.',
+            consignee: 'Cliente Francia',
+            carrier: 'TERCOM',
+            pickupDate: '2026-04-02',
+            deliveryDate: '2026-04-03',
+            vehicleType: 'Bilico centinato',
+            pickupPlace: 'Fossano',
+            deliveryPlace: 'Lione',
+            cmr: 'CMR-EXPORT-4412',
+            incoterm: 'DAP',
+            goodsDescription: 'Pet food palletizzato',
+            packageCount: '12',
+            grossWeight: '8200',
+            booking: 'BK-RD-4412'
+          },
+          dynamicLabels: {
+            shipper: 'Mittente', consignee: 'Destinatario', carrier: 'Vettore', pickupDate: 'Data ritiro',
+            deliveryDate: 'Data consegna', vehicleType: 'Mezzo', pickupPlace: 'Luogo ritiro',
+            deliveryPlace: 'Luogo consegna', cmr: 'CMR', incoterm: 'Incoterm',
+            goodsDescription: 'Descrizione merce', packageCount: 'Colli', grossWeight: 'Peso lordo', booking: 'Booking'
+          }
         },
         {
           id: 'PR-2026-003',
@@ -236,7 +287,31 @@ window.KedrixOneData = (() => {
           eta: '2026-03-31',
           type: 'Import',
           port: 'La Spezia',
-          notes: 'Verifica operativa con dogana.'
+          notes: 'Verifica operativa con dogana.',
+          hbl: 'HBL-APR-9902',
+          dynamicData: {
+            importer: 'Aprica S.p.A.',
+            consignee: 'Aprica S.p.A.',
+            company: 'Maersk',
+            portLoading: 'Ningbo',
+            portDischarge: 'La Spezia',
+            arrivalDate: '2026-03-31',
+            booking: 'BK-SEA-8812',
+            hbl: 'HBL-APR-9902',
+            customsOffice: 'La Spezia',
+            incoterm: 'FOB',
+            goodsDescription: 'Materiale tecnico',
+            packageCount: '6',
+            grossWeight: '4300',
+            containerCode: 'OOLU7654321',
+            inspectionFlags: ['ui.verifyDocumentale', 'ui.verifyScanner']
+          },
+          dynamicLabels: {
+            importer: 'Importatore', consignee: 'Destinatario', company: 'Compagnia marittima',
+            portLoading: 'Porto di imbarco', portDischarge: 'Porto di sbarco', arrivalDate: 'Data arrivo',
+            booking: 'Booking', hbl: 'HBL', customsOffice: 'Dogana', incoterm: 'Incoterm',
+            goodsDescription: 'Descrizione merce', packageCount: 'Colli', grossWeight: 'Peso lordo', containerCode: 'Container'
+          }
         }
       ],
       operatorLogs: [

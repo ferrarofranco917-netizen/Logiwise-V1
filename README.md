@@ -31,3 +31,8 @@ Sostituisci integralmente il contenuto del repo con questo pacchetto oppure appl
 - I risultati del motore ricerca pratiche aprono ora la pratica direttamente nel form principale in modalità modifica, con scroll/focus automatico.
 - È stato aggiunto un banner sticky di verifica operativa quando la pratica ha controlli attivi (documentale, scanner, doganale, ecc.).
 - Regola architetturale formalizzata: ogni risultato trovato da motori ricerca/documenti dovrà essere sempre apribile ed editabile dal relativo modulo di competenza.
+
+
+## STEP 5C.3 — Search open hard-fix + banner verifica live
+- apertura da search con scroll forzato al form editor
+- banner IN VERIFICA sempre renderizzato e aggiornato live su stato/flag

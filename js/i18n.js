@@ -65,6 +65,16 @@ window.KedrixOneI18N = (() => {
         demoReset: 'Dati demo ripristinati',
         languageUpdated: 'Lingua aggiornata',
         currentUserContext: 'Contesto applicativo corrente.',
+        terminal: 'Terminal',
+        mbl: 'MBL',
+        hbl: 'HBL',
+        cmr: 'CMR',
+        movementDirection: 'Direzione movimento',
+        validationMblRequired: 'Compila il Master BL per le pratiche FCL.',
+        validationHblRequired: "Compila l'House BL per le pratiche LCL / groupage.",
+        validationHawbRequired: "Compila l'HAWB per le spedizioni aeree in consol.",
+        validationCmrRequired: 'Compila il numero CMR.',
+        validationWarehouseCustomsRequired: 'Per il deposito doganale indica la dogana di riferimento.',
         moduleFamiliesPlanned: 'Famiglie previste',
         baseContacts: 'Base contatti',
         nextStep: 'STEP successivo',
@@ -206,6 +216,16 @@ window.KedrixOneI18N = (() => {
         demoReset: 'Demo data restored',
         languageUpdated: 'Language updated',
         currentUserContext: 'Current application context.',
+        terminal: 'Terminal',
+        mbl: 'MBL',
+        hbl: 'HBL',
+        cmr: 'CMR',
+        movementDirection: 'Movement direction',
+        validationMblRequired: 'Enter the Master BL for FCL shipments.',
+        validationHblRequired: 'Enter the House BL for LCL / groupage shipments.',
+        validationHawbRequired: 'Enter the HAWB for air consol shipments.',
+        validationCmrRequired: 'Enter the CMR number.',
+        validationWarehouseCustomsRequired: 'For bonded warehouse flows specify the customs office.',
         moduleFamiliesPlanned: 'Planned families',
         baseContacts: 'Base contacts',
         nextStep: 'Next step',
@@ -652,7 +672,17 @@ Object.assign(dictionary.it.ui, {
   validationDepositRequired: 'Seleziona il deposito di riferimento.',
   validationSummaryTitle: 'Controlli da completare prima del salvataggio',
   validationSummaryHint: 'Sistema i campi evidenziati: la tab con errori viene segnalata automaticamente.',
-  validationBlockedSave: 'Salvataggio bloccato: completa i controlli evidenziati.'
+  validationBlockedSave: 'Salvataggio bloccato: completa i controlli evidenziati.',
+  verifyCustoms: 'Doganale',
+  openedFromSearch: 'Aperta da ricerca',
+  openedFromList: 'Aperta da elenco',
+  openedAfterSave: 'Pratica attiva',
+  openAndEdit: 'Apri e modifica',
+  editingPracticeBannerKicker: 'Pratica aperta in modifica',
+  editingReady: 'Modificabile subito',
+  inVerification: 'IN VERIFICA',
+  verificationBannerHint: 'Banner operativo fisso: la pratica richiede controlli/verifiche attive.',
+  searchPreviewHint: 'La pratica selezionata si apre nel form in alto in modifica e può essere aggiornata subito.'
 });
 
 Object.assign(dictionary.en.ui, {
@@ -679,7 +709,17 @@ Object.assign(dictionary.en.ui, {
   validationDepositRequired: 'Select the reference warehouse deposit.',
   validationSummaryTitle: 'Checks to complete before saving',
   validationSummaryHint: 'Fix the highlighted fields: tabs containing errors are marked automatically.',
-  validationBlockedSave: 'Save blocked: complete the highlighted checks.'
+  validationBlockedSave: 'Save blocked: complete the highlighted checks.',
+  verifyCustoms: 'Customs',
+  openedFromSearch: 'Opened from search',
+  openedFromList: 'Opened from list',
+  openedAfterSave: 'Active practice',
+  openAndEdit: 'Open and edit',
+  editingPracticeBannerKicker: 'Practice opened in edit mode',
+  editingReady: 'Ready to edit',
+  inVerification: 'UNDER REVIEW',
+  verificationBannerHint: 'Sticky operational banner: the practice has active checks/reviews.',
+  searchPreviewHint: 'The selected practice opens in the form above in edit mode and can be updated immediately.'
 });
 
   return {

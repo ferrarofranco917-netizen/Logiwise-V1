@@ -485,6 +485,10 @@ img {
   box-shadow: 0 14px 34px rgba(15, 23, 42, 0.26);
 }
 
+.verification-sticky-banner.is-hidden {
+  display: none;
+}
+
 .verification-banner-kicker {
   font-size: 11px;
   letter-spacing: 0.12em;

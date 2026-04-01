@@ -20,6 +20,7 @@ window.KedrixOnePracticeSchemas = (() => {
       carriers: ['TERCOM', 'BRT', 'DHL Freight', 'DB Schenker', 'Lannutti'],
       vehicleTypes: ['Bilico centinato', 'Motrice', 'Furgone', 'Container chassis', 'Cassonato'],
       logisticsLocations: ['Fossano', 'Torino', 'Genova', 'Milano', 'Lione'],
+      seaTerminals: ["PSA Genova Pra\'", 'SECH Genova', 'VTE Voltri', 'Terminal del Golfo La Spezia', 'Vado Gateway'],
       deposits: ['Magazzino interno', 'Deposito doganale', 'Transit point', 'Cross-dock'],
       warehouseLinks: ['Pratica import', 'Pratica export', 'Transito interno', 'Deposito temporaneo'],
       customsOffices: ['Genova Porto', 'La Spezia', 'Torino', 'Milano 1', 'Vado Ligure']
@@ -53,9 +54,12 @@ window.KedrixOnePracticeSchemas = (() => {
           { name: 'company', type: 'text', labelKey: 'ui.shippingCompany', suggestionKey: 'shippingCompanies' },
           { name: 'portLoading', type: 'text', labelKey: 'ui.seaPortLoading', required: true, suggestionKey: 'seaPorts' },
           { name: 'portDischarge', type: 'text', labelKey: 'ui.seaPortDischarge', required: true, suggestionKey: 'seaPorts' },
+          { name: 'terminal', type: 'text', labelKey: 'ui.terminal', suggestionKey: 'seaTerminals' },
           { name: 'vesselVoyage', type: 'text', labelKey: 'ui.vesselVoyage' },
           { name: 'arrivalDate', type: 'date', labelKey: 'ui.arrivalDate', required: true },
           { name: 'booking', type: 'text', labelKey: 'ui.booking', required: true },
+          { name: 'mbl', type: 'text', labelKey: 'ui.mbl' },
+          { name: 'hbl', type: 'text', labelKey: 'ui.hbl' },
           { name: 'customsOffice', type: 'text', labelKey: 'ui.customsOffice', required: true, suggestionKey: 'customsOffices' },
           { name: 'incoterm', type: 'select', labelKey: 'ui.incoterm', required: true, optionSource: 'incoterms' },
           { name: 'category', type: 'select-derived', labelKey: 'ui.categoryLabel' }
@@ -87,9 +91,12 @@ window.KedrixOnePracticeSchemas = (() => {
           { name: 'company', type: 'text', labelKey: 'ui.shippingCompany', suggestionKey: 'shippingCompanies' },
           { name: 'portLoading', type: 'text', labelKey: 'ui.seaPortLoading', required: true, suggestionKey: 'seaPorts' },
           { name: 'portDischarge', type: 'text', labelKey: 'ui.seaPortDischarge', required: true, suggestionKey: 'seaPorts' },
+          { name: 'terminal', type: 'text', labelKey: 'ui.terminal', suggestionKey: 'seaTerminals' },
           { name: 'vesselVoyage', type: 'text', labelKey: 'ui.vesselVoyage' },
           { name: 'departureDate', type: 'date', labelKey: 'ui.departureDate', required: true },
           { name: 'booking', type: 'text', labelKey: 'ui.booking', required: true },
+          { name: 'mbl', type: 'text', labelKey: 'ui.mbl' },
+          { name: 'hbl', type: 'text', labelKey: 'ui.hbl' },
           { name: 'customsOffice', type: 'text', labelKey: 'ui.customsOffice', required: true, suggestionKey: 'customsOffices' },
           { name: 'incoterm', type: 'select', labelKey: 'ui.incoterm', required: true, optionSource: 'incoterms' },
           { name: 'category', type: 'select-derived', labelKey: 'ui.categoryLabel' }
@@ -189,6 +196,7 @@ window.KedrixOnePracticeSchemas = (() => {
           { name: 'plateDriver', type: 'text', labelKey: 'ui.plateDriver' },
           { name: 'pickupPlace', type: 'text', labelKey: 'ui.pickupPlace', required: true, suggestionKey: 'logisticsLocations' },
           { name: 'deliveryPlace', type: 'text', labelKey: 'ui.deliveryPlace', required: true, suggestionKey: 'logisticsLocations' },
+          { name: 'cmr', type: 'text', labelKey: 'ui.cmr', required: true },
           { name: 'incoterm', type: 'select', labelKey: 'ui.incoterm', required: true, optionSource: 'incoterms' }
         ],
         detail: [
@@ -221,6 +229,7 @@ window.KedrixOnePracticeSchemas = (() => {
           { name: 'plateDriver', type: 'text', labelKey: 'ui.plateDriver' },
           { name: 'pickupPlace', type: 'text', labelKey: 'ui.pickupPlace', required: true, suggestionKey: 'logisticsLocations' },
           { name: 'deliveryPlace', type: 'text', labelKey: 'ui.deliveryPlace', required: true, suggestionKey: 'logisticsLocations' },
+          { name: 'cmr', type: 'text', labelKey: 'ui.cmr', required: true },
           { name: 'incoterm', type: 'select', labelKey: 'ui.incoterm', required: true, optionSource: 'incoterms' }
         ],
         detail: [
@@ -245,8 +254,10 @@ window.KedrixOnePracticeSchemas = (() => {
           { name: 'client', type: 'derived', labelKey: 'ui.clientRequired' },
           { name: 'warehouseContact', type: 'text', labelKey: 'ui.clientContact' },
           { name: 'originDest', type: 'text', labelKey: 'ui.originDestination', required: true, suggestionKey: 'logisticsLocations' },
+          { name: 'movementDirection', type: 'select', labelKey: 'ui.movementDirection', required: true, options: ['ENTRATA', 'USCITA'] },
           { name: 'lots', type: 'text', labelKey: 'ui.lots', required: true },
           { name: 'deposit', type: 'text', labelKey: 'ui.deposit', required: true, suggestionKey: 'deposits' },
+          { name: 'customsOffice', type: 'text', labelKey: 'ui.customsOffice', suggestionKey: 'customsOffices' },
           { name: 'linkedTo', type: 'text', labelKey: 'ui.linkedTo', suggestionKey: 'warehouseLinks' },
           { name: 'baseQuotation', type: 'text', labelKey: 'ui.baseQuotation' },
           { name: 'plateDriver', type: 'text', labelKey: 'ui.plateDriver' }
@@ -395,8 +406,20 @@ window.KedrixOnePracticeSchemas = (() => {
       }
     });
 
-    if (type.startsWith('sea_') && draft.category === 'FCL-FULL' && isEmptyValue(dynamicData.containerCode)) {
-      errors.push(buildError('containerCode', 'detail', type, 'ui.validationContainerRequired', 'Il container è obbligatorio per le pratiche FCL.'));
+    if (type.startsWith('sea_')) {
+      if (draft.category === 'FCL-FULL' && isEmptyValue(dynamicData.containerCode)) {
+        errors.push(buildError('containerCode', 'detail', type, 'ui.validationContainerRequired', 'Il container è obbligatorio per le pratiche FCL.'));
+      }
+      if (draft.category === 'FCL-FULL' && isEmptyValue(dynamicData.mbl)) {
+        errors.push(buildError('mbl', 'practice', type, 'ui.validationMblRequired', 'Compila il Master BL per le pratiche FCL.'));
+      }
+      if (draft.category === 'LCL-GROUPAGE' && isEmptyValue(dynamicData.hbl)) {
+        errors.push(buildError('hbl', 'practice', type, 'ui.validationHblRequired', "Compila l'House BL per le pratiche LCL / groupage."));
+      }
+    }
+
+    if (type.startsWith('air_') && draft.category === 'AIR-CONSOL' && isEmptyValue(dynamicData.hawb)) {
+      errors.push(buildError('hawb', 'practice', type, 'ui.validationHawbRequired', "Compila l'HAWB per le spedizioni aeree in consol."));
     }
 
     if (type.startsWith('road_')) {
@@ -407,11 +430,20 @@ window.KedrixOnePracticeSchemas = (() => {
       }
     }
 
-    if (type === 'warehouse' && isEmptyValue(dynamicData.deposit)) {
-      errors.push(buildError('deposit', 'practice', type, 'ui.validationDepositRequired', 'Seleziona il deposito di riferimento.'));
+    if (type === 'warehouse' && draft.category === 'DEPOSITO DOGANALE' && isEmptyValue(dynamicData.customsOffice)) {
+      errors.push(buildError('customsOffice', 'practice', type, 'ui.validationWarehouseCustomsRequired', 'Per il deposito doganale indica la dogana di riferimento.'));
     }
 
-    return { valid: errors.length === 0, errors };
+    const uniqueErrors = [];
+    const seenErrors = new Set();
+    errors.forEach((error) => {
+      const key = `${error.tab || ''}|${error.field || ''}|${error.message || ''}`;
+      if (seenErrors.has(key)) return;
+      seenErrors.add(key);
+      uniqueErrors.push(error);
+    });
+
+    return { valid: uniqueErrors.length === 0, errors: uniqueErrors };
   }
 
   return {

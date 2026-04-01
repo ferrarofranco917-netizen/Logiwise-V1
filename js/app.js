@@ -55,7 +55,33 @@
     const query = Utils.normalize(state.filterText);
     return state.practices.filter((practice) => {
       const okStatus = state.statusFilter === 'Tutti' || practice.status === state.statusFilter;
-      const okQuery = !query || [practice.reference, practice.client, practice.port, practice.id, practice.practiceType, practice.containerCode, practice.booking, practice.customsOffice, practice.goodsDescription].some((value) => Utils.normalize(value).includes(query));
+      const dynamicData = extractPracticeDynamicData(practice);
+      const searchableValues = [
+        practice.reference,
+        practice.client,
+        practice.clientName,
+        practice.port,
+        practice.id,
+        practice.practiceType,
+        practice.containerCode,
+        practice.booking,
+        practice.customsOffice,
+        practice.goodsDescription,
+        practice.terminal,
+        practice.mbl,
+        practice.hbl,
+        practice.mawb,
+        practice.hawb,
+        practice.cmr,
+        practice.carrier,
+        practice.airline,
+        practice.deposit,
+        ...Object.values(dynamicData || {})
+      ];
+      const okQuery = !query || searchableValues.some((value) => {
+        if (Array.isArray(value)) return value.some((item) => Utils.normalize(item).includes(query));
+        return Utils.normalize(value).includes(query);
+      });
       return okStatus && okQuery;
     });
   }
@@ -78,6 +104,166 @@
 
   function getClientById(clientId) {
     return (state.clients || []).find((client) => client.id === clientId) || null;
+  }
+
+  function getPracticeSchemaFields(type) {
+    return PracticeSchemas && typeof PracticeSchemas.getFields === 'function'
+      ? PracticeSchemas.getFields(type)
+      : [];
+  }
+
+  function buildDynamicLabelsForType(type) {
+    const labels = {};
+    getPracticeSchemaFields(type).forEach((field) => {
+      if (!field || field.type === 'derived' || field.type === 'select-derived') return;
+      labels[field.name] = I18N.t(field.labelKey, field.name);
+    });
+    return labels;
+  }
+
+  function extractPracticeDynamicData(practice) {
+    const base = practice && practice.dynamicData && typeof practice.dynamicData === 'object'
+      ? { ...practice.dynamicData }
+      : {};
+    const fields = getPracticeSchemaFields(practice?.practiceType || '');
+    fields.forEach((field) => {
+      if (!field || field.type === 'derived' || field.type === 'select-derived') return;
+      if (base[field.name] !== undefined && base[field.name] !== null && String(base[field.name]).trim() !== '') return;
+      const topLevelValue = practice?.[field.name];
+      if (Array.isArray(topLevelValue) ? topLevelValue.length : String(topLevelValue || '').trim()) {
+        base[field.name] = Array.isArray(topLevelValue) ? [...topLevelValue] : topLevelValue;
+      }
+    });
+    return base;
+  }
+
+  function normalizePracticeRecordsState() {
+    let changed = false;
+    state.practices = (state.practices || []).map((practice) => {
+      const dynamicData = extractPracticeDynamicData(practice);
+      const dynamicLabels = {
+        ...buildDynamicLabelsForType(practice.practiceType),
+        ...(practice.dynamicLabels || {})
+      };
+
+      const next = {
+        ...practice,
+        dynamicData,
+        dynamicLabels,
+        terminal: practice.terminal || dynamicData.terminal || '',
+        mbl: practice.mbl || dynamicData.mbl || '',
+        hbl: practice.hbl || dynamicData.hbl || '',
+        mawb: practice.mawb || dynamicData.mawb || '',
+        hawb: practice.hawb || dynamicData.hawb || '',
+        cmr: practice.cmr || dynamicData.cmr || '',
+        carrier: practice.carrier || dynamicData.carrier || '',
+        airline: practice.airline || dynamicData.airline || '',
+        deposit: practice.deposit || dynamicData.deposit || ''
+      };
+
+      if (JSON.stringify(next) !== JSON.stringify(practice)) changed = true;
+      return next;
+    });
+    return changed;
+  }
+
+  function getDraftVerificationKeys(draft = ensureDraftPractice()) {
+    const values = [];
+    ['inspectionFlags', 'warehouseFlag', 'verificationFlags'].forEach((key) => {
+      const entry = draft?.dynamicData?.[key];
+      if (Array.isArray(entry)) {
+        values.push(...entry);
+        return;
+      }
+      const text = String(entry || '').trim();
+      if (!text) return;
+      values.push(...text.split(',').map((item) => item.trim()).filter(Boolean));
+    });
+
+    if (String(draft?.status || '').trim().toLowerCase() === 'sdoganamento') {
+      values.unshift('ui.verifyCustoms');
+    }
+
+    return Array.from(new Set(values.map((value) => String(value || '').trim()).filter(Boolean)));
+  }
+
+  function updateVerificationBannerState(draft = ensureDraftPractice()) {
+    const banner = document.getElementById('practiceVerificationBanner');
+    if (!banner) return;
+    const titleNode = document.getElementById('practiceVerificationBannerTitle');
+    const keys = getDraftVerificationKeys(draft);
+    const labels = keys.map((key) => I18N.t(key, key)).filter(Boolean);
+
+    if (!labels.length) {
+      banner.hidden = true;
+      banner.classList.add('is-hidden');
+      if (titleNode) titleNode.textContent = '';
+      return;
+    }
+
+    banner.hidden = false;
+    banner.classList.remove('is-hidden');
+    if (titleNode) titleNode.textContent = labels.join(' · ');
+  }
+
+  function focusPracticeEditor(source = 'manual', practiceId = '') {
+    const run = () => {
+      const editorSection = document.getElementById('practiceEditorSection') || document.getElementById('practiceForm');
+      const editBanner = document.getElementById('practiceEditBanner');
+      const verificationBanner = document.getElementById('practiceVerificationBanner');
+      const primaryField = document.getElementById('clientName')
+        || document.querySelector('#practiceDynamicFields input, #practiceDynamicFields select, #practiceDynamicFields textarea')
+        || document.getElementById('practiceType');
+
+      [editorSection, editBanner, verificationBanner].filter(Boolean).forEach((node) => {
+        node.classList.add('flash-focus');
+        window.setTimeout(() => node.classList.remove('flash-focus'), 1600);
+      });
+
+      if (editorSection) {
+        const topbar = document.querySelector('.topbar');
+        const topOffset = (topbar ? topbar.offsetHeight : 0) + 18;
+        const targetTop = Math.max(0, window.pageYOffset + editorSection.getBoundingClientRect().top - topOffset);
+        window.scrollTo({ top: targetTop, behavior: 'smooth' });
+        window.setTimeout(() => window.scrollTo({ top: targetTop, behavior: 'smooth' }), 220);
+      }
+
+      if (primaryField && typeof primaryField.focus === 'function') {
+        primaryField.focus({ preventScroll: true });
+      }
+
+      const tableRow = practiceId ? main.querySelector(`tr[data-practice-id="${practiceId}"]`) : null;
+      if (tableRow) {
+        tableRow.classList.add('flash-row');
+        window.setTimeout(() => tableRow.classList.remove('flash-row'), 1600);
+      }
+
+      if (source === 'search') {
+        const previewCard = document.getElementById('practiceSearchPreview');
+        const activeResult = practiceId ? main.querySelector(`.practice-search-result[data-practice-id="${practiceId}"]`) : null;
+        [previewCard, activeResult].filter(Boolean).forEach((node) => {
+          node.classList.add('flash-focus');
+          window.setTimeout(() => node.classList.remove('flash-focus'), 1600);
+        });
+      }
+    };
+
+    window.requestAnimationFrame(() => {
+      run();
+      window.requestAnimationFrame(run);
+    });
+  }
+
+  function openPracticeForEditing(practiceId, options = {}) {
+    if (!practiceId) return;
+    const source = options.source || 'manual';
+    loadPracticeIntoDraft(practiceId);
+    state._practiceValidationErrors = [];
+    state.practiceSearchPreviewId = source === 'search' ? practiceId : '';
+    state.practiceOpenSource = source;
+    save();
+    render();
+    focusPracticeEditor(source, practiceId);
   }
 
   function practiceTypeLabel(value) {
@@ -179,6 +365,7 @@
     state.practiceTab = 'practice';
     state._practiceValidationErrors = [];
     state.practiceSearchPreviewId = '';
+    state.practiceOpenSource = '';
   }
 
   function syncClientMatch(clientName) {
@@ -212,7 +399,7 @@
       category: practice.category || '',
       status: practice.status || 'Operativa',
       generatedReference: practice.reference || '',
-      dynamicData: { ...(practice.dynamicData || {}) }
+      dynamicData: extractPracticeDynamicData(practice)
     };
   }
 
@@ -380,6 +567,7 @@
       if (!dynamicFields) return;
       dynamicFields.innerHTML = renderDynamicFieldsHTML(draft.practiceType || '', state.practiceTab || 'practice', draft);
       bindDynamicPersistence();
+      updateVerificationBannerState(draft);
       refreshValidationState();
     }
 
@@ -420,6 +608,7 @@
       if (generatedReference) generatedReference.value = draft.generatedReference;
       syncDerivedPreviewFields();
       save();
+      updateVerificationBannerState(draft);
       if (shouldRefreshValidation) refreshValidationState();
     }
 
@@ -435,6 +624,7 @@
             draft.dynamicData[node.name] = node.value;
           }
           save();
+          updateVerificationBannerState(draft);
           refreshValidationState();
         };
         node.addEventListener('input', handler);
@@ -513,13 +703,7 @@
       clearValidationState();
 
       const schema = getPracticeSchema(draft.practiceType);
-      const dynamicLabels = {};
-      const schemaFields = schema ? PracticeSchemas.getFields(draft.practiceType) : [];
-      schemaFields.forEach((field) => {
-        if (field.type !== 'derived' && field.type !== 'select-derived') {
-          dynamicLabels[field.name] = I18N.t(field.labelKey, field.name);
-        }
-      });
+      const dynamicLabels = buildDynamicLabelsForType(draft.practiceType);
 
       const existingRecord = draft.editingPracticeId ? state.practices.find((item) => item.id === draft.editingPracticeId) : null;
       const record = {
@@ -546,8 +730,17 @@
         grossWeight: draft.dynamicData.grossWeight || '',
         goodsDescription: draft.dynamicData.goodsDescription || '',
         booking: draft.dynamicData.booking || '',
+        terminal: draft.dynamicData.terminal || '',
+        mbl: draft.dynamicData.mbl || '',
+        hbl: draft.dynamicData.hbl || '',
+        mawb: draft.dynamicData.mawb || '',
+        hawb: draft.dynamicData.hawb || '',
+        cmr: draft.dynamicData.cmr || '',
+        carrier: draft.dynamicData.carrier || '',
+        airline: draft.dynamicData.airline || '',
+        deposit: draft.dynamicData.deposit || '',
         customsOffice: draft.dynamicData.customsOffice || draft.dynamicData.customsOperator || '',
-        eta: draft.dynamicData.arrivalDate || draft.dynamicData.deliveryDate || draft.practiceDate,
+        eta: draft.dynamicData.arrivalDate || draft.dynamicData.departureDate || draft.dynamicData.deliveryDate || draft.practiceDate,
         type: draft.practiceType.includes('export') ? 'Export' : draft.practiceType.includes('import') ? 'Import' : 'Magazzino',
         port: draft.dynamicData.portDischarge || draft.dynamicData.airportDestination || draft.dynamicData.deliveryPlace || draft.dynamicData.deposit || '',
         notes: draft.dynamicData.internalNotes || '',
@@ -583,53 +776,17 @@
 
       state.selectedPracticeId = record.id;
       loadPracticeIntoDraft(record.id);
+      state.practiceOpenSource = 'save';
       save();
       render();
+      focusPracticeEditor('save', record.id);
     });
 
     main.querySelectorAll('[data-practice-id]').forEach((node) => {
       node.addEventListener('click', () => {
         const practiceId = node.dataset.practiceId;
-        const openedFromSearch = node.classList.contains('practice-search-result');
-        loadPracticeIntoDraft(practiceId);
-        state._practiceValidationErrors = [];
-        state.practiceSearchPreviewId = openedFromSearch ? practiceId : '';
-        save();
-        render();
-
-        window.requestAnimationFrame(() => {
-          const tableRow = main.querySelector(`tr[data-practice-id="${practiceId}"]`);
-
-          if (openedFromSearch) {
-            const previewCard = document.getElementById('practiceSearchPreview');
-            const activeResult = main.querySelector(`.practice-search-result[data-practice-id="${practiceId}"]`);
-            if (previewCard) {
-              previewCard.classList.add('flash-focus');
-              previewCard.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-              window.setTimeout(() => previewCard.classList.remove('flash-focus'), 1600);
-            }
-            if (activeResult) {
-              activeResult.classList.add('flash-focus');
-              window.setTimeout(() => activeResult.classList.remove('flash-focus'), 1600);
-            }
-            if (tableRow) {
-              tableRow.classList.add('flash-row');
-              window.setTimeout(() => tableRow.classList.remove('flash-row'), 1600);
-            }
-            return;
-          }
-
-          const detailSection = document.getElementById('practiceDetailSection');
-          if (detailSection) {
-            detailSection.classList.add('flash-focus');
-            detailSection.scrollIntoView({ block: 'start', behavior: 'smooth' });
-            window.setTimeout(() => detailSection.classList.remove('flash-focus'), 1600);
-          }
-          if (tableRow) {
-            tableRow.classList.add('flash-row');
-            window.setTimeout(() => tableRow.classList.remove('flash-row'), 1600);
-          }
-        });
+        const source = node.classList.contains('practice-search-result') ? 'search' : 'list';
+        openPracticeForEditing(practiceId, { source });
       });
     });
 
@@ -754,6 +911,7 @@
     languageSelect?.addEventListener('change', (event) => {
       state.language = event.target.value || 'it';
       I18N.setLanguage(state.language);
+      normalizePracticeRecordsState();
       save();
       render();
       toast(I18N.t('ui.languageUpdated', 'Language updated'));
@@ -858,6 +1016,8 @@
     if (action.dataset.action === 'reset-demo') {
       const fresh = Data.initialState();
       Object.assign(state, fresh, { practiceTab: 'practice' });
+      I18N.setLanguage(state.language || 'it');
+      normalizePracticeRecordsState();
       state.currentRoute = safeRoute(state.currentRoute);
       ensureCurrentModuleExpanded();
       save();
@@ -884,6 +1044,7 @@
 
   ensureDraftPractice();
   I18N.setLanguage(state.language || 'it');
+  const recordsNormalized = normalizePracticeRecordsState();
   state.currentRoute = safeRoute(window.location.hash || state.currentRoute);
   ensureCurrentModuleExpanded();
   save();

@@ -161,10 +161,25 @@ window.KedrixOneTemplates = (() => {
           return String(value || '').trim();
         }).slice(0, 8)
       : [];
+    const verificationKeys = Array.from(new Set(['inspectionFlags', 'warehouseFlag', 'verificationFlags'].flatMap((key) => {
+      const entry = draft.dynamicData?.[key];
+      if (Array.isArray(entry)) return entry;
+      const textValue = String(entry || '').trim();
+      return textValue ? textValue.split(',').map((item) => item.trim()).filter(Boolean) : [];
+    }).concat(String(draft.status || '').trim().toLowerCase() === 'sdoganamento' ? ['ui.verifyCustoms'] : []).filter(Boolean)));
+    const verificationLabels = verificationKeys.map((key) => T.t(key, key));
+    const isEditing = Boolean(draft.editingPracticeId);
+    const editSourceLabel = state.practiceOpenSource === 'search'
+      ? T.t('ui.openedFromSearch', 'Aperta da ricerca')
+      : state.practiceOpenSource === 'list'
+        ? T.t('ui.openedFromList', 'Aperta da elenco')
+        : state.practiceOpenSource === 'save'
+          ? T.t('ui.openedAfterSave', 'Pratica attiva')
+          : '';
 
     return `
       <section class="hero">
-        <div class="hero-meta">STEP 5D · ${U.escapeHtml(T.t('ui.practiceSearchEngineReady', 'Pratiche consolidate + motore ricerca trasversale'))}</div>
+        <div class="hero-meta">STEP 5C.1 / 5D · ${U.escapeHtml(T.t('ui.practiceSearchEngineReady', 'Pratiche consolidate + motore ricerca trasversale'))}</div>
         <h2>${U.escapeHtml(T.moduleLabel('practices', 'Pratiche'))}</h2>
         <p>${U.escapeHtml(T.t('ui.step5cIntro', ''))}</p>
       </section>
@@ -187,7 +202,7 @@ window.KedrixOneTemplates = (() => {
         </article>
       </section>
 
-      <section class="panel">
+      <section class="panel" id="practiceEditorSection">
         <div class="panel-head">
           <div>
             <h3 class="panel-title">${U.escapeHtml(T.t('ui.practiceIdentity', 'Identità pratica'))}</h3>
@@ -197,6 +212,18 @@ window.KedrixOneTemplates = (() => {
 
         <form id="practiceForm">
           <div class="practice-form-stack">
+            ${isEditing ? `
+              <div class="edit-session-banner" id="practiceEditBanner">
+                <div>
+                  <div class="summary-kicker">${U.escapeHtml(T.t('ui.editingPracticeBannerKicker', 'Pratica aperta in modifica'))}</div>
+                  <div class="edit-session-title">${U.escapeHtml(draft.generatedReference || '—')}</div>
+                  <div class="edit-session-subtitle">${U.escapeHtml(draft.clientName || '—')}</div>
+                </div>
+                <div class="edit-session-meta">
+                  ${editSourceLabel ? `<span class="badge info">${U.escapeHtml(editSourceLabel)}</span>` : ''}
+                  <span class="badge info">${U.escapeHtml(T.t('ui.editingReady', 'Modificabile subito'))}</span>
+                </div>
+              </div>` : ''}
             <div class="form-grid three">
               <div class="field" data-field-wrap="practiceType">
                 <label for="practiceType">${U.escapeHtml(T.t('ui.practiceType', 'Tipo pratica'))} <span class="required-mark">*</span></label>
@@ -246,6 +273,12 @@ window.KedrixOneTemplates = (() => {
 
             <div class="locked-banner" id="practiceLockedBanner">${U.escapeHtml(T.t('ui.typeBlockedHint', ''))}</div>
 
+            <div class="verification-sticky-banner ${verificationLabels.length ? '' : 'is-hidden'}" id="practiceVerificationBanner" ${verificationLabels.length ? '' : 'hidden'}>
+              <div class="verification-banner-kicker">${U.escapeHtml(T.t('ui.inVerification', 'IN VERIFICA'))}</div>
+              <div class="verification-banner-title" id="practiceVerificationBannerTitle">${U.escapeHtml(verificationLabels.join(' · '))}</div>
+              <div class="verification-banner-hint" id="practiceVerificationBannerHint">${U.escapeHtml(T.t('ui.verificationBannerHint', 'Banner operativo fisso: la pratica richiede controlli/verifiche attive.'))}</div>
+            </div>
+
             <div id="practiceValidationSummary" class="validation-summary" hidden></div>
 
             <div class="practice-helper-row" data-practice-dependent>
@@ -282,7 +315,7 @@ window.KedrixOneTemplates = (() => {
         <div class="panel-head">
           <div>
             <h3 class="panel-title">${U.escapeHtml(T.t('ui.practiceSearchEngineTitle', 'Motore ricerca pratiche'))}</h3>
-            <p class="panel-subtitle">${U.escapeHtml(T.t('ui.practiceSearchEngineHint', 'Indicizzazione trasversale su numero pratica, cliente, container, booking, BL/AWB/CMR e riferimenti operativi.'))}</p>
+            <p class="panel-subtitle">${U.escapeHtml(T.t('ui.practiceSearchEngineHint', 'Indicizzazione trasversale su numero pratica, cliente, container, booking, HBL/MBL, AWB/HAWB/MAWB, CMR e riferimenti operativi.'))}</p>
           </div>
         </div>
 
@@ -290,13 +323,13 @@ window.KedrixOneTemplates = (() => {
           <div class="form-grid three practice-search-grid">
             <div class="field full">
               <label for="practiceSearchQuery">${U.escapeHtml(T.t('ui.searchLabel', 'Ricerca'))}</label>
-              <input id="practiceSearchQuery" name="practiceSearchQuery" type="search" value="${U.escapeHtml(searchQuery)}" placeholder="${U.escapeHtml(T.t('ui.practiceSearchPlaceholder', 'Cerca per cliente, numero pratica, container, booking, BL, MAWB, HAWB, CMR...'))}" autocomplete="off" />
+              <input id="practiceSearchQuery" name="practiceSearchQuery" type="search" value="${U.escapeHtml(searchQuery)}" placeholder="${U.escapeHtml(T.t('ui.practiceSearchPlaceholder', 'Cerca per cliente, numero pratica, container, booking, HBL, MBL, MAWB, HAWB, CMR...'))}" autocomplete="off" />
               <div class="field-hint">${U.escapeHtml(T.t('ui.practiceSearchLiveHint', 'Ricerca live ordinata per rilevanza operativa.'))}</div>
             </div>
           </div>
 
           <div class="practice-search-meta-row">
-            <div class="search-meta-pill">${U.escapeHtml(T.t('ui.indexedFieldsHint', 'Campi indicizzati'))}: ${U.escapeHtml(T.t('ui.indexedFieldsList', 'pratiche · cliente · container · booking · BL/AWB/CMR'))}</div>
+            <div class="search-meta-pill">${U.escapeHtml(T.t('ui.indexedFieldsHint', 'Campi indicizzati'))}: ${U.escapeHtml(T.t('ui.indexedFieldsList', 'pratiche · cliente · container · booking · HBL/MBL · AWB/HAWB/MAWB · CMR'))}</div>
             <div class="search-meta-pill">${searchQuery ? `${searchResults.length} ${U.escapeHtml(T.t('ui.searchResults', 'risultati'))}` : U.escapeHtml(T.t('ui.searchReady', 'Ricerca pronta'))}</div>
           </div>
 
@@ -307,7 +340,7 @@ window.KedrixOneTemplates = (() => {
                   <div>
                     <div class="summary-kicker">${U.escapeHtml(T.t('ui.searchPreviewKicker', 'Anteprima risultato selezionato'))}</div>
                     <h4 class="panel-title">${U.escapeHtml(activeSearchPreview.clientName || activeSearchPreview.client || '—')}</h4>
-                    <p class="panel-subtitle">${U.escapeHtml(T.t('ui.searchPreviewHint', 'Preview immediata: la pratica è già caricata in modifica anche nel form principale.'))}</p>
+                    <p class="panel-subtitle">${U.escapeHtml(T.t('ui.searchPreviewHint', 'La pratica selezionata si apre nel form in alto in modifica e può essere aggiornata subito.'))}</p>
                   </div>
                   <div class="search-preview-badges">
                     <span class="badge info">${U.escapeHtml(activeSearchPreview.practiceTypeLabel || activeSearchPreview.practiceType || '—')}</span>
@@ -334,7 +367,10 @@ window.KedrixOneTemplates = (() => {
                       <div class="summary-kicker">${U.escapeHtml(result.reference)}</div>
                       <div class="panel-title practice-search-result-title">${U.escapeHtml(result.clientName)}</div>
                     </div>
-                    <span class="badge info">${U.escapeHtml(result.practiceTypeLabel || '—')}</span>
+                    <div class="search-result-actions">
+                      <span class="badge info">${U.escapeHtml(result.practiceTypeLabel || '—')}</span>
+                      <span class="search-edit-cta">${U.escapeHtml(T.t('ui.openAndEdit', 'Apri e modifica'))}</span>
+                    </div>
                   </div>
                   <div class="practice-search-result-meta">
                     <span>${U.escapeHtml(T.t('ui.status', 'Stato'))}: ${U.escapeHtml(result.status || '—')}</span>

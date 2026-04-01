@@ -9,6 +9,12 @@ window.KedrixOneSearchIndex = (() => {
     { key: 'clientName', label: 'Cliente', weight: 135, getter: (practice) => practice.clientName || practice.client },
     { key: 'containerCode', label: 'Container', weight: 125, getter: (practice) => practice.containerCode },
     { key: 'booking', label: 'Booking', weight: 120, getter: (practice) => practice.booking },
+    { key: 'mbl', label: 'MBL', weight: 118, getter: (practice) => practice.mbl },
+    { key: 'hbl', label: 'HBL', weight: 118, getter: (practice) => practice.hbl },
+    { key: 'mawb', label: 'MAWB', weight: 118, getter: (practice) => practice.mawb },
+    { key: 'hawb', label: 'HAWB', weight: 118, getter: (practice) => practice.hawb },
+    { key: 'cmr', label: 'CMR', weight: 118, getter: (practice) => practice.cmr },
+    { key: 'terminal', label: 'Terminal', weight: 85, getter: (practice) => practice.terminal },
     { key: 'goodsDescription', label: 'Merce', weight: 60, getter: (practice) => practice.goodsDescription },
     { key: 'portLoading', label: 'Partenza', weight: 70, getter: (practice) => practice.portLoading },
     { key: 'portDischarge', label: 'Arrivo', weight: 75, getter: (practice) => practice.portDischarge },
@@ -29,7 +35,9 @@ window.KedrixOneSearchIndex = (() => {
     containerCode: 'Container',
     pickupPlace: 'Ritiro',
     deliveryPlace: 'Consegna',
+    terminal: 'Terminal',
     deposit: 'Deposito',
+    movementDirection: 'Movimento',
     airportDeparture: 'Aeroporto partenza',
     airportDestination: 'Aeroporto arrivo',
     portLoading: 'Porto imbarco',
@@ -40,7 +48,7 @@ window.KedrixOneSearchIndex = (() => {
     customsOffice: 'Dogana'
   };
 
-  const DYNAMIC_FIELD_REGEX = /(booking|container|bl|bill|lading|awb|mawb|hawb|cmr|client|consignee|shipper|importer|port|airport|deposit|pickup|delivery|customs|reference|lot|vehicle|carrier)/i;
+  const DYNAMIC_FIELD_REGEX = /(booking|container|bl|bill|lading|awb|mawb|hawb|cmr|client|consignee|shipper|importer|port|terminal|airport|deposit|pickup|delivery|customs|reference|lot|vehicle|carrier|movement)/i;
 
   function normalize(value) {
     return Utils && typeof Utils.normalize === 'function'
