@@ -1,6 +1,8 @@
 window.KedrixOnePracticeSavePipeline = (() => {
   'use strict';
 
+  const SeaSchemaCleanup = window.KedrixOneSeaSchemaCleanup;
+
   const preSaveHooks = [];
 
   function registerPreSaveHook(hook) {
@@ -81,7 +83,12 @@ window.KedrixOnePracticeSavePipeline = (() => {
     const schema = typeof getPracticeSchema === 'function' ? getPracticeSchema(draft.practiceType) : null;
     const dynamicLabels = typeof buildDynamicLabelsForType === 'function' ? buildDynamicLabelsForType(draft.practiceType) : {};
     const existingRecord = draft.editingPracticeId ? ((state && state.practices) || []).find((item) => item.id === draft.editingPracticeId) : null;
+    if (SeaSchemaCleanup && typeof SeaSchemaCleanup.normalizeDraft === 'function') {
+      SeaSchemaCleanup.normalizeDraft(draft);
+    }
     const { normalizedSeaPortLoading, normalizedSeaPortDischarge } = prepareNormalizedDraft(draft, normalizeSeaPortField || (() => ''));
+    const policyNumber = draft.dynamicData.policyNumber || draft.dynamicData.mbl || '';
+    const customsOffice = draft.dynamicData.customsOffice || draft.dynamicData.customsOperator || '';
 
     return {
       existingRecord,
@@ -112,7 +119,7 @@ window.KedrixOnePracticeSavePipeline = (() => {
         terminal: draft.dynamicData.terminal || draft.dynamicData.terminalPickup || draft.dynamicData.terminalDelivery || '',
         terminalPickup: draft.dynamicData.terminalPickup || '',
         terminalDelivery: draft.dynamicData.terminalDelivery || '',
-        mbl: draft.dynamicData.mbl || '',
+        mbl: policyNumber,
         hbl: draft.dynamicData.hbl || '',
         mawb: draft.dynamicData.mawb || '',
         hawb: draft.dynamicData.hawb || '',
@@ -121,9 +128,9 @@ window.KedrixOnePracticeSavePipeline = (() => {
         transporter: draft.dynamicData.transporter || '',
         airline: draft.dynamicData.airline || '',
         deposit: draft.dynamicData.deposit || '',
-        customsOffice: draft.dynamicData.customsOffice || draft.dynamicData.customsOperator || '',
-        customsSection: draft.dynamicData.customsSection || '',
-        policyNumber: draft.dynamicData.policyNumber || '',
+        customsOffice: customsOffice,
+        customsSection: '',
+        policyNumber: policyNumber,
         baseQuotation: draft.dynamicData.baseQuotation || '',
         deliveryCity: draft.dynamicData.deliveryCity || '',
         additionalReference: draft.dynamicData.additionalReference || '',
@@ -154,6 +161,10 @@ window.KedrixOnePracticeSavePipeline = (() => {
       ? { ...record.dynamicData }
       : {};
 
+    const normalizedDynamicData = SeaSchemaCleanup && typeof SeaSchemaCleanup.normalizeDynamicData === 'function'
+      ? SeaSchemaCleanup.normalizeDynamicData(dynamicData, record.practiceType || '')
+      : dynamicData;
+
     return typeof createEmptyDraft === 'function'
       ? createEmptyDraft({
         editingPracticeId: '',
@@ -164,7 +175,7 @@ window.KedrixOnePracticeSavePipeline = (() => {
         category: record.category || '',
         status: record.status || 'In attesa documenti',
         generatedReference: '',
-        dynamicData
+        dynamicData: normalizedDynamicData
       })
       : null;
   }

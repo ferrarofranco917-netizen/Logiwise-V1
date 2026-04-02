@@ -97,3 +97,11 @@ Regola: niente nuova logica autonoma in `app.js` se può vivere in un modulo ded
 - La copia reimposta lo stato a `In attesa documenti` e svuota i riferimenti operativi/documentali che non devono ereditarsi in modo cieco (es. booking, container, MBL/HBL, MAWB/HAWB, CMR, bolla, alcune date operative e flag di verifica).
 - Banner dedicato per distinguere chiaramente la copia non ancora salvata dalla pratica origine.
 - Base pronta per step successivi: controlli container, pesi, allegati pratica e ulteriori regole di integrità dati.
+
+
+## STEP 5C.8 — Sea schema cleanup + deduplication
+- removed MBL input from sea forms and consolidated on `Polizza`
+- removed duplicated `Sezione doganale` field from sea forms and consolidated on `Dogana / sezione`
+- placed `Fatt. Estera` and `Importo Fattura` consecutively
+- suppressed redundant Incoterms hint under `Deposito` and `Collega a`
+- added legacy-safe sea normalization module for backward-compatible draft/record hydration

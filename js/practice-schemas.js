@@ -72,7 +72,6 @@ window.KedrixOnePracticeSchemas = (() => {
           { name: 'policyNumber', type: 'text', labelKey: 'ui.policyNumber' },
           { name: 'policyOriginals', type: 'number', labelKey: 'ui.policyOriginals' },
           { name: 'policyCopies', type: 'number', labelKey: 'ui.policyCopies' },
-          { name: 'mbl', type: 'text', labelKey: 'ui.mbl' },
           { name: 'hbl', type: 'text', labelKey: 'ui.hbl' },
           { name: 'customsOffice', type: 'text', labelKey: 'ui.customsOffice', required: true, suggestionKey: 'customsOffices' },
           { name: 'baseQuotation', type: 'text', labelKey: 'ui.baseQuotation' },
@@ -119,7 +118,6 @@ window.KedrixOnePracticeSchemas = (() => {
           { name: 'policyNumber', type: 'text', labelKey: 'ui.policyNumber' },
           { name: 'policyOriginals', type: 'number', labelKey: 'ui.policyOriginals' },
           { name: 'policyCopies', type: 'number', labelKey: 'ui.policyCopies' },
-          { name: 'mbl', type: 'text', labelKey: 'ui.mbl' },
           { name: 'hbl', type: 'text', labelKey: 'ui.hbl' },
           { name: 'customsOffice', type: 'text', labelKey: 'ui.customsOffice', required: true, suggestionKey: 'customsOffices' },
           { name: 'baseQuotation', type: 'text', labelKey: 'ui.baseQuotation' },
@@ -281,9 +279,9 @@ window.KedrixOnePracticeSchemas = (() => {
           { name: 'originDest', type: 'text', labelKey: 'ui.originDestination', required: true, suggestionKey: 'logisticsLocations' },
           { name: 'movementDirection', type: 'select', labelKey: 'ui.movementDirection', required: true, options: ['ENTRATA', 'USCITA'] },
           { name: 'lots', type: 'text', labelKey: 'ui.lots', required: true },
-          { name: 'deposit', type: 'text', labelKey: 'ui.deposit', required: true, suggestionKey: 'deposits' },
+          { name: 'deposit', type: 'text', labelKey: 'ui.deposit', required: true, suggestionKey: 'deposits', hintKey: false },
           { name: 'customsOffice', type: 'text', labelKey: 'ui.customsOffice', suggestionKey: 'customsOffices' },
-          { name: 'linkedTo', type: 'text', labelKey: 'ui.linkedTo', suggestionKey: 'warehouseLinks' },
+          { name: 'linkedTo', type: 'text', labelKey: 'ui.linkedTo', suggestionKey: 'warehouseLinks', hintKey: false },
           { name: 'baseQuotation', type: 'text', labelKey: 'ui.baseQuotation' },
           { name: 'plateDriver', type: 'text', labelKey: 'ui.plateDriver' }
         ],
@@ -352,20 +350,19 @@ window.KedrixOnePracticeSchemas = (() => {
     { name: 'correspondent', type: 'text', labelKey: 'ui.correspondent' },
     { name: 'insurance', type: 'text', labelKey: 'ui.insurance' },
     { name: 'foreignInvoice', type: 'text', labelKey: 'ui.foreignInvoice' },
-    { name: 'deposit', type: 'text', labelKey: 'ui.deposit', suggestionKey: 'deposits' },
+    { name: 'invoiceAmount', type: 'number', labelKey: 'ui.invoiceAmount' },
+    { name: 'deposit', type: 'text', labelKey: 'ui.deposit', suggestionKey: 'deposits', hintKey: false },
     { name: 'terminalPickup', type: 'text', labelKey: 'ui.terminalPickup', suggestionKey: 'seaTerminals' },
     { name: 'terminalDelivery', type: 'text', labelKey: 'ui.terminalDelivery', suggestionKey: 'seaTerminals' },
     { name: 'performedDate', type: 'date', labelKey: 'ui.performedDate' },
     { name: 'unloadingDate', type: 'date', labelKey: 'ui.unloadingDate' },
     { name: 'fumigation', type: 'text', labelKey: 'ui.fumigation' },
-    { name: 'invoiceAmount', type: 'number', labelKey: 'ui.invoiceAmount' },
     { name: 'salesOwner', type: 'text', labelKey: 'ui.salesOwner' },
-    { name: 'customsSection', type: 'text', labelKey: 'ui.customsSection' },
     { name: 'additionalFigures', type: 'text', labelKey: 'ui.additionalFigures' },
     { name: 'transporter', type: 'text', labelKey: 'ui.transporter' },
     { name: 'bolla', type: 'text', labelKey: 'ui.bolla' },
     { name: 'appraisalCession', type: 'text', labelKey: 'ui.appraisalCession' },
-    { name: 'linkedTo', type: 'text', labelKey: 'ui.linkedTo', suggestionKey: 'warehouseLinks' },
+    { name: 'linkedTo', type: 'text', labelKey: 'ui.linkedTo', suggestionKey: 'warehouseLinks', hintKey: false },
     { name: 'deliveryCity', type: 'text', labelKey: 'ui.deliveryCity' },
     { name: 'additionalReference', type: 'text', labelKey: 'ui.additionalReference' },
     { name: 'tags', type: 'text', labelKey: 'ui.tags' }
@@ -599,8 +596,8 @@ window.KedrixOnePracticeSchemas = (() => {
       if (draft.category === 'FCL-FULL' && isEmptyValue(dynamicData.containerCode)) {
         errors.push(buildError('containerCode', 'detail', type, 'ui.validationContainerRequired', 'Il container è obbligatorio per le pratiche FCL.'));
       }
-      if (draft.category === 'FCL-FULL' && isEmptyValue(dynamicData.mbl)) {
-        errors.push(buildError('mbl', 'practice', type, 'ui.validationMblRequired', 'Compila il Master BL per le pratiche FCL.'));
+      if (draft.category === 'FCL-FULL' && isEmptyValue(dynamicData.policyNumber || dynamicData.mbl)) {
+        errors.push(buildError('policyNumber', 'practice', type, 'ui.validationPolicyNumberRequired', 'Compila la polizza per le pratiche FCL.'));
       }
       if (draft.category === 'LCL-GROUPAGE' && isEmptyValue(dynamicData.hbl)) {
         errors.push(buildError('hbl', 'practice', type, 'ui.validationHblRequired', "Compila l'House BL per le pratiche LCL / groupage."));

@@ -103,13 +103,19 @@ window.KedrixOnePracticeFormRenderer = (() => {
           return `<option value="${displayText}">${displayText}</option>`;
         }).join('')}</datalist>`
         : '';
-      const hintKey = field.name === 'portLoading' || field.name === 'portDischarge'
-        ? 'ui.unlocodeHint'
-        : 'ui.clientRuleHint';
-      const hintFallback = field.name === 'portLoading' || field.name === 'portDischarge'
-        ? 'Scrivi il porto o il codice UN/LOCODE. Esempio: Genova → ITGOA.'
-        : 'Seleziona un valore coerente con la configurazione operativa.';
-      const hintHtml = fieldOptionEntries.length && datalistId ? `<div class="field-hint">${Utils.escapeHtml(I18N.t(hintKey, hintFallback))}</div>` : '';
+      const hintKey = field.hintKey === false
+        ? false
+        : (field.hintKey || (field.name === 'portLoading' || field.name === 'portDischarge'
+          ? 'ui.unlocodeHint'
+          : 'ui.clientRuleHint'));
+      const hintFallback = field.hintKey === false
+        ? ''
+        : (field.hintFallback || (field.name === 'portLoading' || field.name === 'portDischarge'
+          ? 'Scrivi il porto o il codice UN/LOCODE. Esempio: Genova → ITGOA.'
+          : 'Seleziona un valore coerente con la configurazione operativa.'));
+      const hintHtml = fieldOptionEntries.length && datalistId && hintKey
+        ? `<div class="field-hint">${Utils.escapeHtml(I18N.t(hintKey, hintFallback))}</div>`
+        : '';
       return `<div ${wrapAttrs}><label for="dyn_${field.name}">${label}</label><input id="dyn_${field.name}" name="${field.name}" value="${Utils.escapeHtml(currentValue || '')}" type="${field.type === 'number' ? 'number' : field.type === 'date' ? 'date' : 'text'}" ${field.type === 'number' ? 'step="0.01" min="0"' : ''} ${datalistId ? `list="${datalistId}"` : ''} autocomplete="off" />${datalistHtml}${hintHtml}</div>`;
     }).join('') + `</div>`;
   }

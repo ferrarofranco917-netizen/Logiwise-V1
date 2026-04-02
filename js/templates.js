@@ -324,7 +324,7 @@ window.KedrixOneTemplates = (() => {
         <div class="panel-head">
           <div>
             <h3 class="panel-title">${U.escapeHtml(T.t('ui.practiceSearchEngineTitle', 'Motore ricerca pratiche'))}</h3>
-            <p class="panel-subtitle">${U.escapeHtml(T.t('ui.practiceSearchEngineHint', 'Indicizzazione trasversale su numero pratica, cliente, container, booking, HBL/MBL, AWB/HAWB/MAWB, CMR e riferimenti operativi.'))}</p>
+            <p class="panel-subtitle">${U.escapeHtml(T.t('ui.practiceSearchEngineHint', 'Indicizzazione trasversale su numero pratica, cliente, container, booking, HBL/Polizza, AWB/HAWB/MAWB, CMR e riferimenti operativi.'))}</p>
           </div>
         </div>
 
@@ -332,13 +332,13 @@ window.KedrixOneTemplates = (() => {
           <div class="form-grid three practice-search-grid">
             <div class="field full">
               <label for="practiceSearchQuery">${U.escapeHtml(T.t('ui.searchLabel', 'Ricerca'))}</label>
-              <input id="practiceSearchQuery" name="practiceSearchQuery" type="search" value="${U.escapeHtml(searchQuery)}" placeholder="${U.escapeHtml(T.t('ui.practiceSearchPlaceholder', 'Cerca per cliente, numero pratica, container, booking, HBL, MBL, MAWB, HAWB, CMR...'))}" autocomplete="off" />
+              <input id="practiceSearchQuery" name="practiceSearchQuery" type="search" value="${U.escapeHtml(searchQuery)}" placeholder="${U.escapeHtml(T.t('ui.practiceSearchPlaceholder', 'Cerca per cliente, numero pratica, container, booking, HBL, Polizza, MAWB, HAWB, CMR...'))}" autocomplete="off" />
               <div class="field-hint">${U.escapeHtml(T.t('ui.practiceSearchLiveHint', 'Ricerca live ordinata per rilevanza operativa.'))}</div>
             </div>
           </div>
 
           <div class="practice-search-meta-row">
-            <div class="search-meta-pill">${U.escapeHtml(T.t('ui.indexedFieldsHint', 'Campi indicizzati'))}: ${U.escapeHtml(T.t('ui.indexedFieldsList', 'pratiche · cliente · container · booking · HBL/MBL · AWB/HAWB/MAWB · CMR · terminal · quotazione · polizza'))}</div>
+            <div class="search-meta-pill">${U.escapeHtml(T.t('ui.indexedFieldsHint', 'Campi indicizzati'))}: ${U.escapeHtml(T.t('ui.indexedFieldsList', 'pratiche · cliente · container · booking · HBL/Polizza · AWB/HAWB/MAWB · CMR · terminal · quotazione · polizza'))}</div>
             <div class="search-meta-pill">${searchQuery ? `${searchResults.length} ${U.escapeHtml(T.t('ui.searchResults', 'risultati'))}` : U.escapeHtml(T.t('ui.searchReady', 'Ricerca pronta'))}</div>
           </div>
 

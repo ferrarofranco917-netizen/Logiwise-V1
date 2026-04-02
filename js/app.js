@@ -19,6 +19,7 @@
   const PracticeSavePipeline = window.KedrixOnePracticeSavePipeline;
   const PracticeDuplicate = window.KedrixOnePracticeDuplicate;
   const PracticeSearchUI = window.KedrixOnePracticeSearchUI;
+  const SeaSchemaCleanup = window.KedrixOneSeaSchemaCleanup;
 
   const state = Storage.load(() => Data.initialState());
 
@@ -107,6 +108,7 @@
         practice.customsOffice,
         practice.goodsDescription,
         practice.terminal,
+        practice.policyNumber,
         practice.mbl,
         practice.hbl,
         practice.mawb,
@@ -182,6 +184,17 @@
         base[field.name] = Array.isArray(topLevelValue) ? [...topLevelValue] : topLevelValue;
       }
     });
+
+    if (SeaSchemaCleanup && typeof SeaSchemaCleanup.isSeaPracticeType === 'function' && SeaSchemaCleanup.isSeaPracticeType(practice?.practiceType || '')) {
+      if (!String(base.policyNumber || '').trim() && String(practice?.policyNumber || practice?.mbl || '').trim()) {
+        base.policyNumber = practice.policyNumber || practice.mbl || '';
+      }
+      if (String(practice?.customsSection || '').trim() || String(practice?.customsOffice || '').trim()) {
+        base.customsOffice = SeaSchemaCleanup.mergeCustomsOffice(base.customsOffice || practice?.customsOffice || '', practice?.customsSection || '');
+      }
+      return SeaSchemaCleanup.normalizeDynamicData(base, practice?.practiceType || '');
+    }
+
     return base;
   }
 
@@ -223,7 +236,7 @@
         terminal: practice.terminal || dynamicData.terminal || dynamicData.terminalPickup || dynamicData.terminalDelivery || '',
         terminalPickup: practice.terminalPickup || dynamicData.terminalPickup || '',
         terminalDelivery: practice.terminalDelivery || dynamicData.terminalDelivery || '',
-        mbl: practice.mbl || dynamicData.mbl || '',
+        mbl: dynamicData.policyNumber || practice.policyNumber || practice.mbl || '',
         hbl: practice.hbl || dynamicData.hbl || '',
         mawb: practice.mawb || dynamicData.mawb || '',
         hawb: practice.hawb || dynamicData.hawb || '',
@@ -232,8 +245,10 @@
         transporter: practice.transporter || dynamicData.transporter || '',
         airline: practice.airline || dynamicData.airline || '',
         deposit: practice.deposit || dynamicData.deposit || '',
+        customsOffice: practice.customsOffice || dynamicData.customsOffice || '',
+        customsSection: '',
         baseQuotation: practice.baseQuotation || dynamicData.baseQuotation || '',
-        policyNumber: practice.policyNumber || dynamicData.policyNumber || '',
+        policyNumber: dynamicData.policyNumber || practice.policyNumber || practice.mbl || '',
         deliveryCity: practice.deliveryCity || dynamicData.deliveryCity || '',
         additionalReference: practice.additionalReference || dynamicData.additionalReference || '',
         bolla: practice.bolla || dynamicData.bolla || ''
@@ -858,7 +873,7 @@
         terminal: draft.dynamicData.terminal || draft.dynamicData.terminalPickup || draft.dynamicData.terminalDelivery || '',
         terminalPickup: draft.dynamicData.terminalPickup || '',
         terminalDelivery: draft.dynamicData.terminalDelivery || '',
-        mbl: draft.dynamicData.mbl || '',
+        mbl: draft.dynamicData.policyNumber || draft.dynamicData.mbl || '',
         hbl: draft.dynamicData.hbl || '',
         mawb: draft.dynamicData.mawb || '',
         hawb: draft.dynamicData.hawb || '',
@@ -868,8 +883,8 @@
         airline: draft.dynamicData.airline || '',
         deposit: draft.dynamicData.deposit || '',
         customsOffice: draft.dynamicData.customsOffice || draft.dynamicData.customsOperator || '',
-        customsSection: draft.dynamicData.customsSection || '',
-        policyNumber: draft.dynamicData.policyNumber || '',
+        customsSection: '',
+        policyNumber: draft.dynamicData.policyNumber || draft.dynamicData.mbl || '',
         baseQuotation: draft.dynamicData.baseQuotation || '',
         deliveryCity: draft.dynamicData.deliveryCity || '',
         additionalReference: draft.dynamicData.additionalReference || '',

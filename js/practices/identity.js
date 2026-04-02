@@ -1,6 +1,8 @@
 window.KedrixOnePracticeIdentity = (() => {
   'use strict';
 
+  const SeaSchemaCleanup = window.KedrixOneSeaSchemaCleanup;
+
   function today() {
     return new Date().toISOString().slice(0, 10);
   }
@@ -99,6 +101,10 @@ window.KedrixOnePracticeIdentity = (() => {
       dynamicData: typeof extractPracticeDynamicData === 'function' ? extractPracticeDynamicData(practice) : { ...((practice && practice.dynamicData) || {}) }
     });
 
+    if (SeaSchemaCleanup && typeof SeaSchemaCleanup.normalizeDraft === 'function') {
+      SeaSchemaCleanup.normalizeDraft(state.draftPractice);
+    }
+
     return state.draftPractice;
   }
 
@@ -106,7 +112,7 @@ window.KedrixOnePracticeIdentity = (() => {
     if (!practice || typeof practice !== 'object') return createEmptyDraft();
 
     const { extractPracticeDynamicData, practiceDate } = options;
-    return createEmptyDraft({
+    const draft = createEmptyDraft({
       editingPracticeId: '',
       practiceType: practice.practiceType || '',
       clientId: practice.clientId || '',
@@ -117,6 +123,12 @@ window.KedrixOnePracticeIdentity = (() => {
       generatedReference: '',
       dynamicData: typeof extractPracticeDynamicData === 'function' ? extractPracticeDynamicData(practice) : { ...((practice && practice.dynamicData) || {}) }
     });
+
+    if (SeaSchemaCleanup && typeof SeaSchemaCleanup.normalizeDraft === 'function') {
+      SeaSchemaCleanup.normalizeDraft(draft);
+    }
+
+    return draft;
   }
 
   return {

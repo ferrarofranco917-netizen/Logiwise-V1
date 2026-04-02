@@ -3,6 +3,7 @@ window.KedrixOnePracticeDraftValidator = (() => {
 
   const I18N = window.KedrixOneI18N;
   const PracticeSchemas = window.KedrixOnePracticeSchemas;
+  const SeaSchemaCleanup = window.KedrixOneSeaSchemaCleanup;
 
   function isEmptyValue(value) {
     if (Array.isArray(value)) return value.length === 0;
@@ -27,7 +28,10 @@ window.KedrixOnePracticeDraftValidator = (() => {
   function validateDraft(draft, companyConfig) {
     const errors = [];
     const type = draft && draft.practiceType ? draft.practiceType : '';
-    const dynamicData = (draft && draft.dynamicData) || {};
+    const rawDynamicData = (draft && draft.dynamicData) || {};
+    const dynamicData = SeaSchemaCleanup && typeof SeaSchemaCleanup.normalizeDynamicData === 'function'
+      ? SeaSchemaCleanup.normalizeDynamicData(rawDynamicData, type)
+      : rawDynamicData;
 
     if (!type) {
       errors.push({ field: 'practiceType', tab: 'identity', label: I18N.t('ui.practiceType', 'Tipo pratica'), message: I18N.t('ui.validationPracticeTypeRequired', 'Seleziona il tipo pratica.') });
@@ -83,8 +87,8 @@ window.KedrixOnePracticeDraftValidator = (() => {
       if (draft.category === 'FCL-FULL' && isEmptyValue(dynamicData.containerCode)) {
         errors.push(buildError('containerCode', 'detail', type, 'ui.validationContainerRequired', 'Il container è obbligatorio per le pratiche FCL.'));
       }
-      if (draft.category === 'FCL-FULL' && isEmptyValue(dynamicData.mbl)) {
-        errors.push(buildError('mbl', 'practice', type, 'ui.validationMblRequired', 'Compila il Master BL per le pratiche FCL.'));
+      if (draft.category === 'FCL-FULL' && isEmptyValue(dynamicData.policyNumber || dynamicData.mbl)) {
+        errors.push(buildError('policyNumber', 'practice', type, 'ui.validationPolicyNumberRequired', 'Compila la polizza per le pratiche FCL.'));
       }
       if (draft.category === 'LCL-GROUPAGE' && isEmptyValue(dynamicData.hbl)) {
         errors.push(buildError('hbl', 'practice', type, 'ui.validationHblRequired', "Compila l'House BL per le pratiche LCL / groupage."));
