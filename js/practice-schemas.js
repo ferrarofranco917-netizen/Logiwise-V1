@@ -346,11 +346,24 @@ window.KedrixOnePracticeSchemas = (() => {
     });
   }
 
+  function moveFieldAfter(schemaKey, tabKey, fieldName, anchorFieldName) {
+    const schema = schemas[schemaKey];
+    if (!schema || !schema.tabs || !Array.isArray(schema.tabs[tabKey])) return;
+    const fields = schema.tabs[tabKey];
+    const fieldIndex = fields.findIndex((field) => field && field.name === fieldName);
+    const anchorIndex = fields.findIndex((field) => field && field.name === anchorFieldName);
+    if (fieldIndex === -1 || anchorIndex === -1 || fieldIndex === anchorIndex) return;
+    const [field] = fields.splice(fieldIndex, 1);
+    const targetIndex = fields.findIndex((entry) => entry && entry.name === anchorFieldName);
+    fields.splice(targetIndex + 1, 0, field);
+  }
+
   const seaSharedPracticeHardeningFields = [
     { name: 'correspondent', type: 'text', labelKey: 'ui.correspondent' },
     { name: 'insurance', type: 'text', labelKey: 'ui.insurance' },
     { name: 'foreignInvoice', type: 'text', labelKey: 'ui.foreignInvoice' },
     { name: 'invoiceAmount', type: 'number', labelKey: 'ui.invoiceAmount' },
+    { name: 'invoiceCurrency', type: 'select', labelKey: 'ui.invoiceCurrency', suggestionKey: 'currencies' },
     { name: 'deposit', type: 'text', labelKey: 'ui.deposit', suggestionKey: 'deposits', hintKey: false },
     { name: 'terminalPickup', type: 'text', labelKey: 'ui.terminalPickup', suggestionKey: 'seaTerminals' },
     { name: 'terminalDelivery', type: 'text', labelKey: 'ui.terminalDelivery', suggestionKey: 'seaTerminals' },
@@ -379,6 +392,8 @@ window.KedrixOnePracticeSchemas = (() => {
     ...seaSharedPracticeHardeningFields
   ]);
 
+  moveFieldAfter('sea_import', 'practice', 'incoterm', 'terminalDelivery');
+  moveFieldAfter('sea_export', 'practice', 'incoterm', 'terminalDelivery');
 
   function getPracticeConfig(companyConfig) {
     const config = companyConfig && typeof companyConfig === 'object' ? companyConfig.practiceConfig || {} : {};

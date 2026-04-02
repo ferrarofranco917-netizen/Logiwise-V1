@@ -211,6 +211,7 @@ window.KedrixOneData = (() => {
             customsSection: 'Import',
             baseQuotation: 'Q-2026-041',
             invoiceAmount: '15420',
+            invoiceCurrency: 'USD',
             transporter: 'TERCOM SRL',
             deliveryCity: 'Bene Vagienna',
             additionalReference: 'RIF-CLIENTE-7781',
@@ -227,7 +228,7 @@ window.KedrixOneData = (() => {
             vesselExchangeRate: 'Cambio nave', vesselExchangeCurrency: 'Valuta cambio nave', terminal: 'Terminal',
             arrivalDate: 'Data arrivo', freightAmount: 'Nolo', freightCurrency: 'Valuta nolo', booking: 'Booking',
             policyNumber: 'Polizza', policyOriginals: 'Originali', policyCopies: 'Copie', mbl: 'MBL', customsOffice: 'Dogana',
-            baseQuotation: 'Quotaz. base / Des. agg.', incoterm: 'Incoterm', goodsDescription: 'Descrizione merce', packageCount: 'Colli',
+            baseQuotation: 'Quotaz. base / Des. agg.', invoiceCurrency: 'Valuta fattura', incoterm: 'Incoterm', goodsDescription: 'Descrizione merce', packageCount: 'Colli',
             grossWeight: 'Peso lordo', containerCode: 'Container'
           }
         },

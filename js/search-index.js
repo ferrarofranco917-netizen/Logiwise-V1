@@ -54,6 +54,7 @@ window.KedrixOneSearchIndex = (() => {
     bolla: 'Bolla',
     foreignInvoice: 'Fatt. estera',
     invoiceAmount: 'Importo fattura',
+    invoiceCurrency: 'Valuta fattura',
     additionalReference: 'Rif. aggiuntivo',
     deliveryCity: 'Città consegna',
     tags: 'Tags',

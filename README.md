@@ -105,3 +105,9 @@ Regola: niente nuova logica autonoma in `app.js` se può vivere in un modulo ded
 - placed `Fatt. Estera` and `Importo Fattura` consecutively
 - suppressed redundant Incoterms hint under `Deposito` and `Collega a`
 - added legacy-safe sea normalization module for backward-compatible draft/record hydration
+
+
+## STEP 5C.8A — micro-fix schema mare
+- campo `Incoterm` mantenuto nel mare ma con etichetta semplificata, senza testo `Resa (Incoterms® 2020)`
+- campo `Incoterm` riposizionato dopo `Terminal consegna` nello schema mare
+- aggiunto campo `Valuta fattura` accanto a `Importo Fattura`
