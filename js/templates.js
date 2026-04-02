@@ -346,7 +346,7 @@ window.KedrixOneTemplates = (() => {
           </div>
 
           <div class="practice-search-meta-row">
-            <div class="search-meta-pill">${U.escapeHtml(T.t('ui.indexedFieldsHint', 'Campi indicizzati'))}: ${U.escapeHtml(T.t('ui.indexedFieldsList', 'pratiche · cliente · container · booking · HBL/Polizza · AWB/HAWB/MAWB · CMR · terminal · quotazione · polizza'))}</div>
+            <div class="search-meta-pill">${U.escapeHtml(T.t('ui.indexedFieldsHint', 'Campi indicizzati'))}: ${U.escapeHtml(T.t('ui.indexedFieldsList', 'pratiche · cliente · container · booking · HBL/Polizza · AWB/HAWB/MAWB · CMR · terminal · documenti collegati · MRN · riferimenti documento'))}</div>
             <div class="search-meta-pill">${searchQuery ? `${searchResults.length} ${U.escapeHtml(T.t('ui.searchResults', 'risultati'))}` : U.escapeHtml(T.t('ui.searchReady', 'Ricerca pronta'))}</div>
           </div>
 
@@ -362,6 +362,7 @@ window.KedrixOneTemplates = (() => {
                   <div class="search-preview-badges">
                     <span class="badge info">${U.escapeHtml(activeSearchPreview.practiceTypeLabel || activeSearchPreview.practiceType || '—')}</span>
                     <span class="badge ${activeSearchPreview.status === 'In attesa documenti' ? 'warning' : 'info'}">${U.escapeHtml(activeSearchPreview.status || '—')}</span>
+                    ${activeSearchPreviewResult?.searchScopeLabel ? `<span class="badge info">${U.escapeHtml(activeSearchPreviewResult.searchScopeLabel)}</span>` : ''}
                     <button class="btn secondary small-btn" type="button" data-open-practice-id="${U.escapeHtml(activeSearchPreview.id)}">${U.escapeHtml(T.t('ui.openAndEdit', 'Apri e modifica'))}</button>
                   </div>
                 </div>
@@ -370,11 +371,16 @@ window.KedrixOneTemplates = (() => {
                   <div class="detail-row"><div class="detail-label">${U.escapeHtml(T.t('ui.clientRequired', 'Cliente'))}</div><div>${U.escapeHtml(activeSearchPreview.clientName || activeSearchPreview.client || '—')}</div></div>
                   <div class="detail-row"><div class="detail-label">${U.escapeHtml(T.t('ui.categoryLabel', 'Categoria'))}</div><div>${U.escapeHtml(activeSearchPreview.category || '—')}</div></div>
                   <div class="detail-row"><div class="detail-label">${U.escapeHtml(T.t('ui.practiceDate', 'Data pratica'))}</div><div>${U.escapeHtml(activeSearchPreview.practiceDate || activeSearchPreview.eta || '—')}</div></div>
+                  ${activeSearchPreviewResult?.linkedDocumentsCount ? `<div class="detail-row"><div class="detail-label">${U.escapeHtml(T.t('ui.documentsWord', 'Documenti'))}</div><div>${U.escapeHtml(String(activeSearchPreviewResult.linkedDocumentsCount))}</div></div>` : ''}
                   ${activeSearchPreviewEntries.map(([key, value]) => `<div class="detail-row"><div class="detail-label">${U.escapeHtml(activeSearchPreview.dynamicLabels?.[key] || key)}</div><div>${U.escapeHtml(Array.isArray(value) ? value.join(', ') : (value || '—'))}</div></div>`).join('')}
                 </div>
                 ${activeSearchPreviewResult && activeSearchPreviewResult.matches?.length ? `
                   <div class="practice-search-match-list">
                     ${activeSearchPreviewResult.matches.map((match) => `<span class="match-chip"><strong>${U.escapeHtml(match.label)}:</strong> ${U.escapeHtml(match.value)}</span>`).join('')}
+                  </div>` : ''}
+                ${activeSearchPreviewResult?.documentMatches?.length ? `
+                  <div class="practice-search-match-list">
+                    ${activeSearchPreviewResult.documentMatches.map((match) => `<span class="match-chip"><strong>${U.escapeHtml(T.t('ui.documentMatch', 'Documento'))}:</strong> ${U.escapeHtml(match.fileName)} · ${U.escapeHtml(match.documentTypeLabel)}</span>`).join('')}
                   </div>` : ''}
               </article>` : ''}
             <div class="practice-search-results">
@@ -387,6 +393,7 @@ window.KedrixOneTemplates = (() => {
                     </div>
                     <div class="search-result-actions">
                       <span class="badge info">${U.escapeHtml(result.practiceTypeLabel || '—')}</span>
+                      ${result.searchScopeLabel ? `<span class="badge info">${U.escapeHtml(result.searchScopeLabel)}</span>` : ''}
                       <span class="search-edit-cta">${U.escapeHtml(T.t('ui.openAndEdit', 'Apri e modifica'))}</span>
                     </div>
                   </div>
@@ -394,6 +401,7 @@ window.KedrixOneTemplates = (() => {
                     <span>${U.escapeHtml(T.t('ui.status', 'Stato'))}: ${U.escapeHtml(result.status || '—')}</span>
                     <span>${U.escapeHtml(T.t('ui.categoryLabel', 'Categoria'))}: ${U.escapeHtml(result.category || '—')}</span>
                     <span>${U.escapeHtml(T.t('ui.practiceDate', 'Data pratica'))}: ${U.escapeHtml(result.practiceDate || '—')}</span>
+                    ${result.linkedDocumentsCount ? `<span>${U.escapeHtml(T.t('ui.documentsWord', 'Documenti'))}: ${U.escapeHtml(String(result.linkedDocumentsCount))}</span>` : ''}
                   </div>
                   <div class="practice-search-match-list">
                     ${result.matches.map((match) => `<span class="match-chip"><strong>${U.escapeHtml(match.label)}:</strong> ${U.escapeHtml(match.value)}</span>`).join('')}
@@ -617,6 +625,7 @@ function documents(state, module, searchResults = []) {
                 <div class="attachment-main">
                   <div class="attachment-file-name">${U.escapeHtml(document.fileName || '—')}</div>
                   <div class="attachment-file-meta">${U.escapeHtml(document.documentTypeLabel || '—')} · ${U.escapeHtml(formatDateTime(document.importedAt))}</div>
+                  ${document.metadataSummary?.length ? `<div class="attachment-metadata-summary">${document.metadataSummary.map((entry) => `<span class="match-chip"><strong>${U.escapeHtml(entry.label)}:</strong> ${U.escapeHtml(entry.value)}</span>`).join('')}</div>` : ''}
                 </div>
                 <div class="document-engine-meta">
                   ${(document.matches || []).length ? `<div class="practice-search-match-list">${document.matches.map((match) => `<span class="match-chip"><strong>${U.escapeHtml(match.label)}:</strong> ${U.escapeHtml(match.value)}</span>`).join('')}</div>` : `<div class="attachment-file-meta">${U.escapeHtml(T.t('ui.documentPreviewHint', 'Usa Anteprima per controllare il contenuto senza uscire dal modulo.'))}</div>`}

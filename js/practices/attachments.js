@@ -3,6 +3,7 @@ window.KedrixOnePracticeAttachments = (() => {
 
   const DB_NAME = 'kedrix-one-practice-attachments';
   const DocumentCategories = window.KedrixOneDocumentCategories;
+  const DocumentMetadata = window.KedrixOneDocumentMetadata;
   const DB_VERSION = 1;
   const STORE_NAME = 'attachments';
 
@@ -121,11 +122,18 @@ window.KedrixOnePracticeAttachments = (() => {
     }).format(date);
   }
 
+  function normalizeItem(item) {
+    return DocumentMetadata && typeof DocumentMetadata.ensure === 'function'
+      ? DocumentMetadata.ensure(item || {})
+      : { ...item, documentDate: String(item?.documentDate || '').trim(), externalReference: String(item?.externalReference || '').trim(), customsMrn: String(item?.customsMrn || '').trim(), tags: Array.isArray(item?.tags) ? item.tags : [], notes: String(item?.notes || '').trim() };
+  }
+
   function getAttachments(state, draft, practice = null) {
     const ownerKey = getOwnerKey(draft, practice);
     if (!ownerKey) return [];
     const index = normalizeAttachmentIndex(state);
-    const items = Array.isArray(index[ownerKey]) ? index[ownerKey] : [];
+    const items = Array.isArray(index[ownerKey]) ? index[ownerKey].map((item) => normalizeItem(item)) : [];
+    index[ownerKey] = items;
     return [...items].sort((a, b) => String(b.importedAt || '').localeCompare(String(a.importedAt || '')));
   }
 
@@ -133,7 +141,7 @@ window.KedrixOnePracticeAttachments = (() => {
     if (!practice || typeof practice !== 'object') return practice;
     const ownerKey = String(practice.attachmentOwnerKey || practice.id || '').trim();
     const items = ownerKey && state?.practiceAttachmentIndex && Array.isArray(state.practiceAttachmentIndex[ownerKey])
-      ? state.practiceAttachmentIndex[ownerKey]
+      ? state.practiceAttachmentIndex[ownerKey].map((item) => normalizeItem(item))
       : [];
     practice.attachmentOwnerKey = ownerKey;
     practice.attachmentCount = items.length;
@@ -147,6 +155,15 @@ window.KedrixOnePracticeAttachments = (() => {
     const linked = (state.practices || []).find((practice) => String(practice.id || '').trim() === String(draft.editingPracticeId || '').trim() || String(practice.attachmentOwnerKey || '').trim() === ownerKey);
     if (!linked) return null;
     return syncRecordSummary(state, linked);
+  }
+
+  function renderMetadataSummary(item, i18n, escapeHtml) {
+    const summary = DocumentMetadata && typeof DocumentMetadata.buildSummary === 'function'
+      ? DocumentMetadata.buildSummary(item, i18n)
+      : [];
+    if (!summary.length) return '';
+    const safe = typeof escapeHtml === 'function' ? escapeHtml : (value) => String(value || '');
+    return `<div class="attachment-metadata-summary">${summary.map((entry) => `<span class="match-chip"><strong>${safe(entry.label)}:</strong> ${safe(entry.value)}</span>`).join('')}</div>`;
   }
 
   function renderPanelHTML(options = {}) {
@@ -204,6 +221,29 @@ window.KedrixOnePracticeAttachments = (() => {
                     ${typeOptions.map((option) => `<option value="${escapeHtml(option.value)}" ${item.documentType === option.value ? 'selected' : ''}>${escapeHtml(option.label)}</option>`).join('')}
                   </select>
                 </div>
+                ${renderMetadataSummary(item, i18n, escapeHtml)}
+                <div class="attachment-metadata-grid">
+                  <div class="field">
+                    <label for="attachment_date_${escapeHtml(item.id)}">${escapeHtml(t('ui.documentDate', 'Data documento'))}</label>
+                    <input id="attachment_date_${escapeHtml(item.id)}" type="date" value="${escapeHtml(item.documentDate || '')}" data-attachment-meta-id="${escapeHtml(item.id)}" data-attachment-meta-field="documentDate" />
+                  </div>
+                  <div class="field">
+                    <label for="attachment_ref_${escapeHtml(item.id)}">${escapeHtml(t('ui.documentReference', 'Rif. documento'))}</label>
+                    <input id="attachment_ref_${escapeHtml(item.id)}" type="text" value="${escapeHtml(item.externalReference || '')}" placeholder="${escapeHtml(t('ui.documentReferencePlaceholder', 'Numero invoice, packing list, riferimento cliente...'))}" data-attachment-meta-id="${escapeHtml(item.id)}" data-attachment-meta-field="externalReference" />
+                  </div>
+                  <div class="field">
+                    <label for="attachment_mrn_${escapeHtml(item.id)}">${escapeHtml(t('ui.customsMrn', 'MRN / Rif. doganale'))}</label>
+                    <input id="attachment_mrn_${escapeHtml(item.id)}" type="text" value="${escapeHtml(item.customsMrn || '')}" placeholder="${escapeHtml(t('ui.customsMrnPlaceholder', 'MRN, svincolo, rif. ufficio...'))}" data-attachment-meta-id="${escapeHtml(item.id)}" data-attachment-meta-field="customsMrn" />
+                  </div>
+                  <div class="field full">
+                    <label for="attachment_tags_${escapeHtml(item.id)}">${escapeHtml(t('ui.tags', 'Tags'))}</label>
+                    <input id="attachment_tags_${escapeHtml(item.id)}" type="text" value="${escapeHtml(DocumentMetadata && typeof DocumentMetadata.serializeTags === 'function' ? DocumentMetadata.serializeTags(item.tags) : (Array.isArray(item.tags) ? item.tags.join(', ') : ''))}" placeholder="${escapeHtml(t('ui.attachmentTagsPlaceholder', 'dogana, scanner, originale, urgente...'))}" data-attachment-meta-id="${escapeHtml(item.id)}" data-attachment-meta-field="tags" />
+                  </div>
+                  <div class="field full">
+                    <label for="attachment_notes_${escapeHtml(item.id)}">${escapeHtml(t('ui.notes', 'Note'))}</label>
+                    <textarea id="attachment_notes_${escapeHtml(item.id)}" rows="2" placeholder="${escapeHtml(t('ui.attachmentNotesPlaceholder', 'Note operative sul documento, esito, originali, osservazioni...'))}" data-attachment-meta-id="${escapeHtml(item.id)}" data-attachment-meta-field="notes">${escapeHtml(item.notes || '')}</textarea>
+                  </div>
+                </div>
                 <div class="attachment-actions">
                   <button class="btn secondary small-btn" type="button" data-attachment-open="${escapeHtml(item.id)}">${escapeHtml(t('ui.openAttachment', 'Apri'))}</button>
                   <button class="btn secondary small-btn danger-btn" type="button" data-attachment-remove="${escapeHtml(item.id)}">${escapeHtml(t('ui.removeAttachment', 'Rimuovi'))}</button>
@@ -244,6 +284,25 @@ window.KedrixOnePracticeAttachments = (() => {
     }));
   }
 
+  async function syncAttachmentRecordMetadata(item) {
+    if (!item || !item.id) return false;
+    return withStore('readwrite', (store) => new Promise((resolve, reject) => {
+      const readRequest = store.get(item.id);
+      readRequest.onerror = () => reject(readRequest.error || new Error('Errore lettura allegato.'));
+      readRequest.onsuccess = () => {
+        const current = readRequest.result;
+        if (!current) {
+          resolve(false);
+          return;
+        }
+        const next = { ...current, ...normalizeItem(item) };
+        const putRequest = store.put(next);
+        putRequest.onerror = () => reject(putRequest.error || new Error('Errore aggiornamento allegato.'));
+        putRequest.onsuccess = () => resolve(true);
+      };
+    }));
+  }
+
   async function addFiles(options = {}) {
     const { state, draft, files, documentType = 'generic', save, toast, rerender } = options;
     const ownerKey = ensureDraftOwnerKey(draft);
@@ -262,7 +321,12 @@ window.KedrixOnePracticeAttachments = (() => {
         size: Number(file.size || 0),
         documentType: String(documentType || 'generic'),
         importedAt: new Date().toISOString(),
-        practiceId: String(draft.editingPracticeId || '').trim() || ''
+        practiceId: String(draft.editingPracticeId || '').trim() || '',
+        documentDate: '',
+        externalReference: '',
+        customsMrn: '',
+        tags: [],
+        notes: ''
       };
       await putAttachmentRecord({ ...item, blob: file });
       index[ownerKey].unshift(item);
@@ -311,7 +375,7 @@ window.KedrixOnePracticeAttachments = (() => {
     return true;
   }
 
-  function updateAttachmentType(options = {}) {
+  async function updateAttachmentType(options = {}) {
     const { state, draft, attachmentId, documentType, save, rerender, toast, i18n } = options;
     const ownerKey = ensureDraftOwnerKey(draft);
     const index = normalizeAttachmentIndex(state);
@@ -319,11 +383,52 @@ window.KedrixOnePracticeAttachments = (() => {
     const item = items.find((entry) => entry.id === attachmentId);
     if (!item) return false;
     item.documentType = String(documentType || 'generic');
+    await syncAttachmentRecordMetadata(item);
     syncLinkedPracticeRecordState(state, draft);
     if (typeof save === 'function') save();
     if (typeof rerender === 'function') rerender();
     if (typeof toast === 'function') {
       const label = i18n && typeof i18n.t === 'function' ? i18n.t('ui.attachmentTypeUpdated', 'Tipo documento aggiornato') : 'Tipo documento aggiornato';
+      toast(label);
+    }
+    return true;
+  }
+
+  async function updateAttachmentMetadata(options = {}) {
+    const { state, draft, attachmentId, field, value, save, rerender, toast, i18n } = options;
+    const ownerKey = ensureDraftOwnerKey(draft);
+    const index = normalizeAttachmentIndex(state);
+    const items = Array.isArray(index[ownerKey]) ? index[ownerKey] : [];
+    const item = items.find((entry) => entry.id === attachmentId);
+    if (!item || !field) return false;
+
+    const next = DocumentMetadata && typeof DocumentMetadata.applyPatch === 'function'
+      ? DocumentMetadata.applyPatch(item, { [field]: value })
+      : { ...item, [field]: value };
+
+    const unchanged = JSON.stringify({
+      documentDate: item.documentDate || '',
+      externalReference: item.externalReference || '',
+      customsMrn: item.customsMrn || '',
+      tags: Array.isArray(item.tags) ? item.tags : [],
+      notes: item.notes || ''
+    }) === JSON.stringify({
+      documentDate: next.documentDate || '',
+      externalReference: next.externalReference || '',
+      customsMrn: next.customsMrn || '',
+      tags: Array.isArray(next.tags) ? next.tags : [],
+      notes: next.notes || ''
+    });
+
+    if (unchanged) return false;
+
+    Object.assign(item, next);
+    await syncAttachmentRecordMetadata(item);
+    syncLinkedPracticeRecordState(state, draft);
+    if (typeof save === 'function') save();
+    if (typeof rerender === 'function') rerender();
+    if (typeof toast === 'function') {
+      const label = i18n && typeof i18n.t === 'function' ? i18n.t('ui.attachmentMetadataUpdated', 'Metadati documento aggiornati') : 'Metadati documento aggiornati';
       toast(label);
     }
     return true;
@@ -392,8 +497,8 @@ window.KedrixOnePracticeAttachments = (() => {
     });
 
     root.querySelectorAll('[data-attachment-type-id]').forEach((select) => {
-      select.addEventListener('change', () => {
-        updateAttachmentType({
+      select.addEventListener('change', async () => {
+        await updateAttachmentType({
           state,
           draft,
           attachmentId: select.dataset.attachmentTypeId,
@@ -404,6 +509,25 @@ window.KedrixOnePracticeAttachments = (() => {
           i18n
         });
       });
+    });
+
+    root.querySelectorAll('[data-attachment-meta-id]').forEach((input) => {
+      const handler = async () => {
+        await updateAttachmentMetadata({
+          state,
+          draft,
+          attachmentId: input.dataset.attachmentMetaId,
+          field: input.dataset.attachmentMetaField,
+          value: input.value || '',
+          save,
+          rerender,
+          toast,
+          i18n
+        });
+      };
+
+      if (input.tagName === 'INPUT' && input.type === 'date') input.addEventListener('change', handler);
+      else input.addEventListener('blur', handler);
     });
   }
 
@@ -419,6 +543,7 @@ window.KedrixOnePracticeAttachments = (() => {
     removeAttachment,
     renderPanelHTML,
     syncRecordSummary,
+    updateAttachmentMetadata,
     updateAttachmentType
   };
 })();

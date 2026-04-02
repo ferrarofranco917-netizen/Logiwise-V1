@@ -1,3 +1,25 @@
+# Kedrix One — STEP 6B.4
+
+Metadati documentali avanzati + ponte di ricerca relazionale Pratiche/Documenti.
+
+## Interventi applicati
+- metadati documento nei pannelli Allegati: data documento, riferimento documento, MRN/rif. doganale, tags, note
+- salvataggio metadati con conferma applicativa via toast
+- ricerca Pratiche estesa ai match documentali collegati (nome file, tipo documento, MRN, riferimento documento, tags)
+- Document Engine arricchito con metadati ricercabili e riepilogo metadata nei bundle
+- nuovi moduli dedicati: `js/documents/document-metadata.js`, `js/search/practice-document-bridge.js`
+
+## File toccati
+- js/documents/document-metadata.js
+- js/search/practice-document-bridge.js
+- js/practices/attachments.js
+- js/documents/document-engine.js
+- js/templates.js
+- js/app.js
+- index.html
+- style.css
+- README.md
+
 # Kedrix One — STEP 5C.1 HARDENING
 
 Consolidamento reale del modulo Pratiche con hardening retrocompatibile e preparazione operativa per la ricerca base.

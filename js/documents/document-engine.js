@@ -4,6 +4,7 @@ window.KedrixOneDocumentEngine = (() => {
   const Utils = window.KedrixOneUtils;
   const Attachments = window.KedrixOnePracticeAttachments;
   const DocumentCategories = window.KedrixOneDocumentCategories;
+  const DocumentMetadata = window.KedrixOneDocumentMetadata;
 
   const PRACTICE_FIELD_DEFS = [
     { key: 'reference', label: 'Numero pratica', getter: (practice) => practice.reference },
@@ -70,6 +71,13 @@ window.KedrixOneDocumentEngine = (() => {
       (Array.isArray(items) ? items : []).forEach((item) => {
         if (!item || typeof item !== 'object') return;
         const practice = resolvePractice(state, ownerKey, item.practiceId);
+        const metadata = DocumentMetadata && typeof DocumentMetadata.ensure === 'function'
+          ? DocumentMetadata.ensure(item)
+          : item;
+        const metadataSummary = DocumentMetadata && typeof DocumentMetadata.buildSummary === 'function'
+          ? DocumentMetadata.buildSummary(metadata, i18n)
+          : [];
+
         documents.push({
           id: item.id,
           ownerKey: String(ownerKey || '').trim(),
@@ -89,6 +97,12 @@ window.KedrixOneDocumentEngine = (() => {
           documentType: String(item.documentType || 'generic'),
           documentTypeLabel: getTypeLabel(item.documentType || 'generic', state, i18n),
           importedAt: item.importedAt || '',
+          documentDate: metadata.documentDate || '',
+          externalReference: metadata.externalReference || '',
+          customsMrn: metadata.customsMrn || '',
+          tags: Array.isArray(metadata.tags) ? metadata.tags : [],
+          notes: metadata.notes || '',
+          metadataSummary,
           practice
         });
       });
@@ -162,7 +176,11 @@ window.KedrixOneDocumentEngine = (() => {
       { label: 'Dogana', value: document.customsOffice },
       { label: 'Container', value: document.containerCode },
       { label: 'Booking', value: document.booking },
-      { label: 'Merce', value: document.goodsDescription }
+      { label: 'Merce', value: document.goodsDescription },
+      { label: 'Rif. documento', value: document.externalReference },
+      { label: 'MRN', value: document.customsMrn },
+      { label: 'Tags', value: Array.isArray(document.tags) ? document.tags.join(', ') : '' },
+      { label: 'Note', value: document.notes }
     ];
 
     return candidates.filter((candidate) => {
@@ -196,6 +214,10 @@ window.KedrixOneDocumentEngine = (() => {
       { value: document.containerCode, weight: 52 },
       { value: document.booking, weight: 52 },
       { value: document.customsOffice, weight: 48 },
+      { value: document.externalReference, weight: 62 },
+      { value: document.customsMrn, weight: 78 },
+      { value: Array.isArray(document.tags) ? document.tags.join(' ') : '', weight: 42 },
+      { value: document.notes, weight: 25 },
       { value: document.goodsDescription, weight: 35 }
     ].reduce((acc, candidate) => acc + scoreMatch(candidate.value, tokens, candidate.weight), 0);
   }

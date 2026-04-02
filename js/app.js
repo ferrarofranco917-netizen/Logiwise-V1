@@ -24,6 +24,7 @@
   const DocumentCategories = window.KedrixOneDocumentCategories;
   const DocumentPreview = window.KedrixOneDocumentPreview;
   const AppFeedback = window.KedrixOneAppFeedback;
+  const PracticeDocumentBridge = window.KedrixOnePracticeDocumentBridge;
   const PracticeDuplicate = window.KedrixOnePracticeDuplicate;
   const PracticeSearchUI = window.KedrixOnePracticeSearchUI;
   const SeaSchemaCleanup = window.KedrixOneSeaSchemaCleanup;
@@ -170,14 +171,21 @@
   }
 
   function practiceSearchResults() {
+    const query = String(state.practiceSearchQuery || '').trim();
+    let baseResults = [];
+
     if (PracticeSearchUI && typeof PracticeSearchUI.searchResults === 'function') {
-      return PracticeSearchUI.searchResults(state.practiceSearchQuery, state.practices, runtimePracticeSearchIndex, (nextIndex) => {
+      baseResults = PracticeSearchUI.searchResults(query, state.practices, runtimePracticeSearchIndex, (nextIndex) => {
         runtimePracticeSearchIndex = nextIndex;
       });
+    } else if (query && SearchIndex && typeof SearchIndex.search === 'function') {
+      baseResults = SearchIndex.search(query, rebuildPracticeSearchIndex());
     }
-    const query = String(state.practiceSearchQuery || '').trim();
-    if (!query || !SearchIndex || typeof SearchIndex.search !== 'function') return [];
-    return SearchIndex.search(query, rebuildPracticeSearchIndex());
+
+    if (!query) return [];
+    return PracticeDocumentBridge && typeof PracticeDocumentBridge.mergePracticeResults === 'function'
+      ? PracticeDocumentBridge.mergePracticeResults(query, baseResults, state, I18N)
+      : baseResults;
   }
 
 
