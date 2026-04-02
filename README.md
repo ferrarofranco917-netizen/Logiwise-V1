@@ -163,3 +163,8 @@ Regola: niente nuova logica autonoma in `app.js` se può vivere in un modulo ded
 - alert non bloccante se il container è già presente in altra pratica
 - normalizzazione container in maiuscolo senza spazi
 - modulo dedicato: `js/practices/container-integrity.js`
+
+
+## STEP 5C.10 HF1 — Nuova pratica + booking opzionale
+- `Nuova pratica` ora resetta sempre il draft e apre il form pulito anche se l'utente è già dentro `Pratiche`.
+- `Booking` non è più obbligatorio negli schemi mare import/export.

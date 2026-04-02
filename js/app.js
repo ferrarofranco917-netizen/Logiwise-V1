@@ -1212,6 +1212,13 @@
 
     const routeAction = event.target.closest('[data-route-action]');
     if (routeAction) {
+      if (routeAction.id === 'newPracticeButton') {
+        resetPracticeDraft();
+        save();
+        navigate(routeAction.dataset.routeAction || 'practices');
+        toast(I18N.t('ui.newDraft', 'Nuova pratica'));
+        return;
+      }
       navigate(routeAction.dataset.routeAction);
       return;
     }
