@@ -316,6 +316,26 @@ img {
   line-height: 1.45;
 }
 
+.field-note {
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.field-info {
+  color: var(--muted);
+}
+
+.field-warning {
+  color: #eed4a6;
+}
+
+.field.is-warning input,
+.field.is-warning select,
+.field.is-warning textarea {
+  border-color: rgba(238, 212, 166, 0.55);
+  box-shadow: 0 0 0 1px rgba(238, 212, 166, 0.18);
+}
+
 .field.is-invalid input,
 .field.is-invalid select,
 .field.is-invalid textarea {

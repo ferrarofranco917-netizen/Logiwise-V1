@@ -155,3 +155,11 @@ Regola: niente nuova logica autonoma in `app.js` se può vivere in un modulo ded
 ## STEP 5C.9C HF2 — Verification banner flags only
 - Fixed regression: the verification banner is now shown only when one or more customs verification flags are active.
 - Status `Sdoganamento` no longer triggers the banner by itself.
+
+
+## STEP 5C.10 — Controlli container e integrità dati
+- controllo formale container ISO 6346 per pratiche mare
+- controllo check digit container ISO 6346
+- alert non bloccante se il container è già presente in altra pratica
+- normalizzazione container in maiuscolo senza spazi
+- modulo dedicato: `js/practices/container-integrity.js`

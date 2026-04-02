@@ -782,7 +782,12 @@ Object.assign(dictionary.it.ui, {
   customsVerificationAlertTitle: 'Attenzione unità sottoposta a verifica',
   customsVerificationTypePrefix: 'Tipo:',
 customsVerificationTypesPrefix: 'Tipologie verifica:',
-  customsVerificationDashboardHint: 'Verifiche doganali attive sulla unità.'
+  customsVerificationDashboardHint: 'Verifiche doganali attive sulla unità.',
+  validationContainerFormat: 'Formato container non valido. Usa ISO 6346 (es. MSCU1234567).',
+  validationContainerCheckDigit: 'Check digit container non valido. Verifica il codice ISO 6346.',
+  containerDuplicateSingle: 'Attenzione: container già presente nella pratica',
+  containerDuplicateMultiple: 'Attenzione: container già presente in altre pratiche',
+  containerNormalizedHint: 'Il codice container viene normalizzato in maiuscolo senza spazi.'
 });
 
 Object.assign(dictionary.en.ui, {
@@ -825,7 +830,12 @@ Object.assign(dictionary.en.ui, {
   customsVerificationAlertTitle: 'Warning: unit under customs inspection',
   customsVerificationTypePrefix: 'Type:',
 customsVerificationTypesPrefix: 'Inspection types:',
-  customsVerificationDashboardHint: 'Active customs checks on the unit.'
+  customsVerificationDashboardHint: 'Active customs checks on the unit.',
+  validationContainerFormat: 'Invalid container format. Use ISO 6346 (e.g. MSCU1234567).',
+  validationContainerCheckDigit: 'Invalid container check digit. Verify the ISO 6346 code.',
+  containerDuplicateSingle: 'Warning: container already present in practice',
+  containerDuplicateMultiple: 'Warning: container already present in other practices',
+  containerNormalizedHint: 'The container code is normalized in uppercase without spaces.'
 });
 
 

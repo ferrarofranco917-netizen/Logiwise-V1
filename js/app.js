@@ -17,6 +17,7 @@
   const PracticeIdentity = window.KedrixOnePracticeIdentity;
   const PracticePersistence = window.KedrixOnePracticePersistence;
   const PracticeSavePipeline = window.KedrixOnePracticeSavePipeline;
+  const PracticeContainerIntegrity = window.KedrixOnePracticeContainerIntegrity;
   const PracticeDuplicate = window.KedrixOnePracticeDuplicate;
   const PracticeSearchUI = window.KedrixOnePracticeSearchUI;
   const SeaSchemaCleanup = window.KedrixOneSeaSchemaCleanup;
@@ -25,6 +26,10 @@
   const state = Storage.load(() => Data.initialState());
 
   sanitizeLegacyPortSuggestions();
+
+  if (PracticeContainerIntegrity && typeof PracticeContainerIntegrity.registerPreSaveHook === 'function') {
+    PracticeContainerIntegrity.registerPreSaveHook(PracticeSavePipeline, I18N);
+  }
 
   const main = document.getElementById('mainContent');
   const title = document.getElementById('pageTitle');
@@ -362,9 +367,28 @@
   }
 
   function validatePracticeDraft(draft) {
-    return PracticeDraftValidator && typeof PracticeDraftValidator.validateDraft === 'function'
+    const baseValidation = PracticeDraftValidator && typeof PracticeDraftValidator.validateDraft === 'function'
       ? PracticeDraftValidator.validateDraft(draft, state.companyConfig)
       : PracticeSchemas.validateDraft(draft, state.companyConfig);
+
+    const extraErrors = PracticeContainerIntegrity && typeof PracticeContainerIntegrity.buildValidationErrors === 'function'
+      ? PracticeContainerIntegrity.buildValidationErrors({ state, draft, i18n: I18N })
+      : [];
+
+    const mergedErrors = [...(baseValidation.errors || []), ...extraErrors].filter(Boolean);
+    const uniqueErrors = [];
+    const seenErrors = new Set();
+    mergedErrors.forEach((error) => {
+      const key = `${error.tab || ''}|${error.field || ''}|${error.message || ''}`;
+      if (seenErrors.has(key)) return;
+      seenErrors.add(key);
+      uniqueErrors.push(error);
+    });
+
+    return {
+      valid: uniqueErrors.length === 0,
+      errors: uniqueErrors
+    };
   }
 
   function renderDynamicFieldsHTML(type, tab, draft = ensureDraftPractice()) {
@@ -623,12 +647,23 @@
       category.disabled = !draft.practiceType;
     }
 
+    function refreshContainerIntegrityState() {
+      if (!dynamicFields || !PracticeContainerIntegrity || typeof PracticeContainerIntegrity.applyFieldState !== 'function') return;
+      PracticeContainerIntegrity.applyFieldState({
+        root: dynamicFields,
+        state,
+        draft,
+        i18n: I18N
+      });
+    }
+
     function renderDynamicPanels() {
       if (!dynamicFields) return;
       dynamicFields.innerHTML = renderDynamicFieldsHTML(draft.practiceType || '', state.practiceTab || 'practice', draft);
       bindDynamicPersistence();
       updateVerificationBannerState(draft);
       refreshValidationState();
+      refreshContainerIntegrityState();
     }
 
     function syncPracticeLock() {
@@ -700,13 +735,17 @@
             if (draft.practiceType && typeof PracticeSchemas.getField === 'function' && typeof PracticeSchemas.normalizeSuggestedValue === 'function') {
               const field = PracticeSchemas.getField(draft.practiceType, fieldName);
               nextValue = PracticeSchemas.normalizeSuggestedValue(draft.practiceType, field, rawValue, state.companyConfig);
-              if (!Array.isArray(nextValue) && node && nextValue !== node.value) node.value = nextValue;
             }
+            if (PracticeContainerIntegrity && typeof PracticeContainerIntegrity.normalizeFieldValue === 'function') {
+              nextValue = PracticeContainerIntegrity.normalizeFieldValue(fieldName, nextValue, draft);
+            }
+            if (!Array.isArray(nextValue) && node && nextValue !== node.value) node.value = nextValue;
             return nextValue;
           },
           save: () => {
             save();
             refreshValidationState();
+            refreshContainerIntegrityState();
           },
           updateVerificationBannerState
         });
@@ -723,13 +762,17 @@
             if (normalize && draft.practiceType && typeof PracticeSchemas.getField === 'function' && typeof PracticeSchemas.normalizeSuggestedValue === 'function') {
               const field = PracticeSchemas.getField(draft.practiceType, node.name);
               nextValue = PracticeSchemas.normalizeSuggestedValue(draft.practiceType, field, nextValue, state.companyConfig);
-              if (nextValue !== node.value) node.value = nextValue;
             }
+            if (PracticeContainerIntegrity && typeof PracticeContainerIntegrity.normalizeFieldValue === 'function') {
+              nextValue = PracticeContainerIntegrity.normalizeFieldValue(node.name, nextValue, draft);
+            }
+            if (nextValue !== node.value) node.value = nextValue;
             draft.dynamicData[node.name] = nextValue;
           }
           save();
           updateVerificationBannerState(draft);
           refreshValidationState();
+          refreshContainerIntegrityState();
         };
         node.addEventListener('input', () => persistNodeValue(false));
         node.addEventListener('change', () => persistNodeValue(true));
