@@ -19,9 +19,10 @@ window.KedrixOnePracticeReferenceNormalizer = (() => {
 
   function getReferenceFieldNames(practiceType) {
     const type = cleanText(practiceType).toLowerCase();
-    if (type.startsWith('sea_')) return ['portLoading', 'portDischarge', 'customsOffice'];
-    if (type.startsWith('air_')) return ['airportDeparture', 'airportDestination', 'customsOffice'];
-    if (type === 'warehouse') return ['customsOffice'];
+    if (type.startsWith('sea_')) return ['portLoading', 'portDischarge', 'customsOffice', 'taric'];
+    if (type.startsWith('air_')) return ['airportDeparture', 'airportDestination', 'customsOffice', 'taric'];
+    if (type.startsWith('road_')) return ['taric'];
+    if (type === 'warehouse') return ['customsOffice', 'taric'];
     return [];
   }
 

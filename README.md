@@ -121,3 +121,12 @@ Regola: niente nuova logica autonoma in `app.js` se può vivere in un modulo ded
 - introdotto dataset aeroporti strutturato per i flussi aerei
 - introdotto modulo `js/practices/reference-normalizer.js` per normalizzare porti/aeroporti/dogane in save/open/edit senza sporcare `app.js`
 - hint operativi dedicati per UN/LOCODE, aeroporti e codici ADM
+
+
+## STEP 5C.9A — Dataset estesi + TARIC autocomplete + layout comparti
+
+- dataset porti UN/LOCODE ampliato in file dedicato
+- dataset TARIC/CN bootstrap in file dedicato con suggerimenti su prefisso cifra
+- form pratica segmentato in comparti operativi: controparti, routing, documentale, dogana, operativa
+- `Dogana` e `Data dogana` affiancati nello stesso comparto logico
+- `Importo fattura`, `Valuta fattura` e `Packing list` consolidati nel comparto documentale

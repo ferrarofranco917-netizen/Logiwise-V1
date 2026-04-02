@@ -55,6 +55,9 @@ window.KedrixOneSearchIndex = (() => {
     foreignInvoice: 'Fatt. estera',
     invoiceAmount: 'Importo fattura',
     invoiceCurrency: 'Valuta fattura',
+    packingList: 'Packing list',
+    customsDate: 'Data dogana',
+    taric: 'TARIC',
     additionalReference: 'Rif. aggiuntivo',
     deliveryCity: 'Città consegna',
     tags: 'Tags',
@@ -62,7 +65,7 @@ window.KedrixOneSearchIndex = (() => {
     destinationRef: 'Destinazione'
   };
 
-  const DYNAMIC_FIELD_REGEX = /(booking|container|bl|bill|lading|awb|mawb|hawb|cmr|client|consignee|shipper|sender|importer|port|terminal|airport|deposit|pickup|delivery|customs|reference|quotation|policy|origin|destination|lot|vehicle|carrier|transport|movement|invoice|bolla|city|fumig|tag)/i;
+  const DYNAMIC_FIELD_REGEX = /(booking|container|bl|bill|lading|awb|mawb|hawb|cmr|client|consignee|shipper|sender|importer|port|terminal|airport|deposit|pickup|delivery|customs|reference|quotation|policy|origin|destination|lot|vehicle|carrier|transport|movement|invoice|packing|taric|bolla|city|fumig|tag)/i;
 
   function normalize(value) {
     return Utils && typeof Utils.normalize === 'function'

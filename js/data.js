@@ -215,10 +215,12 @@ window.KedrixOneData = (() => {
             policyCopies: '2',
             mbl: 'MSCU-MBL-7781',
             customsOffice: '261101 - Passo Nuovo (Genova 1)',
+            customsDate: '2026-03-31',
             customsSection: 'Import',
             baseQuotation: 'Q-2026-041',
             invoiceAmount: '15420',
             invoiceCurrency: 'USD',
+            packingList: 'PL-2026-0901',
             transporter: 'TERCOM SRL',
             deliveryCity: 'Bene Vagienna',
             additionalReference: 'RIF-CLIENTE-7781',
@@ -227,7 +229,8 @@ window.KedrixOneData = (() => {
             goodsDescription: 'Pneumatici automotive',
             packageCount: '18',
             grossWeight: '22100',
-            containerCode: 'MSCU1234567'
+            containerCode: 'MSCU1234567',
+            taric: '40111000'
           },
           dynamicLabels: {
             importer: 'Importatore', consignee: 'Destinatario', company: 'Compagnia marittima',
@@ -235,8 +238,8 @@ window.KedrixOneData = (() => {
             vesselExchangeRate: 'Cambio nave', vesselExchangeCurrency: 'Valuta cambio nave', terminal: 'Terminal',
             arrivalDate: 'Data arrivo', freightAmount: 'Nolo', freightCurrency: 'Valuta nolo', booking: 'Booking',
             policyNumber: 'Polizza', policyOriginals: 'Originali', policyCopies: 'Copie', mbl: 'MBL', customsOffice: 'Dogana',
-            baseQuotation: 'Quotaz. base / Des. agg.', invoiceCurrency: 'Valuta fattura', incoterm: 'Incoterm', goodsDescription: 'Descrizione merce', packageCount: 'Colli',
-            grossWeight: 'Peso lordo', containerCode: 'Container'
+            baseQuotation: 'Quotaz. base / Des. agg.', invoiceCurrency: 'Valuta fattura', packingList: 'Packing list', customsDate: 'Data dogana', incoterm: 'Incoterm', goodsDescription: 'Descrizione merce', packageCount: 'Colli',
+            grossWeight: 'Peso lordo', containerCode: 'Container', taric: 'TARIC'
           }
         },
         {

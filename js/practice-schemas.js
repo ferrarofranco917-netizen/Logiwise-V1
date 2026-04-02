@@ -4,6 +4,7 @@ window.KedrixOnePracticeSchemas = (() => {
   const I18N = window.KedrixOneI18N;
   const PortData = window.KedrixOnePortData || {};
   const CustomsData = window.KedrixOneCustomsData || {};
+  const TaricData = window.KedrixOneTaricData || {};
 
   const incoterms2020 = ['EXW', 'FCA', 'CPT', 'CIP', 'DAP', 'DPU', 'DDP', 'FAS', 'FOB', 'CFR', 'CIF'];
 
@@ -29,7 +30,8 @@ window.KedrixOnePracticeSchemas = (() => {
       currencies: ['EUR', 'USD', 'GBP', 'CHF', 'CNY', 'JPY'],
       deposits: ['Magazzino interno', 'Deposito doganale', 'Transit point', 'Cross-dock'],
       warehouseLinks: ['Pratica import', 'Pratica export', 'Transito interno', 'Deposito temporaneo'],
-      customsOffices: Array.isArray(CustomsData.defaultCustomsOffices) ? CustomsData.defaultCustomsOffices.map((entry) => ({ ...entry })) : []
+      customsOffices: Array.isArray(CustomsData.defaultCustomsOffices) ? CustomsData.defaultCustomsOffices.map((entry) => ({ ...entry })) : [],
+      taricCodes: Array.isArray(TaricData.defaultTaricCodes) ? TaricData.defaultTaricCodes.map((entry) => ({ ...entry })) : []
     }
   };
 
@@ -82,7 +84,7 @@ window.KedrixOnePracticeSchemas = (() => {
         detail: [
           { name: 'articleCode', type: 'text', labelKey: 'ui.articleCode' },
           { name: 'containerCode', type: 'text', labelKey: 'ui.containerCode' },
-          { name: 'taric', type: 'text', labelKey: 'ui.taric' },
+          { name: 'taric', type: 'text', labelKey: 'ui.taric', suggestionKey: 'taricCodes', hintKey: 'ui.taricHint', hintFallback: 'Digita 2, 4, 6 o 8 cifre della voce doganale per ottenere suggerimenti TARIC/CN.' },
           { name: 'goodsDescription', type: 'textarea', labelKey: 'ui.goodsDescription', required: true, full: true },
           { name: 'packageType', type: 'text', labelKey: 'ui.packageType' },
           { name: 'packageCount', type: 'number', labelKey: 'ui.packageCount', required: true },
@@ -128,7 +130,7 @@ window.KedrixOnePracticeSchemas = (() => {
         detail: [
           { name: 'articleCode', type: 'text', labelKey: 'ui.articleCode' },
           { name: 'containerCode', type: 'text', labelKey: 'ui.containerCode' },
-          { name: 'taric', type: 'text', labelKey: 'ui.taric' },
+          { name: 'taric', type: 'text', labelKey: 'ui.taric', suggestionKey: 'taricCodes', hintKey: 'ui.taricHint', hintFallback: 'Digita 2, 4, 6 o 8 cifre della voce doganale per ottenere suggerimenti TARIC/CN.' },
           { name: 'goodsDescription', type: 'textarea', labelKey: 'ui.goodsDescription', required: true, full: true },
           { name: 'packageType', type: 'text', labelKey: 'ui.packageType' },
           { name: 'packageCount', type: 'number', labelKey: 'ui.packageCount', required: true },
@@ -161,6 +163,7 @@ window.KedrixOnePracticeSchemas = (() => {
         ],
         detail: [
           { name: 'articleCode', type: 'text', labelKey: 'ui.articleCode' },
+          { name: 'taric', type: 'text', labelKey: 'ui.taric', suggestionKey: 'taricCodes', hintKey: 'ui.taricHint', hintFallback: 'Digita 2, 4, 6 o 8 cifre della voce doganale per ottenere suggerimenti TARIC/CN.' },
           { name: 'goodsDescription', type: 'textarea', labelKey: 'ui.goodsDescription', required: true, full: true },
           { name: 'packageCount', type: 'number', labelKey: 'ui.packageCount', required: true },
           { name: 'packageType', type: 'text', labelKey: 'ui.packageType' },
@@ -193,6 +196,7 @@ window.KedrixOnePracticeSchemas = (() => {
         ],
         detail: [
           { name: 'articleCode', type: 'text', labelKey: 'ui.articleCode' },
+          { name: 'taric', type: 'text', labelKey: 'ui.taric', suggestionKey: 'taricCodes', hintKey: 'ui.taricHint', hintFallback: 'Digita 2, 4, 6 o 8 cifre della voce doganale per ottenere suggerimenti TARIC/CN.' },
           { name: 'goodsDescription', type: 'textarea', labelKey: 'ui.goodsDescription', required: true, full: true },
           { name: 'packageCount', type: 'number', labelKey: 'ui.packageCount', required: true },
           { name: 'packageType', type: 'text', labelKey: 'ui.packageType' },
@@ -226,7 +230,7 @@ window.KedrixOnePracticeSchemas = (() => {
         detail: [
           { name: 'articleCode', type: 'text', labelKey: 'ui.articleCode' },
           { name: 'containerCode', type: 'text', labelKey: 'ui.containerCode' },
-          { name: 'taric', type: 'text', labelKey: 'ui.taric' },
+          { name: 'taric', type: 'text', labelKey: 'ui.taric', suggestionKey: 'taricCodes', hintKey: 'ui.taricHint', hintFallback: 'Digita 2, 4, 6 o 8 cifre della voce doganale per ottenere suggerimenti TARIC/CN.' },
           { name: 'goodsDescription', type: 'textarea', labelKey: 'ui.goodsDescription', required: true, full: true },
           { name: 'packageCount', type: 'number', labelKey: 'ui.packageCount', required: true },
           { name: 'grossWeight', type: 'number', labelKey: 'ui.grossWeight', required: true },
@@ -259,7 +263,7 @@ window.KedrixOnePracticeSchemas = (() => {
         detail: [
           { name: 'articleCode', type: 'text', labelKey: 'ui.articleCode' },
           { name: 'containerCode', type: 'text', labelKey: 'ui.containerCode' },
-          { name: 'taric', type: 'text', labelKey: 'ui.taric' },
+          { name: 'taric', type: 'text', labelKey: 'ui.taric', suggestionKey: 'taricCodes', hintKey: 'ui.taricHint', hintFallback: 'Digita 2, 4, 6 o 8 cifre della voce doganale per ottenere suggerimenti TARIC/CN.' },
           { name: 'goodsDescription', type: 'textarea', labelKey: 'ui.goodsDescription', required: true, full: true },
           { name: 'packageCount', type: 'number', labelKey: 'ui.packageCount', required: true },
           { name: 'grossWeight', type: 'number', labelKey: 'ui.grossWeight', required: true },
@@ -289,7 +293,7 @@ window.KedrixOnePracticeSchemas = (() => {
         detail: [
           { name: 'articleCode', type: 'text', labelKey: 'ui.articleCode' },
           { name: 'containerCode', type: 'text', labelKey: 'ui.containerCode' },
-          { name: 'taric', type: 'text', labelKey: 'ui.taric' },
+          { name: 'taric', type: 'text', labelKey: 'ui.taric', suggestionKey: 'taricCodes', hintKey: 'ui.taricHint', hintFallback: 'Digita 2, 4, 6 o 8 cifre della voce doganale per ottenere suggerimenti TARIC/CN.' },
           { name: 'goodsDescription', type: 'textarea', labelKey: 'ui.goodsDescription', required: true, full: true },
           { name: 'packageCount', type: 'number', labelKey: 'ui.packageCount', required: true },
           { name: 'grossWeight', type: 'number', labelKey: 'ui.grossWeight', required: true },
@@ -365,6 +369,7 @@ window.KedrixOnePracticeSchemas = (() => {
     { name: 'foreignInvoice', type: 'text', labelKey: 'ui.foreignInvoice' },
     { name: 'invoiceAmount', type: 'number', labelKey: 'ui.invoiceAmount' },
     { name: 'invoiceCurrency', type: 'select', labelKey: 'ui.invoiceCurrency', suggestionKey: 'currencies' },
+    { name: 'packingList', type: 'text', labelKey: 'ui.packingList' },
     { name: 'deposit', type: 'text', labelKey: 'ui.deposit', suggestionKey: 'deposits', hintKey: false },
     { name: 'terminalPickup', type: 'text', labelKey: 'ui.terminalPickup', suggestionKey: 'seaTerminals' },
     { name: 'terminalDelivery', type: 'text', labelKey: 'ui.terminalDelivery', suggestionKey: 'seaTerminals' },
@@ -393,8 +398,59 @@ window.KedrixOnePracticeSchemas = (() => {
     ...seaSharedPracticeHardeningFields
   ]);
 
-  moveFieldAfter('sea_import', 'practice', 'incoterm', 'terminalDelivery');
-  moveFieldAfter('sea_export', 'practice', 'incoterm', 'terminalDelivery');
+
+
+  appendUniqueFields('sea_import', 'practice', [
+    { name: 'customsDate', type: 'date', labelKey: 'ui.customsDate' }
+  ]);
+
+  appendUniqueFields('sea_export', 'practice', [
+    { name: 'customsDate', type: 'date', labelKey: 'ui.customsDate' }
+  ]);
+
+  appendUniqueFields('air_import', 'practice', [
+    { name: 'foreignInvoice', type: 'text', labelKey: 'ui.foreignInvoice' },
+    { name: 'invoiceAmount', type: 'number', labelKey: 'ui.invoiceAmount' },
+    { name: 'invoiceCurrency', type: 'select', labelKey: 'ui.invoiceCurrency', suggestionKey: 'currencies' },
+    { name: 'packingList', type: 'text', labelKey: 'ui.packingList' },
+    { name: 'baseQuotation', type: 'text', labelKey: 'ui.baseQuotation' },
+    { name: 'customsDate', type: 'date', labelKey: 'ui.customsDate' }
+  ]);
+
+  appendUniqueFields('air_export', 'practice', [
+    { name: 'foreignInvoice', type: 'text', labelKey: 'ui.foreignInvoice' },
+    { name: 'invoiceAmount', type: 'number', labelKey: 'ui.invoiceAmount' },
+    { name: 'invoiceCurrency', type: 'select', labelKey: 'ui.invoiceCurrency', suggestionKey: 'currencies' },
+    { name: 'packingList', type: 'text', labelKey: 'ui.packingList' },
+    { name: 'baseQuotation', type: 'text', labelKey: 'ui.baseQuotation' },
+    { name: 'customsDate', type: 'date', labelKey: 'ui.customsDate' }
+  ]);
+
+  moveFieldAfter('sea_import', 'practice', 'invoiceCurrency', 'invoiceAmount');
+  moveFieldAfter('sea_import', 'practice', 'packingList', 'invoiceCurrency');
+  moveFieldAfter('sea_import', 'practice', 'customsDate', 'customsOffice');
+  moveFieldAfter('sea_import', 'practice', 'incoterm', 'packingList');
+
+  moveFieldAfter('sea_export', 'practice', 'invoiceCurrency', 'invoiceAmount');
+  moveFieldAfter('sea_export', 'practice', 'packingList', 'invoiceCurrency');
+  moveFieldAfter('sea_export', 'practice', 'customsDate', 'customsOffice');
+  moveFieldAfter('sea_export', 'practice', 'incoterm', 'packingList');
+
+  moveFieldAfter('air_import', 'practice', 'baseQuotation', 'hawb');
+  moveFieldAfter('air_import', 'practice', 'foreignInvoice', 'baseQuotation');
+  moveFieldAfter('air_import', 'practice', 'invoiceAmount', 'foreignInvoice');
+  moveFieldAfter('air_import', 'practice', 'invoiceCurrency', 'invoiceAmount');
+  moveFieldAfter('air_import', 'practice', 'packingList', 'invoiceCurrency');
+  moveFieldAfter('air_import', 'practice', 'customsDate', 'customsOffice');
+  moveFieldAfter('air_import', 'practice', 'incoterm', 'packingList');
+
+  moveFieldAfter('air_export', 'practice', 'baseQuotation', 'hawb');
+  moveFieldAfter('air_export', 'practice', 'foreignInvoice', 'baseQuotation');
+  moveFieldAfter('air_export', 'practice', 'invoiceAmount', 'foreignInvoice');
+  moveFieldAfter('air_export', 'practice', 'invoiceCurrency', 'invoiceAmount');
+  moveFieldAfter('air_export', 'practice', 'packingList', 'invoiceCurrency');
+  moveFieldAfter('air_export', 'practice', 'customsDate', 'customsOffice');
+  moveFieldAfter('air_export', 'practice', 'incoterm', 'packingList');
 
   function getPracticeConfig(companyConfig) {
     const config = companyConfig && typeof companyConfig === 'object' ? companyConfig.practiceConfig || {} : {};
@@ -628,6 +684,10 @@ window.KedrixOnePracticeSchemas = (() => {
 
     if (type.startsWith('air_') && draft.category === 'AIR-CONSOL' && isEmptyValue(dynamicData.hawb)) {
       errors.push(buildError('hawb', 'practice', type, 'ui.validationHawbRequired', "Compila l'HAWB per le spedizioni aeree in consol."));
+    }
+
+    if (!isEmptyValue(dynamicData.invoiceAmount) && isEmptyValue(dynamicData.invoiceCurrency)) {
+      errors.push(buildError('invoiceCurrency', 'practice', type, 'ui.validationInvoiceCurrencyRequired', "Se indichi l'importo fattura, seleziona anche la valuta."));
     }
 
     if (type.startsWith('road_')) {
