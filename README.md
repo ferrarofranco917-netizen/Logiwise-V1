@@ -111,3 +111,5 @@ Regola: niente nuova logica autonoma in `app.js` se può vivere in un modulo ded
 - campo `Incoterm` mantenuto nel mare ma con etichetta semplificata, senza testo `Resa (Incoterms® 2020)`
 - campo `Incoterm` riposizionato dopo `Terminal consegna` nello schema mare
 - aggiunto campo `Valuta fattura` accanto a `Importo Fattura`
+
+- removed the misplaced `Incoterms 2020` hint from sea/air suggestion fields (company, ports, origin/destination, customs, terminal) and replaced it with neutral directory guidance

@@ -107,12 +107,12 @@ window.KedrixOnePracticeFormRenderer = (() => {
         ? false
         : (field.hintKey || (field.name === 'portLoading' || field.name === 'portDischarge'
           ? 'ui.unlocodeHint'
-          : 'ui.clientRuleHint'));
+          : 'ui.directorySuggestionHint'));
       const hintFallback = field.hintKey === false
         ? ''
         : (field.hintFallback || (field.name === 'portLoading' || field.name === 'portDischarge'
           ? 'Scrivi il porto o il codice UN/LOCODE. Esempio: Genova → ITGOA.'
-          : 'Seleziona un valore coerente con la configurazione operativa.'));
+          : 'Seleziona un valore suggerito coerente con la configurazione operativa.'));
       const hintHtml = fieldOptionEntries.length && datalistId && hintKey
         ? `<div class="field-hint">${Utils.escapeHtml(I18N.t(hintKey, hintFallback))}</div>`
         : '';

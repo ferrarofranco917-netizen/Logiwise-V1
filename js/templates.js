@@ -291,7 +291,7 @@ window.KedrixOneTemplates = (() => {
 
             <div class="practice-helper-row" data-practice-dependent>
               <span class="helper-pill">${U.escapeHtml(T.t('ui.validationCoverage', 'Validazione per tipo pratica'))}</span>
-              <span class="helper-pill">${U.escapeHtml(T.t('ui.incotermConfigHint', 'Incoterms dinamici da configurazione aziendale'))}</span>
+              <span class="helper-pill">${U.escapeHtml(T.t('ui.directoryConfigHint', 'Suggerimenti operativi da directory aziendale'))}</span>
               <span class="helper-pill">${U.escapeHtml(T.t('ui.mappingHint', 'Mapping operativo coerente per mare / aerea / terra / magazzino'))}</span>
             </div>
 
