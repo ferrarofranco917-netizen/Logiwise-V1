@@ -20,6 +20,8 @@
   const PracticeContainerIntegrity = window.KedrixOnePracticeContainerIntegrity;
   const PracticeWeightIntegrity = window.KedrixOnePracticeWeightIntegrity;
   const PracticeAttachments = window.KedrixOnePracticeAttachments;
+  const DocumentEngine = window.KedrixOneDocumentEngine;
+  const AppFeedback = window.KedrixOneAppFeedback;
   const PracticeDuplicate = window.KedrixOnePracticeDuplicate;
   const PracticeSearchUI = window.KedrixOnePracticeSearchUI;
   const SeaSchemaCleanup = window.KedrixOneSeaSchemaCleanup;
@@ -42,6 +44,9 @@
   const main = document.getElementById('mainContent');
   const title = document.getElementById('pageTitle');
   const toastRegion = document.getElementById('toastRegion');
+  if (AppFeedback && typeof AppFeedback.init === 'function') {
+    AppFeedback.init({ toastRegion });
+  }
   const sidebarNav = document.getElementById('sidebarNav');
   const brandCompany = document.getElementById('brandCompany');
   const brandProduct = document.getElementById('brandProduct');
@@ -86,9 +91,13 @@
     save();
   }
 
-  function toast(text) {
+  function toast(text, tone = 'info') {
+    if (AppFeedback && typeof AppFeedback.showToast === 'function') {
+      AppFeedback.showToast(text, { tone });
+      return;
+    }
     const el = document.createElement('div');
-    el.className = 'toast';
+    el.className = `toast toast-${tone}`;
     el.textContent = text;
     toastRegion.appendChild(el);
     setTimeout(() => el.remove(), 2500);
@@ -164,6 +173,12 @@
     const query = String(state.practiceSearchQuery || '').trim();
     if (!query || !SearchIndex || typeof SearchIndex.search !== 'function') return [];
     return SearchIndex.search(query, rebuildPracticeSearchIndex());
+  }
+
+
+  function documentSearchResults() {
+    if (!DocumentEngine || typeof DocumentEngine.searchBundles !== 'function') return [];
+    return DocumentEngine.searchBundles(state.documentSearchQuery, state, I18N);
   }
 
   function getClientById(clientId) {
@@ -693,6 +708,8 @@
             root: dynamicFields,
             save,
             toast,
+            feedback: AppFeedback,
+            i18n: I18N,
             rerender: () => renderDynamicPanels()
           });
         }
@@ -1059,6 +1076,46 @@
     }
   }
 
+
+  function bindDocumentEvents() {
+    const input = document.getElementById('documentSearchQuery');
+
+    input?.addEventListener('input', (event) => {
+      state.documentSearchQuery = event.target.value || '';
+      state.documentPreviewPracticeId = '';
+      save();
+      render();
+    });
+
+    main.querySelectorAll('[data-document-preview]').forEach((button) => {
+      button.addEventListener('click', () => {
+        state.documentPreviewPracticeId = button.dataset.documentPreview || '';
+        save();
+        render();
+      });
+    });
+
+    main.querySelectorAll('[data-document-open]').forEach((button) => {
+      button.addEventListener('click', async (event) => {
+        event.stopPropagation();
+        try {
+          if (PracticeAttachments && typeof PracticeAttachments.openAttachment === 'function') {
+            await PracticeAttachments.openAttachment({ attachmentId: button.dataset.documentOpen, toast });
+          }
+        } catch (error) {
+          toast(error?.message || 'Errore apertura allegato', 'warning');
+        }
+      });
+    });
+
+    main.querySelectorAll('[data-document-open-practice]').forEach((button) => {
+      button.addEventListener('click', (event) => {
+        event.stopPropagation();
+        openPracticeForEditing(button.dataset.documentOpenPractice, { source: 'search' });
+      });
+    });
+  }
+
   function renderSidebar() {
     const visibleModules = Licensing.visibleModules(Modules.list(), state);
     sidebarNav.innerHTML = Templates.sidebar(visibleModules, currentRoute(), expandedModules());
@@ -1079,6 +1136,12 @@
     if (route === 'practices' || route === 'practices/elenco-pratiche') {
       main.innerHTML = Templates.practices(state, selectedPractice(), filteredPractices(), practiceSearchResults());
       bindPracticeEvents();
+      return;
+    }
+
+    if (route === 'documents') {
+      main.innerHTML = Templates.documents(state, module, documentSearchResults());
+      bindDocumentEvents();
       return;
     }
 

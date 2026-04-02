@@ -299,7 +299,7 @@ window.KedrixOnePracticeAttachments = (() => {
   }
 
   function updateAttachmentType(options = {}) {
-    const { state, draft, attachmentId, documentType, save, rerender } = options;
+    const { state, draft, attachmentId, documentType, save, rerender, toast, i18n } = options;
     const ownerKey = ensureDraftOwnerKey(draft);
     const index = normalizeAttachmentIndex(state);
     const items = Array.isArray(index[ownerKey]) ? index[ownerKey] : [];
@@ -309,11 +309,15 @@ window.KedrixOnePracticeAttachments = (() => {
     syncLinkedPracticeRecordState(state, draft);
     if (typeof save === 'function') save();
     if (typeof rerender === 'function') rerender();
+    if (typeof toast === 'function') {
+      const label = i18n && typeof i18n.t === 'function' ? i18n.t('ui.attachmentTypeUpdated', 'Tipo documento aggiornato') : 'Tipo documento aggiornato';
+      toast(label);
+    }
     return true;
   }
 
   function bind(options = {}) {
-    const { state, draft, root, save, toast, rerender } = options;
+    const { state, draft, root, save, toast, rerender, feedback, i18n } = options;
     if (!root) return;
     const fileInput = root.querySelector('#practiceAttachmentInput');
     const typeSelect = root.querySelector('#practiceAttachmentType');
@@ -350,7 +354,14 @@ window.KedrixOnePracticeAttachments = (() => {
 
     root.querySelectorAll('[data-attachment-remove]').forEach((button) => {
       button.addEventListener('click', async () => {
-        const confirmed = window.confirm('Rimuovere questo allegato dalla pratica?');
+        const confirmed = feedback && typeof feedback.confirm === 'function'
+          ? await feedback.confirm({
+              title: i18n && typeof i18n.t === 'function' ? i18n.t('ui.removeAttachmentConfirmTitle', 'Rimuovere allegato') : 'Rimuovere allegato',
+              message: i18n && typeof i18n.t === 'function' ? i18n.t('ui.removeAttachmentConfirmMessage', 'L’allegato verrà scollegato dalla pratica corrente.') : 'L’allegato verrà scollegato dalla pratica corrente.',
+              confirmLabel: i18n && typeof i18n.t === 'function' ? i18n.t('ui.removeAttachment', 'Rimuovi') : 'Rimuovi',
+              cancelLabel: i18n && typeof i18n.t === 'function' ? i18n.t('ui.cancel', 'Annulla') : 'Annulla'
+            })
+          : window.confirm('Rimuovere questo allegato dalla pratica?');
         if (!confirmed) return;
         try {
           await removeAttachment({
@@ -375,7 +386,9 @@ window.KedrixOnePracticeAttachments = (() => {
           attachmentId: select.dataset.attachmentTypeId,
           documentType: select.value || 'generic',
           save,
-          rerender
+          rerender,
+          toast,
+          i18n
         });
       });
     });
@@ -386,8 +399,12 @@ window.KedrixOnePracticeAttachments = (() => {
     createDraftOwnerKey,
     ensureDraftOwnerKey,
     getAttachments,
+    getDocumentTypeOptions,
     normalizeAttachmentIndex,
+    openAttachment,
+    removeAttachment,
     renderPanelHTML,
-    syncRecordSummary
+    syncRecordSummary,
+    updateAttachmentType
   };
 })();

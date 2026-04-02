@@ -6,6 +6,7 @@ window.KedrixOneTemplates = (() => {
   const L = window.KedrixOneLicensing;
   const T = window.KedrixOneI18N;
   const PracticeVerification = window.KedrixOnePracticeVerification;
+  const DocumentEngine = window.KedrixOneDocumentEngine;
 
   function sidebar(modules, activeRoute, expandedModules) {
     const expanded = new Set(expandedModules || []);
@@ -475,6 +476,144 @@ window.KedrixOneTemplates = (() => {
           </div>` : `<div class="empty-text">${U.escapeHtml(T.t('ui.noSelection', 'Nessuna pratica selezionata.'))}</div>`}
       </section>`;
   }
+  function formatDateTime(value) {
+    if (!value) return '—';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return value;
+    return new Intl.DateTimeFormat(T.getLanguage() === 'en' ? 'en-GB' : 'it-IT', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(date);
+  }
+
+  function documents(state, module, searchResults = []) {
+    const summary = DocumentEngine && typeof DocumentEngine.summary === 'function'
+      ? DocumentEngine.summary(state, T)
+      : { totalDocuments: 0, totalBundles: 0, latestImportedAt: '', typedCounts: {} };
+    const bundles = DocumentEngine && typeof DocumentEngine.buildBundles === 'function'
+      ? DocumentEngine.buildBundles(state, T)
+      : [];
+    const query = String(state.documentSearchQuery || '').trim();
+    const activePracticeId = state.documentPreviewPracticeId || searchResults[0]?.practiceId || searchResults[0]?.bundleKey || bundles[0]?.practiceId || bundles[0]?.bundleKey || '';
+    const activeBundle = searchResults.find((item) => (item.practiceId || item.bundleKey) === activePracticeId)
+      || bundles.find((item) => (item.practiceId || item.bundleKey) === activePracticeId)
+      || null;
+    const list = query ? searchResults : bundles;
+    const topTypeEntry = Object.entries(summary.typedCounts || {}).sort((left, right) => right[1] - left[1])[0] || null;
+
+    return `
+      <section class="hero">
+        <div class="hero-meta">STEP 6B / 5E · ${U.escapeHtml(T.t('ui.documentEngineReady', 'Document Engine + ricerca relazionale documentale'))}</div>
+        <h2>${U.escapeHtml(module?.label || T.moduleLabel('documents', 'Documenti'))}</h2>
+        <p>${U.escapeHtml(T.t('ui.documentEngineIntro', 'Hub documentale operativo collegato alle pratiche: ricerca relazionale, bundle per pratica e accesso diretto agli allegati.'))}</p>
+      </section>
+
+      <section class="kpi-grid compact-kpi-grid">
+        <article class="kpi-card">
+          <div class="kpi-label">${U.escapeHtml(T.t('ui.totalDocumentsCount', 'Documenti collegati'))}</div>
+          <div class="kpi-value">${summary.totalDocuments}</div>
+          <div class="kpi-hint">${U.escapeHtml(T.t('ui.documentEngineCountHint', 'Archivio allegati collegato alle pratiche'))}</div>
+        </article>
+        <article class="kpi-card">
+          <div class="kpi-label">${U.escapeHtml(T.t('ui.documentBundlesCount', 'Bundle pratica/documenti'))}</div>
+          <div class="kpi-value">${summary.totalBundles}</div>
+          <div class="kpi-hint">${U.escapeHtml(T.t('ui.documentBundlesHint', 'Ogni bundle raccoglie pratica madre + documenti collegati'))}</div>
+        </article>
+        <article class="kpi-card">
+          <div class="kpi-label">${U.escapeHtml(T.t('ui.latestDocumentImport', 'Ultima importazione'))}</div>
+          <div class="kpi-value">${U.escapeHtml(formatDateTime(summary.latestImportedAt))}</div>
+          <div class="kpi-hint">${U.escapeHtml(T.t('ui.appFeedbackHint', 'Conferme gestite dall’app, non dal browser'))}</div>
+        </article>
+        <article class="kpi-card">
+          <div class="kpi-label">${U.escapeHtml(T.t('ui.topDocumentType', 'Tipo documento prevalente'))}</div>
+          <div class="kpi-value">${U.escapeHtml(topTypeEntry ? topTypeEntry[0] : '—')}</div>
+          <div class="kpi-hint">${U.escapeHtml(topTypeEntry ? `${topTypeEntry[1]} ${T.t('ui.documentsWord', 'documenti')}` : T.t('ui.noDocumentsAvailable', 'Nessun documento disponibile'))}</div>
+        </article>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <div>
+            <h3 class="panel-title">${U.escapeHtml(T.t('ui.documentRelationalSearch', 'Ricerca relazionale documentale'))}</h3>
+            <p class="panel-subtitle">${U.escapeHtml(T.t('ui.documentRelationalSearchHint', 'Cerca per numero pratica, cliente, container, booking, dogana, nome file o tipo documento e ottieni il bundle collegato.'))}</p>
+          </div>
+        </div>
+        <div class="table-toolbar">
+          <div class="field full">
+            <label for="documentSearchQuery">${U.escapeHtml(T.t('ui.search', 'Ricerca'))}</label>
+            <input id="documentSearchQuery" type="search" value="${U.escapeHtml(query)}" placeholder="${U.escapeHtml(T.t('ui.documentSearchPlaceholder', 'Numero pratica, cliente, container, booking, dogana, nome file...'))}" autocomplete="off" />
+          </div>
+          <div class="table-toolbar-summary">${query ? `${searchResults.length} ${U.escapeHtml(T.t('ui.bundlesFound', 'bundle trovati'))}` : `${bundles.length} ${U.escapeHtml(T.t('ui.availableBundles', 'bundle disponibili'))}`}</div>
+        </div>
+      </section>
+
+      <section class="two-col documents-two-col">
+        <article class="panel">
+          <div class="panel-head">
+            <div>
+              <h3 class="panel-title">${U.escapeHtml(query ? T.t('ui.searchResults', 'Risultati ricerca') : T.t('ui.documentBundlesRecent', 'Bundle recenti'))}</h3>
+              <p class="panel-subtitle">${U.escapeHtml(query ? T.t('ui.documentSearchResultsHint', 'Il bundle resta centrato sulla pratica madre ma mostra anche i documenti corrispondenti.') : T.t('ui.documentBundlesRecentHint', 'Ultime pratiche con documenti collegati disponibili nel browser locale.'))}</p>
+            </div>
+          </div>
+          <div class="document-bundle-list">
+            ${list.length ? list.map((bundle) => `
+              <button type="button" class="document-bundle-card ${activeBundle && (activeBundle.practiceId || activeBundle.bundleKey) === (bundle.practiceId || bundle.bundleKey) ? 'active' : ''}" data-document-preview="${U.escapeHtml(bundle.practiceId || bundle.bundleKey)}">
+                <div class="document-bundle-head">
+                  <div>
+                    <div class="summary-kicker">${U.escapeHtml(bundle.reference || '—')}</div>
+                    <div class="panel-title document-bundle-title">${U.escapeHtml(bundle.clientName || '—')}</div>
+                  </div>
+                  <span class="badge info">${U.escapeHtml(bundle.practiceTypeLabel || '—')}</span>
+                </div>
+                <div class="document-bundle-meta">
+                  <span>${U.escapeHtml(T.t('ui.status', 'Stato'))}: ${U.escapeHtml(bundle.practiceStatus || '—')}</span>
+                  <span>${U.escapeHtml(T.t('ui.documentsWord', 'Documenti'))}: ${bundle.documentsCount || bundle.documents?.length || 0}</span>
+                  ${bundle.matchedDocumentsCount ? `<span>${U.escapeHtml(T.t('ui.documentMatches', 'Match documento'))}: ${bundle.matchedDocumentsCount}</span>` : ''}
+                </div>
+                ${(bundle.practiceMatches || []).length ? `<div class="practice-search-match-list">${bundle.practiceMatches.map((match) => `<span class="match-chip"><strong>${U.escapeHtml(match.label)}:</strong> ${U.escapeHtml(match.value)}</span>`).join('')}</div>` : ''}
+              </button>`).join('') : `<div class="empty-state-inline">${U.escapeHtml(query ? T.t('ui.noDocumentSearchResults', 'Nessun bundle documentale coerente con la ricerca.') : T.t('ui.noDocumentsAvailable', 'Nessun documento disponibile'))}</div>`}
+          </div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-head">
+            <div>
+              <h3 class="panel-title">${U.escapeHtml(T.t('ui.documentBundleDetail', 'Bundle documentale'))}</h3>
+              <p class="panel-subtitle">${U.escapeHtml(T.t('ui.documentBundleDetailHint', 'Apri la pratica madre oppure apri direttamente gli allegati collegati.'))}</p>
+            </div>
+          </div>
+          ${activeBundle ? `
+            <div class="detail-grid detail-grid-large">
+              <div class="detail-row"><div class="detail-label">${U.escapeHtml(T.t('ui.generatedNumber', 'Numero pratica'))}</div><div>${U.escapeHtml(activeBundle.reference || '—')}</div></div>
+              <div class="detail-row"><div class="detail-label">${U.escapeHtml(T.t('ui.client', 'Cliente'))}</div><div>${U.escapeHtml(activeBundle.clientName || '—')}</div></div>
+              <div class="detail-row"><div class="detail-label">${U.escapeHtml(T.t('ui.practiceTypeDisplay', 'Tipologia'))}</div><div>${U.escapeHtml(activeBundle.practiceTypeLabel || '—')}</div></div>
+              <div class="detail-row"><div class="detail-label">${U.escapeHtml(T.t('ui.status', 'Stato'))}</div><div>${U.escapeHtml(activeBundle.practiceStatus || '—')}</div></div>
+            </div>
+            <div class="action-row">
+              <button class="btn" type="button" data-document-open-practice="${U.escapeHtml(activeBundle.practiceId || '')}">${U.escapeHtml(T.t('ui.openPractice', 'Apri pratica'))}</button>
+            </div>
+            <div class="attachments-list document-engine-list">
+              ${((activeBundle.matchedDocumentsCount ? activeBundle.matchedDocuments : activeBundle.documents) || []).length ? ((activeBundle.matchedDocumentsCount ? activeBundle.matchedDocuments : activeBundle.documents) || []).map((document) => `
+                <article class="attachment-card document-engine-card">
+                  <div class="attachment-main">
+                    <div class="attachment-file-name">${U.escapeHtml(document.fileName || '—')}</div>
+                    <div class="attachment-file-meta">${U.escapeHtml(document.documentTypeLabel || '—')} · ${U.escapeHtml(formatDateTime(document.importedAt))}</div>
+                  </div>
+                  <div class="document-engine-meta">
+                    ${(document.matches || []).length ? `<div class="practice-search-match-list">${document.matches.map((match) => `<span class="match-chip"><strong>${U.escapeHtml(match.label)}:</strong> ${U.escapeHtml(match.value)}</span>`).join('')}</div>` : ''}
+                  </div>
+                  <div class="attachment-actions">
+                    <button class="btn secondary small-btn" type="button" data-document-open="${U.escapeHtml(document.id)}">${U.escapeHtml(T.t('ui.openAttachment', 'Apri'))}</button>
+                  </div>
+                </article>`).join('') : `<div class="empty-text">${U.escapeHtml(T.t('ui.noDocumentsInBundle', 'Nessun documento collegato nel bundle selezionato.'))}</div>`}
+            </div>` : `<div class="empty-text">${U.escapeHtml(T.t('ui.selectDocumentBundle', 'Seleziona un bundle documentale dalla colonna sinistra.'))}</div>`}
+        </article>
+      </section>`;
+  }
+
   function contacts(state, module) {
     return `
       <section class="hero">
@@ -733,6 +872,7 @@ window.KedrixOneTemplates = (() => {
     sidebar,
     dashboard,
     practices,
+    documents,
     contacts,
     settings,
     moduleOverview,

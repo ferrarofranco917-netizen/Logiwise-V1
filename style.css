@@ -1280,3 +1280,130 @@ img {
     justify-content: flex-start;
   }
 }
+
+.toast-warning {
+  border-color: rgba(199, 154, 82, 0.4);
+}
+
+.toast-success {
+  border-color: rgba(95, 143, 118, 0.42);
+}
+
+.app-dialog-root[hidden] {
+  display: none;
+}
+
+.app-dialog-root {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+}
+
+.app-dialog-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(6, 10, 15, 0.62);
+  backdrop-filter: blur(2px);
+}
+
+.app-dialog {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(520px, calc(100vw - 32px));
+  transform: translate(-50%, -50%);
+  background: linear-gradient(180deg, rgba(22, 33, 43, 0.98), rgba(17, 26, 35, 0.98));
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  padding: 20px;
+}
+
+.app-dialog-warning {
+  border-color: rgba(199, 154, 82, 0.28);
+}
+
+.app-dialog-kicker {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.app-dialog-title {
+  margin: 0 0 8px;
+  font-size: 20px;
+}
+
+.app-dialog-message {
+  margin: 0;
+  color: var(--text2);
+  line-height: 1.55;
+}
+
+.app-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.documents-two-col {
+  align-items: start;
+}
+
+.document-bundle-list {
+  display: grid;
+  gap: 10px;
+}
+
+.document-bundle-card {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(22, 33, 43, 0.72);
+  padding: 14px;
+  text-align: left;
+  color: var(--text);
+}
+
+.document-bundle-card:hover,
+.document-bundle-card.active {
+  border-color: rgba(78, 143, 159, 0.32);
+  background: linear-gradient(180deg, rgba(60, 122, 137, 0.18), rgba(22, 33, 43, 0.86));
+}
+
+.document-bundle-head,
+.document-bundle-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.document-bundle-meta {
+  margin-top: 10px;
+  color: var(--text2);
+  font-size: 13px;
+}
+
+.document-bundle-title {
+  font-size: 16px;
+}
+
+.document-engine-list {
+  margin-top: 14px;
+}
+
+.document-engine-card {
+  align-items: center;
+}
+
+.document-engine-meta {
+  flex: 1 1 220px;
+}
+
+body.dialog-open {
+  overflow: hidden;
+}

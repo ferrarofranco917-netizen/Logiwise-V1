@@ -184,3 +184,15 @@ Regola: niente nuova logica autonoma in `app.js` se può vivere in un modulo ded
 - tab dedicata `Allegati` nel form pratica
 - lista allegati con nome file, tipo documento, data importazione, apertura e rimozione controllata
 - owner key stabile per allegati anche prima del primo salvataggio della pratica
+
+
+## STEP 6B.2 — Document Engine + ricerca relazionale documentale
+- nuovo modulo `js/documents/document-engine.js` per costruire bundle pratica/documenti a partire dagli allegati esistenti
+- nuova route reale `Documenti` con ricerca relazionale su numero pratica, cliente, container, booking, dogana, nome file e tipo documento
+- ogni risultato della ricerca documentale resta centrato sulla pratica madre ma mostra i documenti collegati nello stesso bundle
+- apertura diretta della pratica madre dal modulo Documenti
+- apertura diretta dell'allegato collegato dal modulo Documenti
+- base feedback interna app introdotta con `js/ui/app-feedback.js` per conferme/toast dell'app senza dipendere da popup di sistema
+- rimozione allegato nel tab Allegati aggiornata: conferma tramite dialog interno app, non `window.confirm`
+- aggiornamento tipo documento ora confermato con feedback applicativo
+- service worker riallineato ai file reali del repo per evitare cache incoerenti nello staging PWA

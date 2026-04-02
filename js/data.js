@@ -13,6 +13,8 @@ window.KedrixOneData = (() => {
       selectedPracticeId: 'PR-2026-001',
       filterText: '',
       practiceSearchQuery: '',
+      documentSearchQuery: '',
+      documentPreviewPracticeId: '',
       statusFilter: 'Tutti',
       expandedModules: ['practices', 'master-data', 'documents', 'tracking'],
       settingsModuleKey: 'practices',
