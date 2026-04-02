@@ -150,3 +150,8 @@ Regola: niente nuova logica autonoma in `app.js` se può vivere in un modulo ded
 ## STEP 5C.9C HF1 — Fix verificationHint banner
 - Fix regressione in `templates.js` che causava `ReferenceError: verificationHint is not defined` al render di Pratiche.
 - Ripristinata la costruzione dell'hint del banner verifica usando `KedrixOnePracticeVerification.formatTypesHint()`.
+
+
+## STEP 5C.9C HF2 — Verification banner flags only
+- Fixed regression: the verification banner is now shown only when one or more customs verification flags are active.
+- Status `Sdoganamento` no longer triggers the banner by itself.

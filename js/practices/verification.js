@@ -16,10 +16,6 @@ window.KedrixOnePracticeVerification = (() => {
       values.push(...text.split(',').map((item) => item.trim()).filter(Boolean));
     });
 
-    if (String(draft?.status || '').trim().toLowerCase() === 'sdoganamento') {
-      values.unshift('ui.verifyCustoms');
-    }
-
     return Array.from(new Set(values.map((value) => String(value || '').trim()).filter(Boolean)));
   }
 
