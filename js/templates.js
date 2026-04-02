@@ -283,8 +283,8 @@ window.KedrixOneTemplates = (() => {
 
             <div class="verification-sticky-banner ${verificationLabels.length ? '' : 'is-hidden'}" id="practiceVerificationBanner" ${verificationLabels.length ? '' : 'hidden'}>
               <div class="verification-banner-kicker">${U.escapeHtml(T.t('ui.inVerification', 'IN VERIFICA'))}</div>
-              <div class="verification-banner-title" id="practiceVerificationBannerTitle">${U.escapeHtml(verificationLabels.join(' · '))}</div>
-              <div class="verification-banner-hint" id="practiceVerificationBannerHint">${U.escapeHtml(T.t('ui.verificationBannerHint', 'Banner operativo fisso: la pratica richiede controlli/verifiche attive.'))}</div>
+              <div class="verification-banner-title" id="practiceVerificationBannerTitle">${U.escapeHtml(verificationLabels.length ? T.t('ui.customsVerificationAlertTitle', 'Attenzione unità sottoposta a verifica') : '')}</div>
+              <div class="verification-banner-hint" id="practiceVerificationBannerHint">${U.escapeHtml(verificationHint)}</div>
             </div>
 
             <div id="practiceValidationSummary" class="validation-summary" hidden></div>

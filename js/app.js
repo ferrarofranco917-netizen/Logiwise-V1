@@ -280,7 +280,7 @@
 
   function updateVerificationBannerState(draft = ensureDraftPractice()) {
     if (PracticeVerification && typeof PracticeVerification.updateBanner === 'function') {
-      PracticeVerification.updateBanner(draft, { bannerId: 'practiceVerificationBanner', titleId: 'practiceVerificationBannerTitle' });
+      PracticeVerification.updateBanner(draft, { bannerId: 'practiceVerificationBanner', titleId: 'practiceVerificationBannerTitle', hintId: 'practiceVerificationBannerHint' });
     }
   }
 

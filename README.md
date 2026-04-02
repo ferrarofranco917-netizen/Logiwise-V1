@@ -130,3 +130,18 @@ Regola: niente nuova logica autonoma in `app.js` se può vivere in un modulo ded
 - form pratica segmentato in comparti operativi: controparti, routing, documentale, dogana, operativa
 - `Dogana` e `Data dogana` affiancati nello stesso comparto logico
 - `Importo fattura`, `Valuta fattura` e `Packing list` consolidati nel comparto documentale
+
+## STEP 5C.9B — Semantica verifiche doganali nel Dettaglio
+- il blocco `Controlli` nel tab `Dettaglio` viene riallineato a verifiche **doganali** sulla unità, non a controlli interni di processo
+- etichetta aggiornata in `Verifiche doganali`
+- hint sezione aggiornato per chiarire che merce/documentale/scanner/sanitario/magazzino sono tipologie di verifica doganale
+- banner pratica `IN VERIFICA` aggiornato con titolo fisso: `Attenzione unità sottoposta a verifica`
+- dettaglio delle tipologie attive mostrato sotto il titolo del banner
+- dashboard alert aggiornata: quando una pratica ha flag verifica attivi genera l'avviso `Attenzione unità sottoposta a verifica`
+
+
+## STEP 5C.9C — Banner verifica con tipo esplicito
+
+- titolo banner mantenuto: `Attenzione unità sottoposta a verifica`
+- riga dettaglio resa più diretta: `Tipo: Scanner · Magazzino · Documentale`
+- allineamento applicato anche agli alert dashboard

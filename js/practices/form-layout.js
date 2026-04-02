@@ -60,7 +60,7 @@ window.KedrixOnePracticeFormLayout = (() => {
         titleKey: 'ui.sectionChecks',
         titleFallback: 'Controlli',
         descriptionKey: 'ui.sectionChecksHint',
-        descriptionFallback: 'Verifiche operative e alert di processo.'
+        descriptionFallback: 'Verifiche disposte dalla dogana sulla unità e relativo stato di controllo.'
       }
     },
     notes: {

@@ -565,7 +565,7 @@ Object.assign(dictionary.it.ui, {
   additionalReference: 'Rif. aggiuntivo',
   tags: 'Tags',
   internalNotes: 'Note interne',
-  verifications: 'Verifiche',
+  verifications: 'Verifiche doganali',
   verifyMerce: 'Merce',
   verifyDocumentale: 'Documentale',
   verifyScanner: 'Scanner',
@@ -606,7 +606,7 @@ Object.assign(dictionary.it.ui, {
   sectionTransportUnits: 'Unità di trasporto',
   sectionTransportUnitsHint: 'Container, booking e riferimenti unità logistiche.',
   sectionChecks: 'Controlli',
-  sectionChecksHint: 'Verifiche operative e alert di processo.',
+  sectionChecksHint: 'Verifiche disposte dalla dogana sulla unità e relativo stato di controllo.',
   sectionNotes: 'Note',
   sectionNotesHint: 'Appunti operativi e note interne della pratica.',
   validationInvoiceCurrencyRequired: "Se indichi l'importo fattura, seleziona anche la valuta.",
@@ -663,7 +663,7 @@ Object.assign(dictionary.en.ui, {
   linkedTo: 'Link to',
   baseQuotation: 'Base quotation / add. desc.',
   internalNotes: 'Internal notes',
-  verifications: 'Checks',
+  verifications: 'Customs checks',
   verifyMerce: 'Goods',
   verifyDocumentale: 'Documentary',
   verifyScanner: 'Scanner',
@@ -704,7 +704,7 @@ Object.assign(dictionary.en.ui, {
   sectionTransportUnits: 'Transport units',
   sectionTransportUnitsHint: 'Containers, bookings and logistics unit references.',
   sectionChecks: 'Checks',
-  sectionChecksHint: 'Operational verifications and process alerts.',
+  sectionChecksHint: 'Customs checks applied to the unit and related control status.',
   sectionNotes: 'Notes',
   sectionNotesHint: 'Operational notes and internal annotations.',
   validationInvoiceCurrencyRequired: 'If you enter an invoice amount, also select the invoice currency.',
@@ -777,8 +777,12 @@ Object.assign(dictionary.it.ui, {
   editingPracticeBannerKicker: 'Pratica aperta in modifica',
   editingReady: 'Modificabile subito',
   inVerification: 'IN VERIFICA',
-  verificationBannerHint: 'Banner operativo fisso: la pratica richiede controlli/verifiche attive.',
-  searchPreviewHint: 'La pratica selezionata si apre nel form in alto in modifica e può essere aggiornata subito.'
+  verificationBannerHint: 'Verifiche doganali attive sulla unità.',
+  searchPreviewHint: 'La pratica selezionata si apre nel form in alto in modifica e può essere aggiornata subito.',
+  customsVerificationAlertTitle: 'Attenzione unità sottoposta a verifica',
+  customsVerificationTypePrefix: 'Tipo:',
+customsVerificationTypesPrefix: 'Tipologie verifica:',
+  customsVerificationDashboardHint: 'Verifiche doganali attive sulla unità.'
 });
 
 Object.assign(dictionary.en.ui, {
@@ -816,8 +820,12 @@ Object.assign(dictionary.en.ui, {
   editingPracticeBannerKicker: 'Practice opened in edit mode',
   editingReady: 'Ready to edit',
   inVerification: 'UNDER REVIEW',
-  verificationBannerHint: 'Sticky operational banner: the practice has active checks/reviews.',
-  searchPreviewHint: 'The selected practice opens in the form above in edit mode and can be updated immediately.'
+  verificationBannerHint: 'Active customs checks on the unit.',
+  searchPreviewHint: 'The selected practice opens in the form above in edit mode and can be updated immediately.',
+  customsVerificationAlertTitle: 'Warning: unit under customs inspection',
+  customsVerificationTypePrefix: 'Type:',
+customsVerificationTypesPrefix: 'Inspection types:',
+  customsVerificationDashboardHint: 'Active customs checks on the unit.'
 });
 
 
