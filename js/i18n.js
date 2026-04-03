@@ -967,6 +967,32 @@ Object.assign(dictionary.en.ui, {
   newDraft: 'New practice'
 });
 
+Object.assign(dictionary.it.ui, {
+  workspaceMasksTitle: 'Maschere aperte',
+  workspaceMasksHint: 'Base multi-maschera attiva per Pratiche: puoi tenere aperte più maschere e passare da una all\'altra senza perdere il contesto.',
+  workspaceOpenNewMask: 'Apri nuova maschera',
+  workspaceDraftMask: 'Nuova maschera',
+  workspaceEditMask: 'Maschera pratica',
+  workspaceDraftBadge: 'Bozza',
+  workspaceEditBadge: 'In modifica',
+  workspaceCloseMask: 'Chiudi maschera',
+  workspaceMaskClosed: 'Maschera chiusa',
+  workspaceMaskOpened: 'Nuova maschera aperta'
+});
+
+Object.assign(dictionary.en.ui, {
+  workspaceMasksTitle: 'Open masks',
+  workspaceMasksHint: 'Multi-mask base is active for Practices: keep multiple masks open and switch without losing context.',
+  workspaceOpenNewMask: 'Open new mask',
+  workspaceDraftMask: 'New mask',
+  workspaceEditMask: 'Practice mask',
+  workspaceDraftBadge: 'Draft',
+  workspaceEditBadge: 'Editing',
+  workspaceCloseMask: 'Close mask',
+  workspaceMaskClosed: 'Mask closed',
+  workspaceMaskOpened: 'New mask opened'
+});
+
 
 
 Object.assign(dictionary.it.ui, {

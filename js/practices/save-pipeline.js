@@ -238,7 +238,9 @@ window.KedrixOnePracticeSavePipeline = (() => {
 
     state.selectedPracticeId = record.id;
     state.practiceDuplicateSource = null;
-    if (typeof loadPracticeIntoDraft === 'function') loadPracticeIntoDraft(record.id);
+    if (typeof loadPracticeIntoDraft === 'function') {
+      loadPracticeIntoDraft(record.id, { reuseActiveSession: true, source: 'save' });
+    }
     state.practiceOpenSource = 'save';
 
     if (typeof save === 'function') save();

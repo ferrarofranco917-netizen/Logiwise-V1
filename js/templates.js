@@ -165,6 +165,21 @@ window.KedrixOneTemplates = (() => {
       { key: 'notes', label: T.t('ui.tabNotes', 'Note') },
       { key: 'attachments', label: T.t('ui.tabAttachments', fallbackByLanguage('Allegati', 'Attachments')) }
     ];
+    const PracticeWorkspace = window.KedrixOnePracticeWorkspace;
+    const workspaceSessions = PracticeWorkspace && typeof PracticeWorkspace.listSessions === 'function'
+      ? PracticeWorkspace.listSessions(state).map((session) => ({
+          session,
+          summary: typeof PracticeWorkspace.describeSession === 'function'
+            ? PracticeWorkspace.describeSession(session, T)
+            : {
+                id: session.id,
+                label: session?.draft?.generatedReference || session?.draft?.clientName || T.t('ui.workspaceDraftMask', fallbackByLanguage('Nuova maschera', 'New mask')),
+                subtitle: session?.draft?.clientName || session?.draft?.practiceType || '—',
+                badge: session?.draft?.editingPracticeId ? T.t('ui.workspaceEditBadge', fallbackByLanguage('In modifica', 'Editing')) : T.t('ui.workspaceDraftBadge', fallbackByLanguage('Bozza', 'Draft'))
+              }
+        }))
+      : [];
+    const activeWorkspaceSessionId = state.practiceWorkspace?.activeSessionId || workspaceSessions[0]?.summary?.id || '';
     const currentTabKey = state.practiceTab || 'practice';
     const currentTab = tabs.find((tab) => tab.key === currentTabKey) || tabs[0];
     const dynamicPanelTitle = currentTabKey === 'attachments' ? T.t('ui.attachmentsPanelShellTitle', fallbackByLanguage('Gestione allegati', 'Attachment management')) : T.t('ui.dynamicPreview', 'Anteprima schema');
@@ -223,6 +238,29 @@ window.KedrixOneTemplates = (() => {
           <div class="kpi-value">${U.escapeHtml(draft.generatedReference || '—')}</div>
           <div class="kpi-hint">${U.escapeHtml(T.t('ui.clientSuggestionHint', ''))}</div>
         </article>
+      </section>
+
+      <section class="panel practice-workspace-panel">
+        <div class="panel-head">
+          <div>
+            <h3 class="panel-title">${U.escapeHtml(T.t('ui.workspaceMasksTitle', 'Maschere aperte'))}</h3>
+            <p class="panel-subtitle">${U.escapeHtml(T.t('ui.workspaceMasksHint', 'Base multi-maschera attiva per Pratiche: puoi tenere aperte più maschere e passare da una all\'altra senza perdere il contesto.'))}</p>
+          </div>
+          <button class="btn secondary" type="button" data-action="new-practice-session">${U.escapeHtml(T.t('ui.workspaceOpenNewMask', 'Apri nuova maschera'))}</button>
+        </div>
+        <div class="practice-workspace-strip">
+          ${workspaceSessions.map(({ summary }) => `
+            <div class="practice-workspace-mask ${summary.id === activeWorkspaceSessionId ? 'active' : ''}">
+              <button class="practice-workspace-switch" type="button" data-practice-session-switch="${U.escapeHtml(summary.id)}">
+                <span class="practice-workspace-mask-main">
+                  <span class="practice-workspace-mask-title">${U.escapeHtml(summary.label || '—')}</span>
+                  <span class="practice-workspace-mask-subtitle">${U.escapeHtml(summary.subtitle || '—')}</span>
+                </span>
+                <span class="badge info">${U.escapeHtml(summary.badge || '')}</span>
+              </button>
+              <button class="practice-workspace-close" type="button" data-practice-session-close="${U.escapeHtml(summary.id)}" aria-label="${U.escapeHtml(T.t('ui.workspaceCloseMask', 'Chiudi maschera'))}">×</button>
+            </div>`).join('')}
+        </div>
       </section>
 
       <section class="panel" id="practiceEditorSection">

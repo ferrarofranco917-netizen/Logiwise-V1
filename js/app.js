@@ -15,6 +15,7 @@
   const PracticeFormRenderer = window.KedrixOnePracticeFormRenderer;
   const PracticeOpenEdit = window.KedrixOnePracticeOpenEdit;
   const PracticeIdentity = window.KedrixOnePracticeIdentity;
+  const PracticeWorkspace = window.KedrixOnePracticeWorkspace;
   const PracticePersistence = window.KedrixOnePracticePersistence;
   const PracticeSavePipeline = window.KedrixOnePracticeSavePipeline;
   const PracticeContainerIntegrity = window.KedrixOnePracticeContainerIntegrity;
@@ -75,6 +76,91 @@
 
   function save() {
     Storage.save(state);
+  }
+
+  function createEmptyPracticeDraft(overrides = {}) {
+    if (PracticeIdentity && typeof PracticeIdentity.createEmptyDraft === 'function') {
+      return PracticeIdentity.createEmptyDraft(overrides);
+    }
+    return {
+      editingPracticeId: '',
+      practiceType: '',
+      clientId: '',
+      clientName: '',
+      practiceDate: new Date().toISOString().slice(0, 10),
+      category: '',
+      status: 'In attesa documenti',
+      generatedReference: '',
+      attachmentOwnerKey: overrides.attachmentOwnerKey || '',
+      dynamicData: { ...((overrides && overrides.dynamicData) || {}) },
+      ...overrides
+    };
+  }
+
+  function ensurePracticeWorkspace() {
+    if (!PracticeWorkspace || typeof PracticeWorkspace.ensureState !== 'function') return null;
+    PracticeWorkspace.ensureState(state, { createEmptyDraft: createEmptyPracticeDraft });
+    PracticeWorkspace.syncActiveDraft(state, { createEmptyDraft: createEmptyPracticeDraft });
+    return state.practiceWorkspace;
+  }
+
+  function buildDraftFromPractice(practiceId) {
+    if (!practiceId) return null;
+    if (PracticeIdentity && typeof PracticeIdentity.loadPracticeIntoDraft === 'function') {
+      const tempState = {
+        practices: state.practices,
+        selectedPracticeId: '',
+        practiceTab: 'practice',
+        _practiceValidationErrors: [],
+        practiceDuplicateSource: null,
+        draftPractice: createEmptyPracticeDraft()
+      };
+      PracticeIdentity.loadPracticeIntoDraft(tempState, practiceId, { extractPracticeDynamicData });
+      return tempState.draftPractice;
+    }
+    const practice = state.practices.find((item) => item.id === practiceId);
+    if (!practice) return null;
+    return createEmptyPracticeDraft({
+      editingPracticeId: practice.id,
+      practiceType: practice.practiceType || '',
+      clientId: practice.clientId || '',
+      clientName: practice.clientName || practice.client || '',
+      practiceDate: practice.practiceDate || practice.eta || new Date().toISOString().slice(0, 10),
+      category: practice.category || '',
+      status: practice.status || 'Operativa',
+      generatedReference: practice.reference || '',
+      attachmentOwnerKey: practice.attachmentOwnerKey || practice.id || '',
+      dynamicData: extractPracticeDynamicData(practice)
+    });
+  }
+
+  function openPracticeDraftSession(draft, options = {}) {
+    const nextDraft = draft && typeof draft === 'object' ? draft : createEmptyPracticeDraft();
+    if (PracticeWorkspace && typeof PracticeWorkspace.openDraftSession === 'function') {
+      PracticeWorkspace.openDraftSession(state, {
+        draft: nextDraft,
+        source: options.source || 'manual',
+        createEmptyDraft: createEmptyPracticeDraft
+      });
+      PracticeWorkspace.syncActiveDraft(state, { createEmptyDraft: createEmptyPracticeDraft });
+      return state.draftPractice;
+    }
+    state.draftPractice = nextDraft;
+    return state.draftPractice;
+  }
+
+  function switchPracticeDraftSession(sessionId) {
+    if (!PracticeWorkspace || typeof PracticeWorkspace.switchSession !== 'function') return null;
+    const session = PracticeWorkspace.switchSession(state, sessionId, { createEmptyDraft: createEmptyPracticeDraft });
+    PracticeWorkspace.syncActiveDraft(state, { createEmptyDraft: createEmptyPracticeDraft });
+    return session;
+  }
+
+  function closePracticeDraftSession(sessionId) {
+    if (!PracticeWorkspace || typeof PracticeWorkspace.closeSession !== 'function') return null;
+    const removed = PracticeWorkspace.closeSession(state, sessionId, { createEmptyDraft: createEmptyPracticeDraft });
+    PracticeWorkspace.syncActiveDraft(state, { createEmptyDraft: createEmptyPracticeDraft });
+    return removed;
   }
 
   function resolveOptionText(source, fallback = '') {
@@ -415,6 +501,15 @@
             ? PracticeSavePipeline.createDuplicateSafeDraft
             : null),
         extractPracticeDynamicData,
+        openDraftSession: (nextDraft, duplicateOptions = {}) => {
+          openPracticeDraftSession(nextDraft, { source: duplicateOptions.source || 'duplicate' });
+          state.practiceTab = 'practice';
+          state._practiceValidationErrors = [];
+          state.practiceSearchPreviewId = '';
+          state.practiceDuplicateSource = duplicateOptions.practiceDuplicateSource || state.practiceDuplicateSource || null;
+          state.practiceOpenSource = duplicateOptions.source || 'duplicate';
+          state.selectedPracticeId = '';
+        },
         save,
         render,
         toast,
@@ -482,6 +577,10 @@
   }
 
   function ensureDraftPractice() {
+    if (PracticeWorkspace && typeof PracticeWorkspace.syncActiveDraft === 'function') {
+      ensurePracticeWorkspace();
+      return state.draftPractice;
+    }
     return PracticeIdentity && typeof PracticeIdentity.ensureDraft === 'function'
       ? PracticeIdentity.ensureDraft(state)
       : (state.draftPractice || (state.draftPractice = {
@@ -497,9 +596,20 @@
       }));
   }
 
-  function resetPracticeDraft() {
+  function resetPracticeDraft(options = {}) {
+    const overrides = options.overrides || {};
+    if (PracticeWorkspace && typeof PracticeWorkspace.openDraftSession === 'function') {
+      openPracticeDraftSession(createEmptyPracticeDraft(overrides), { source: options.source || 'new' });
+      state.practiceTab = options.practiceTab || 'practice';
+      state._practiceValidationErrors = [];
+      state.practiceSearchPreviewId = '';
+      state.practiceOpenSource = '';
+      state.practiceDuplicateSource = null;
+      state.selectedPracticeId = '';
+      return;
+    }
     if (PracticeIdentity && typeof PracticeIdentity.resetDraft === 'function') {
-      PracticeIdentity.resetDraft(state);
+      PracticeIdentity.resetDraft(state, { overrides, practiceTab: options.practiceTab || 'practice' });
       return;
     }
     state.draftPractice = {
@@ -512,9 +622,10 @@
       status: 'In attesa documenti',
       generatedReference: '',
       attachmentOwnerKey: PracticeAttachments && typeof PracticeAttachments.createDraftOwnerKey === 'function' ? PracticeAttachments.createDraftOwnerKey() : '',
-      dynamicData: {}
+      dynamicData: {},
+      ...overrides
     };
-    state.practiceTab = 'practice';
+    state.practiceTab = options.practiceTab || 'practice';
     state._practiceValidationErrors = [];
     state.practiceSearchPreviewId = '';
     state.practiceOpenSource = '';
@@ -548,7 +659,23 @@
     return Utils.buildFallbackPracticeReference(draft.clientName || 'PR', state.practices, draft.practiceDate);
   }
 
-  function loadPracticeIntoDraft(practiceId) {
+  function loadPracticeIntoDraft(practiceId, options = {}) {
+    if (PracticeWorkspace && typeof PracticeWorkspace.openPracticeSession === 'function') {
+      const session = PracticeWorkspace.openPracticeSession(state, practiceId, {
+        createDraft: buildDraftFromPractice,
+        createEmptyDraft: createEmptyPracticeDraft,
+        source: options.source || state.practiceOpenSource || 'manual',
+        refreshExisting: options.refreshExisting === true,
+        reuseActiveSession: Boolean(options.reuseActiveSession)
+      });
+      if (!session) return;
+      state.selectedPracticeId = practiceId;
+      state.practiceTab = options.practiceTab || 'practice';
+      state._practiceValidationErrors = [];
+      state.practiceDuplicateSource = null;
+      PracticeWorkspace.syncActiveDraft(state, { createEmptyDraft: createEmptyPracticeDraft });
+      return;
+    }
     if (PracticeIdentity && typeof PracticeIdentity.loadPracticeIntoDraft === 'function') {
       PracticeIdentity.loadPracticeIntoDraft(state, practiceId, { extractPracticeDynamicData });
       return;
@@ -1102,7 +1229,7 @@
         PracticeAttachments.syncRecordSummary(state, record);
       }
       state.selectedPracticeId = record.id;
-      loadPracticeIntoDraft(record.id);
+      loadPracticeIntoDraft(record.id, { reuseActiveSession: true, source: 'save' });
       state.practiceOpenSource = 'save';
       save();
       render();
@@ -1267,6 +1394,7 @@ function renderDocumentPreviewPanel() {
     }
 
     if (route === 'practices' || route === 'practices/elenco-pratiche') {
+      ensurePracticeWorkspace();
       main.innerHTML = Templates.practices(state, selectedPractice(), filteredPractices(), practiceSearchResults());
       bindPracticeEvents();
       return;
@@ -1488,6 +1616,25 @@ resetDocumentTypeOptions?.addEventListener('click', () => {
   }
 
   document.addEventListener('click', (event) => {
+    const sessionSwitch = event.target.closest('[data-practice-session-switch]');
+    if (sessionSwitch) {
+      switchPracticeDraftSession(sessionSwitch.dataset.practiceSessionSwitch);
+      save();
+      render();
+      focusPracticeEditor('manual', ensureDraftPractice().editingPracticeId || '');
+      return;
+    }
+
+    const sessionClose = event.target.closest('[data-practice-session-close]');
+    if (sessionClose) {
+      event.stopPropagation();
+      closePracticeDraftSession(sessionClose.dataset.practiceSessionClose);
+      save();
+      render();
+      toast(I18N.t('ui.workspaceMaskClosed', 'Maschera chiusa'), 'info');
+      return;
+    }
+
     const nav = event.target.closest('[data-route]');
     if (nav) {
       navigate(nav.dataset.route);
@@ -1532,6 +1679,13 @@ resetDocumentTypeOptions?.addEventListener('click', () => {
     if (action.dataset.action === 'save-backup') {
       save();
       toast(I18N.t('ui.backupUpdated', 'Backup locale aggiornato correttamente'), 'success');
+    }
+
+    if (action.dataset.action === 'new-practice-session') {
+      resetPracticeDraft({ source: 'new-mask' });
+      save();
+      render();
+      toast(I18N.t('ui.workspaceMaskOpened', 'Nuova maschera aperta'), 'info');
     }
 
     if (action.dataset.action === 'duplicate-practice-draft') {

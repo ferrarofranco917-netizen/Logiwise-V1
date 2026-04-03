@@ -1,0 +1,227 @@
+window.KedrixOnePracticeWorkspace = (() => {
+  'use strict';
+
+  function nowIso() {
+    return new Date().toISOString();
+  }
+
+  function nextSessionId() {
+    return `practice-mask-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  }
+
+  function cloneDraft(draft = {}) {
+    try {
+      return JSON.parse(JSON.stringify(draft || {}));
+    } catch (error) {
+      return {
+        ...(draft || {}),
+        dynamicData: { ...((draft && draft.dynamicData) || {}) }
+      };
+    }
+  }
+
+  function normalizeSession(session = {}, createEmptyDraft) {
+    const fallbackDraft = typeof createEmptyDraft === 'function' ? createEmptyDraft() : { dynamicData: {} };
+    return {
+      id: String(session.id || '').trim() || nextSessionId(),
+      source: String(session.source || '').trim() || 'manual',
+      openedAt: session.openedAt || nowIso(),
+      lastTouchedAt: session.lastTouchedAt || session.openedAt || nowIso(),
+      draft: cloneDraft(session.draft && typeof session.draft === 'object' ? session.draft : fallbackDraft)
+    };
+  }
+
+  function createSession(options = {}) {
+    const { draft, source = 'manual', createEmptyDraft } = options;
+    const fallbackDraft = typeof createEmptyDraft === 'function' ? createEmptyDraft() : { dynamicData: {} };
+    return normalizeSession({
+      id: nextSessionId(),
+      source,
+      openedAt: nowIso(),
+      lastTouchedAt: nowIso(),
+      draft: draft && typeof draft === 'object' ? draft : fallbackDraft
+    }, createEmptyDraft);
+  }
+
+  function ensureState(state, options = {}) {
+    if (!state || typeof state !== 'object') return null;
+    const { createEmptyDraft } = options;
+    if (!state.practiceWorkspace || typeof state.practiceWorkspace !== 'object') {
+      state.practiceWorkspace = {
+        activeSessionId: '',
+        sessions: []
+      };
+    }
+
+    const workspace = state.practiceWorkspace;
+    workspace.sessions = Array.isArray(workspace.sessions)
+      ? workspace.sessions.map((session) => normalizeSession(session, createEmptyDraft))
+      : [];
+
+    if (!workspace.sessions.length) {
+      const seedDraft = state.draftPractice && typeof state.draftPractice === 'object'
+        ? cloneDraft(state.draftPractice)
+        : (typeof createEmptyDraft === 'function' ? createEmptyDraft() : { dynamicData: {} });
+      workspace.sessions = [createSession({ draft: seedDraft, source: 'bootstrap', createEmptyDraft })];
+    }
+
+    const activeExists = workspace.sessions.some((session) => session.id === workspace.activeSessionId);
+    if (!activeExists) workspace.activeSessionId = workspace.sessions[0].id;
+    return workspace;
+  }
+
+  function listSessions(state, options = {}) {
+    const workspace = ensureState(state, options);
+    return workspace ? [...workspace.sessions] : [];
+  }
+
+  function getActiveSession(state, options = {}) {
+    const workspace = ensureState(state, options);
+    if (!workspace) return null;
+    return workspace.sessions.find((session) => session.id === workspace.activeSessionId) || workspace.sessions[0] || null;
+  }
+
+  function touchSession(session) {
+    if (!session || typeof session !== 'object') return session;
+    session.lastTouchedAt = nowIso();
+    return session;
+  }
+
+  function syncActiveDraft(state, options = {}) {
+    const { createEmptyDraft } = options;
+    const workspace = ensureState(state, { createEmptyDraft });
+    if (!workspace) return null;
+    let active = getActiveSession(state, { createEmptyDraft });
+    if (!active) {
+      active = createSession({ createEmptyDraft, source: 'bootstrap' });
+      workspace.sessions = [active];
+      workspace.activeSessionId = active.id;
+    }
+    touchSession(active);
+    state.draftPractice = active.draft;
+    state.selectedPracticeId = String(active.draft?.editingPracticeId || '').trim();
+    return active.draft;
+  }
+
+  function switchSession(state, sessionId, options = {}) {
+    const { createEmptyDraft } = options;
+    const workspace = ensureState(state, { createEmptyDraft });
+    if (!workspace) return null;
+    if (!workspace.sessions.some((session) => session.id === sessionId)) return getActiveSession(state, { createEmptyDraft });
+    workspace.activeSessionId = sessionId;
+    syncActiveDraft(state, { createEmptyDraft });
+    return getActiveSession(state, { createEmptyDraft });
+  }
+
+  function openDraftSession(state, options = {}) {
+    const { draft, source = 'manual', createEmptyDraft } = options;
+    const workspace = ensureState(state, { createEmptyDraft });
+    if (!workspace) return null;
+    const session = createSession({ draft, source, createEmptyDraft });
+    workspace.sessions = [session, ...workspace.sessions];
+    workspace.activeSessionId = session.id;
+    syncActiveDraft(state, { createEmptyDraft });
+    return session;
+  }
+
+  function openPracticeSession(state, practiceId, options = {}) {
+    const {
+      createDraft,
+      createEmptyDraft,
+      source = 'manual',
+      refreshExisting = false,
+      reuseActiveSession = false
+    } = options;
+
+    if (!practiceId) return null;
+    const workspace = ensureState(state, { createEmptyDraft });
+    if (!workspace) return null;
+
+    const builtDraft = typeof createDraft === 'function' ? createDraft(practiceId) : null;
+    if (!builtDraft) return null;
+
+    let targetSession = null;
+    const activeSession = getActiveSession(state, { createEmptyDraft });
+    const existingSession = workspace.sessions.find((session) => String(session.draft?.editingPracticeId || '') === String(practiceId)) || null;
+
+    if (reuseActiveSession && activeSession) {
+      targetSession = activeSession;
+      targetSession.draft = cloneDraft(builtDraft);
+    } else if (existingSession) {
+      targetSession = existingSession;
+      if (refreshExisting) targetSession.draft = cloneDraft(builtDraft);
+    } else {
+      targetSession = createSession({ draft: builtDraft, source, createEmptyDraft });
+      workspace.sessions = [targetSession, ...workspace.sessions];
+    }
+
+    targetSession.source = source;
+    touchSession(targetSession);
+    workspace.activeSessionId = targetSession.id;
+    syncActiveDraft(state, { createEmptyDraft });
+    return targetSession;
+  }
+
+  function closeSession(state, sessionId, options = {}) {
+    const { createEmptyDraft } = options;
+    const workspace = ensureState(state, { createEmptyDraft });
+    if (!workspace) return null;
+    const index = workspace.sessions.findIndex((session) => session.id === sessionId);
+    if (index === -1) return getActiveSession(state, { createEmptyDraft });
+
+    const [removed] = workspace.sessions.splice(index, 1);
+    if (!workspace.sessions.length) {
+      workspace.sessions = [createSession({ createEmptyDraft, source: 'new' })];
+    }
+
+    if (workspace.activeSessionId === sessionId) {
+      const fallback = workspace.sessions[Math.max(0, index - 1)] || workspace.sessions[0];
+      workspace.activeSessionId = fallback.id;
+    }
+
+    syncActiveDraft(state, { createEmptyDraft });
+    return removed;
+  }
+
+  function describeSession(session, i18n) {
+    const draft = session?.draft || {};
+    const isEditing = Boolean(String(draft.editingPracticeId || '').trim());
+    const reference = String(draft.generatedReference || '').trim();
+    const clientName = String(draft.clientName || '').trim();
+    const practiceType = String(draft.practiceType || '').trim();
+    const fallbackDraft = typeof i18n?.t === 'function'
+      ? i18n.t('ui.workspaceDraftMask', 'Nuova maschera')
+      : 'Nuova maschera';
+    const fallbackEdit = typeof i18n?.t === 'function'
+      ? i18n.t('ui.workspaceEditMask', 'Maschera pratica')
+      : 'Maschera pratica';
+    const draftBadge = typeof i18n?.t === 'function'
+      ? i18n.t('ui.workspaceDraftBadge', 'Bozza')
+      : 'Bozza';
+    const editBadge = typeof i18n?.t === 'function'
+      ? i18n.t('ui.workspaceEditBadge', 'In modifica')
+      : 'In modifica';
+
+    return {
+      id: session?.id || '',
+      label: reference || clientName || (isEditing ? fallbackEdit : fallbackDraft),
+      subtitle: clientName || practiceType || '—',
+      badge: isEditing ? editBadge : draftBadge,
+      isEditing,
+      openedAt: session?.openedAt || '',
+      lastTouchedAt: session?.lastTouchedAt || ''
+    };
+  }
+
+  return {
+    closeSession,
+    describeSession,
+    ensureState,
+    getActiveSession,
+    listSessions,
+    openDraftSession,
+    openPracticeSession,
+    switchSession,
+    syncActiveDraft
+  };
+})();

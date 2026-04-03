@@ -83,6 +83,7 @@ window.KedrixOnePracticeDuplicate = (() => {
       buildCurrentPracticeReference,
       createDuplicateSafeDraft,
       extractPracticeDynamicData,
+      openDraftSession,
       save,
       render,
       toast,
@@ -102,18 +103,31 @@ window.KedrixOnePracticeDuplicate = (() => {
 
     if (!nextDraft) return { ok: false, reason: 'duplicate-draft-build-failed' };
 
-    state.draftPractice = nextDraft;
-    state.practiceTab = 'practice';
-    state._practiceValidationErrors = [];
-    state.practiceSearchPreviewId = '';
-    state.practiceOpenSource = source;
-    state.practiceDuplicateSource = {
+    const duplicateContext = {
       id: sourcePractice.id,
       reference: sourcePractice.reference || '',
       clientName: sourcePractice.clientName || sourcePractice.client || '',
       practiceType: sourcePractice.practiceType || '',
       practiceTypeLabel: sourcePractice.practiceTypeLabel || sourcePractice.practiceType || ''
     };
+
+    if (typeof openDraftSession === 'function') {
+      openDraftSession(nextDraft, {
+        source,
+        practiceDuplicateSource: duplicateContext
+      });
+    } else {
+      state.draftPractice = nextDraft;
+      state.practiceTab = 'practice';
+      state._practiceValidationErrors = [];
+      state.practiceSearchPreviewId = '';
+      state.practiceOpenSource = source;
+      state.practiceDuplicateSource = duplicateContext;
+      state.selectedPracticeId = '';
+    }
+
+    state.practiceOpenSource = source;
+    state.practiceDuplicateSource = duplicateContext;
     state.selectedPracticeId = '';
 
     if (typeof buildCurrentPracticeReference === 'function') {

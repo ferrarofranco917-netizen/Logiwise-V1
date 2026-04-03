@@ -37,6 +37,10 @@ window.KedrixOneData = (() => {
         attachmentOwnerKey: '',
         dynamicData: {}
       },
+      practiceWorkspace: {
+        activeSessionId: '',
+        sessions: []
+      },
       practiceDuplicateSource: null,
       masterDataModule: {
         activeEntity: 'client',
