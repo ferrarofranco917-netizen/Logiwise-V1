@@ -209,7 +209,8 @@ window.KedrixOnePracticeSavePipeline = (() => {
       save,
       render,
       loadPracticeIntoDraft,
-      focusPracticeEditor
+      focusPracticeEditor,
+      syncSavedPracticeSessions
     } = options;
 
     const matchedClient = typeof getClientById === 'function' ? getClientById(draft.clientId) : null;
@@ -221,6 +222,7 @@ window.KedrixOnePracticeSavePipeline = (() => {
     if (isEditing) {
       const index = ((state && state.practices) || []).findIndex((item) => item.id === draft.editingPracticeId);
       if (index >= 0) state.practices[index] = record;
+      else state.practices.unshift(record);
     } else {
       state.practices.unshift(record);
     }
@@ -240,6 +242,9 @@ window.KedrixOnePracticeSavePipeline = (() => {
     state.practiceDuplicateSource = null;
     if (typeof loadPracticeIntoDraft === 'function') {
       loadPracticeIntoDraft(record.id, { reuseActiveSession: true, source: 'save' });
+    }
+    if (typeof syncSavedPracticeSessions === 'function') {
+      syncSavedPracticeSessions(record);
     }
     state.practiceOpenSource = 'save';
 
@@ -273,7 +278,8 @@ window.KedrixOnePracticeSavePipeline = (() => {
       save,
       render,
       loadPracticeIntoDraft,
-      focusPracticeEditor
+      focusPracticeEditor,
+      syncSavedPracticeSessions
     } = options;
 
     const preSaveResult = runPreSaveHooks({ state, draft });
@@ -310,6 +316,7 @@ window.KedrixOnePracticeSavePipeline = (() => {
       render,
       loadPracticeIntoDraft,
       focusPracticeEditor,
+      syncSavedPracticeSessions,
       logTexts: {
         updated: `${updatedLogPrefix} ${record.reference}.`,
         created: `${createdLogPrefix} ${record.reference}.`,

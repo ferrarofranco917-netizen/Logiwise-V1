@@ -217,6 +217,42 @@ window.KedrixOnePracticeWorkspace = (() => {
     return targetSession;
   }
 
+
+  function syncPracticeSessions(state, practiceId, options = {}) {
+    const {
+      createDraft,
+      createEmptyDraft,
+      keepDirty = false
+    } = options;
+
+    if (!practiceId) return [];
+    const workspace = ensureState(state, { createEmptyDraft });
+    if (!workspace) return [];
+    const rebuiltDraft = typeof createDraft === 'function' ? createDraft(practiceId) : null;
+    if (!rebuiltDraft) return [];
+
+    const touched = [];
+    workspace.sessions.forEach((session) => {
+      if (String(session?.draft?.editingPracticeId || '') !== String(practiceId)) return;
+      const existingUiState = session.uiState && typeof session.uiState === 'object'
+        ? { ...session.uiState }
+        : { tab: 'practice' };
+      session.draft = cloneDraft(rebuiltDraft);
+      session.uiState = {
+        tab: String(existingUiState.tab || 'practice').trim() || 'practice'
+      };
+      if (!keepDirty) session.isDirty = false;
+      touchSession(session);
+      touched.push(session);
+    });
+
+    if (touched.length && workspace.activeSessionId) {
+      syncActiveDraft(state, { createEmptyDraft });
+    }
+
+    return touched;
+  }
+
   function closeSession(state, sessionId, options = {}) {
     const { createEmptyDraft } = options;
     const workspace = ensureState(state, { createEmptyDraft });
@@ -283,6 +319,7 @@ window.KedrixOnePracticeWorkspace = (() => {
     listSessions,
     openDraftSession,
     openPracticeSession,
+    syncPracticeSessions,
     setActiveDirty,
     setActiveTab,
     setSessionDirty,

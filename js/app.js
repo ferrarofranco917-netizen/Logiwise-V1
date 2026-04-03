@@ -300,6 +300,18 @@
     return state.practices.find((practice) => practice.id === state.selectedPracticeId) || null;
   }
 
+  function syncSavedPracticeSessions(record) {
+    if (!record || !record.id) return [];
+    const touched = PracticeWorkspace && typeof PracticeWorkspace.syncPracticeSessions === 'function'
+      ? PracticeWorkspace.syncPracticeSessions(state, record.id, {
+          createDraft: buildDraftFromPractice,
+          createEmptyDraft: createEmptyPracticeDraft
+        })
+      : [];
+    rebuildPracticeSearchIndex();
+    return touched;
+  }
+
   function rebuildPracticeSearchIndex() {
     if (PracticeSearchUI && typeof PracticeSearchUI.rebuildIndex === 'function') {
       runtimePracticeSearchIndex = PracticeSearchUI.rebuildIndex(state.practices, runtimePracticeSearchIndex);
@@ -1179,7 +1191,8 @@
           save,
           render,
           loadPracticeIntoDraft,
-          focusPracticeEditor
+          focusPracticeEditor,
+          syncSavedPracticeSessions
         });
         if (!result.ok && Array.isArray(result.errors) && result.errors.length) {
           state._practiceValidationErrors = result.errors;
