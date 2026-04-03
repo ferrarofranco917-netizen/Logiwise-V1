@@ -216,9 +216,11 @@ window.KedrixOneTemplates = (() => {
       ? T.t('ui.openedFromSearch', 'Aperta da ricerca')
       : state.practiceOpenSource === 'list'
         ? T.t('ui.openedFromList', 'Aperta da elenco')
-        : state.practiceOpenSource === 'save'
-          ? T.t('ui.openedAfterSave', 'Pratica attiva')
-          : '';
+        : state.practiceOpenSource === 'documents'
+          ? T.t('ui.openedFromDocuments', 'Aperta da documenti')
+          : state.practiceOpenSource === 'save'
+            ? T.t('ui.openedAfterSave', 'Pratica attiva')
+            : '';
 
     return `
       <section class="hero">

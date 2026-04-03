@@ -488,20 +488,28 @@
     if (PracticeOpenEdit && typeof PracticeOpenEdit.openForEditing === 'function') {
       PracticeOpenEdit.openForEditing(practiceId, {
         source: options.source || 'manual',
+        targetRoute: options.targetRoute || '',
         state,
         main,
         save,
         render,
+        navigate,
+        toast,
+        i18n: I18N,
         loadPracticeIntoDraft
       });
       return;
     }
     if (!practiceId) return;
-    loadPracticeIntoDraft(practiceId);
+    loadPracticeIntoDraft(practiceId, { source: options.source || 'manual' });
     state._practiceValidationErrors = [];
     state.practiceSearchPreviewId = options.source === 'search' ? practiceId : '';
     state.practiceOpenSource = options.source || 'manual';
     save();
+    if (options.targetRoute) {
+      navigate(options.targetRoute);
+      return;
+    }
     render();
   }
 
@@ -1407,7 +1415,10 @@ function renderDocumentPreviewPanel() {
     main.querySelectorAll('[data-document-open-practice]').forEach((button) => {
       button.addEventListener('click', (event) => {
         event.stopPropagation();
-        openPracticeForEditing(button.dataset.documentOpenPractice, { source: 'search' });
+        openPracticeForEditing(button.dataset.documentOpenPractice, {
+          source: 'documents',
+          targetRoute: 'practices'
+        });
       });
     });
   }
