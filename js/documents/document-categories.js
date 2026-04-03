@@ -38,6 +38,24 @@ window.KedrixOneDocumentCategories = (() => {
     }));
   }
 
+  function createCanonicalValueMap() {
+    const entries = [];
+    DEFAULT_OPTIONS.forEach((item) => {
+      entries.push([item.value, item.value]);
+      entries.push([slugify(item.value), item.value]);
+      entries.push([slugify(item.fallback), item.value]);
+    });
+    return new Map(entries);
+  }
+
+  const CANONICAL_VALUE_MAP = createCanonicalValueMap();
+
+  function canonicalizeValue(rawValue) {
+    const direct = String(rawValue || '').trim();
+    if (!direct) return '';
+    return CANONICAL_VALUE_MAP.get(direct) || CANONICAL_VALUE_MAP.get(slugify(direct)) || slugify(direct);
+  }
+
   function ensureConfigBucket(state) {
     if (!state.companyConfig || typeof state.companyConfig !== 'object') state.companyConfig = {};
     if (!state.companyConfig.documents || typeof state.companyConfig.documents !== 'object') state.companyConfig.documents = {};
@@ -51,7 +69,7 @@ window.KedrixOneDocumentCategories = (() => {
 
     (Array.isArray(rawOptions) ? rawOptions : []).forEach((entry) => {
       if (!entry || typeof entry !== 'object') return;
-      const value = slugify(entry.value || entry.label);
+      const value = canonicalizeValue(entry.value || entry.label);
       const fallbackEntry = fallbackMap.get(value);
       const label = fallbackEntry
         ? fallbackEntry.label
@@ -93,7 +111,7 @@ window.KedrixOneDocumentCategories = (() => {
       const trimmed = String(line || '').trim();
       if (!trimmed) return;
       const parts = trimmed.split('|');
-      const value = slugify(parts[0]);
+      const value = canonicalizeValue(parts[0]);
       const label = String(parts.length > 1 ? parts.slice(1).join('|') : parts[0]).trim();
       if (!value || !label) return;
       items.push({ value, label });
