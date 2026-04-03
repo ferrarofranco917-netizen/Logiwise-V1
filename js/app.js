@@ -1038,6 +1038,7 @@
         portLoading: normalizedSeaPortLoading || draft.dynamicData.airportDeparture || draft.dynamicData.portLoading || '',
         portDischarge: normalizedSeaPortDischarge || draft.dynamicData.airportDestination || draft.dynamicData.portDischarge || '',
         containerCode: draft.dynamicData.containerCode || '',
+        transportUnitType: draft.dynamicData.transportUnitType || '',
         packageCount: draft.dynamicData.packageCount || '',
         grossWeight: draft.dynamicData.grossWeight || '',
         goodsDescription: draft.dynamicData.goodsDescription || '',

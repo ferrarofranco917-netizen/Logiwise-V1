@@ -85,7 +85,7 @@ window.KedrixOnePracticeFormLayout = (() => {
       detail: {
         goods: ['articleCode', 'taric', 'goodsDescription', 'packageType', 'packageCount'],
         measures: ['grossWeight', 'netWeight', 'teu', 'cbm', 'vgm'],
-        transportUnits: ['containerCode'],
+        transportUnits: ['containerCode', 'transportUnitType'],
         checks: ['inspectionFlags']
       },
       notes: { notes: ['internalNotes'] }
@@ -101,7 +101,7 @@ window.KedrixOnePracticeFormLayout = (() => {
       detail: {
         goods: ['articleCode', 'taric', 'goodsDescription', 'packageType', 'packageCount'],
         measures: ['grossWeight', 'netWeight', 'teu', 'cbm', 'vgm'],
-        transportUnits: ['containerCode'],
+        transportUnits: ['containerCode', 'transportUnitType'],
         checks: ['inspectionFlags']
       },
       notes: { notes: ['internalNotes'] }
@@ -149,7 +149,7 @@ window.KedrixOnePracticeFormLayout = (() => {
       detail: {
         goods: ['articleCode', 'taric', 'goodsDescription', 'packageCount'],
         measures: ['grossWeight', 'netWeight', 'cbm', 'linearMeters'],
-        transportUnits: ['containerCode', 'booking'],
+        transportUnits: ['containerCode', 'transportUnitType', 'booking'],
         checks: []
       },
       notes: { notes: ['internalNotes'] }
@@ -165,7 +165,7 @@ window.KedrixOnePracticeFormLayout = (() => {
       detail: {
         goods: ['articleCode', 'taric', 'goodsDescription', 'packageCount'],
         measures: ['grossWeight', 'netWeight', 'cbm', 'linearMeters'],
-        transportUnits: ['containerCode', 'booking'],
+        transportUnits: ['containerCode', 'transportUnitType', 'booking'],
         checks: []
       },
       notes: { notes: ['internalNotes'] }
@@ -181,7 +181,7 @@ window.KedrixOnePracticeFormLayout = (() => {
       detail: {
         goods: ['articleCode', 'taric', 'goodsDescription', 'packageCount'],
         measures: ['grossWeight', 'netWeight', 'cbm', 'linearMeters', 'vgm'],
-        transportUnits: ['containerCode'],
+        transportUnits: ['containerCode', 'transportUnitType'],
         checks: []
       },
       notes: { notes: ['internalNotes'] }

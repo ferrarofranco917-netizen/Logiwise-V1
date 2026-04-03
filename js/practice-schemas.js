@@ -6,6 +6,7 @@ window.KedrixOnePracticeSchemas = (() => {
   const CustomsData = window.KedrixOneCustomsData || {};
   const TaricData = window.KedrixOneTaricData || {};
   const GoodsMasterData = window.KedrixOneGoodsMasterData || {};
+  const TransportUnitData = window.KedrixOneTransportUnitData || {};
 
   const incoterms2020 = ['EXW', 'FCA', 'CPT', 'CIP', 'DAP', 'DPU', 'DDP', 'FAS', 'FOB', 'CFR', 'CIF'];
 
@@ -34,7 +35,8 @@ window.KedrixOnePracticeSchemas = (() => {
       customsOffices: Array.isArray(CustomsData.defaultCustomsOffices) ? CustomsData.defaultCustomsOffices.map((entry) => ({ ...entry })) : [],
       taricCodes: Array.isArray(TaricData.defaultTaricCodes) ? TaricData.defaultTaricCodes.map((entry) => ({ ...entry })) : [],
       articleCodes: Array.isArray(GoodsMasterData.defaultArticleCodes) ? GoodsMasterData.defaultArticleCodes.map((entry) => ({ ...entry })) : [],
-      packageTypes: Array.isArray(GoodsMasterData.defaultPackageTypes) ? GoodsMasterData.defaultPackageTypes.map((entry) => ({ ...entry })) : []
+      packageTypes: Array.isArray(GoodsMasterData.defaultPackageTypes) ? GoodsMasterData.defaultPackageTypes.map((entry) => ({ ...entry })) : [],
+      transportUnitTypes: Array.isArray(TransportUnitData.defaultTransportUnitTypes) ? TransportUnitData.defaultTransportUnitTypes.map((entry) => ({ ...entry })) : []
     }
   };
 
@@ -410,6 +412,20 @@ window.KedrixOnePracticeSchemas = (() => {
   appendUniqueFields('sea_export', 'practice', [
     { name: 'customsDate', type: 'date', labelKey: 'ui.customsDate' }
   ]);
+
+  const transportUnitTypeField = {
+    name: 'transportUnitType',
+    type: 'text',
+    labelKey: 'ui.transportUnitType',
+    suggestionKey: 'transportUnitTypes',
+    hintKey: 'ui.transportUnitTypeHint',
+    hintFallback: 'Seleziona o digita la tipologia unità/trasporto. Esempi: 20 STANDARD DRY 22G0, 20 BULK 22B0, RoRo, LCL, LTL, FTL.'
+  };
+
+  ['sea_import', 'sea_export', 'road_import', 'road_export', 'warehouse'].forEach((schemaKey) => {
+    appendUniqueFields(schemaKey, 'detail', [transportUnitTypeField]);
+    moveFieldAfter(schemaKey, 'detail', 'transportUnitType', 'containerCode');
+  });
 
   appendUniqueFields('air_import', 'practice', [
     { name: 'foreignInvoice', type: 'text', labelKey: 'ui.foreignInvoice' },

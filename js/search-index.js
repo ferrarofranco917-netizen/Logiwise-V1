@@ -33,6 +33,7 @@ window.KedrixOneSearchIndex = (() => {
     cmrNumber: 'CMR',
     booking: 'Booking',
     containerCode: 'Container',
+    transportUnitType: 'Tipologia unità',
     pickupPlace: 'Ritiro',
     deliveryPlace: 'Consegna',
     terminal: 'Terminal',

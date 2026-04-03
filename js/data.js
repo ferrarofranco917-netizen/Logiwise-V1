@@ -6,6 +6,8 @@ window.KedrixOneData = (() => {
   const defaultSeaPortLocodes = Array.isArray(PortData.defaultSeaPortLocodes) ? PortData.defaultSeaPortLocodes.map((entry) => ({ ...entry })) : [];
   const defaultAirports = Array.isArray(PortData.defaultAirports) ? PortData.defaultAirports.map((entry) => ({ ...entry })) : [];
   const defaultCustomsOffices = Array.isArray(CustomsData.defaultCustomsOffices) ? CustomsData.defaultCustomsOffices.map((entry) => ({ ...entry })) : [];
+  const TransportUnitData = window.KedrixOneTransportUnitData || {};
+  const defaultTransportUnitTypes = Array.isArray(TransportUnitData.defaultTransportUnitTypes) ? TransportUnitData.defaultTransportUnitTypes.map((entry) => ({ ...entry })) : [];
 
   function initialState() {
     return {
@@ -102,7 +104,8 @@ window.KedrixOneData = (() => {
             consignees: ['Michelin Italia', 'Aprica S.p.A.', 'Cliente Francia'],
             shippers: ['Monge & C. S.p.A.'],
             vessels: ['MSC LORETO', 'MAERSK HAMBURG'],
-            taricCodes: [{ value: '40111000', label: '40111000', description: 'Pneumatici nuovi di gomma', displayValue: '40111000 · Pneumatici nuovi di gomma' }]
+            taricCodes: [{ value: '40111000', label: '40111000', description: 'Pneumatici nuovi di gomma', displayValue: '40111000 · Pneumatici nuovi di gomma' }],
+            transportUnitTypes: defaultTransportUnitTypes
           }
         }
       },
@@ -261,6 +264,7 @@ window.KedrixOneData = (() => {
             packageCount: '18',
             grossWeight: '22100',
             containerCode: 'MSCU1234567',
+            transportUnitType: '20 STANDARD DRY 22G0',
             taric: '40111000'
           },
           dynamicLabels: {
@@ -270,7 +274,7 @@ window.KedrixOneData = (() => {
             arrivalDate: 'Data arrivo', freightAmount: 'Nolo', freightCurrency: 'Valuta nolo', booking: 'Booking',
             policyNumber: 'Polizza', policyOriginals: 'Originali', policyCopies: 'Copie', mbl: 'MBL', customsOffice: 'Dogana',
             baseQuotation: 'Quotaz. base / Des. agg.', invoiceCurrency: 'Valuta fattura', packingList: 'Packing list', customsDate: 'Data dogana', incoterm: 'Incoterm', goodsDescription: 'Descrizione merce', packageCount: 'Colli',
-            grossWeight: 'Peso lordo', containerCode: 'Container', taric: 'TARIC'
+            grossWeight: 'Peso lordo', containerCode: 'Container', transportUnitType: 'Tipologia unità / trasporto', taric: 'TARIC'
           }
         },
         {
@@ -316,7 +320,8 @@ window.KedrixOneData = (() => {
             goodsDescription: 'Pet food palletizzato',
             packageCount: '12',
             grossWeight: '8200',
-            booking: 'BK-RD-4412'
+            booking: 'BK-RD-4412',
+            transportUnitType: 'FTL'
           },
           dynamicLabels: {
             shipper: 'Mittente', consignee: 'Destinatario', carrier: 'Vettore', pickupDate: 'Data ritiro',
@@ -372,13 +377,14 @@ window.KedrixOneData = (() => {
             packageCount: '6',
             grossWeight: '4300',
             containerCode: 'OOLU7654321',
+            transportUnitType: 'LCL',
             inspectionFlags: ['ui.verifyDocumentale', 'ui.verifyScanner']
           },
           dynamicLabels: {
             importer: 'Importatore', consignee: 'Destinatario', company: 'Compagnia marittima',
             portLoading: 'Porto di imbarco', portDischarge: 'Porto di sbarco', arrivalDate: 'Data arrivo',
             booking: 'Booking', hbl: 'HBL', customsOffice: 'Dogana', incoterm: 'Incoterm',
-            goodsDescription: 'Descrizione merce', packageCount: 'Colli', grossWeight: 'Peso lordo', containerCode: 'Container'
+            goodsDescription: 'Descrizione merce', packageCount: 'Colli', grossWeight: 'Peso lordo', containerCode: 'Container', transportUnitType: 'Tipologia unità / trasporto'
           }
         }
       ],
