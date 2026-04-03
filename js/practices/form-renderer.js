@@ -5,7 +5,10 @@ window.KedrixOnePracticeFormRenderer = (() => {
   const I18N = window.KedrixOneI18N;
   const PracticeSchemas = window.KedrixOnePracticeSchemas;
   const PracticeFormLayout = window.KedrixOnePracticeFormLayout;
-  const MasterDataQuickAdd = window.KedrixOneMasterDataQuickAdd;
+
+  function getMasterDataQuickAdd() {
+    return window.KedrixOneMasterDataQuickAdd;
+  }
 
   function resolveOptionText(source, fallback = '') {
     if (source === null || source === undefined) return String(fallback || '').trim();
@@ -73,6 +76,7 @@ window.KedrixOnePracticeFormRenderer = (() => {
 
   function renderFieldHTML(type, tab, draft, companyConfig, field) {
     const label = `${Utils.escapeHtml(I18N.t(field.labelKey, field.name))}${field.required ? ' <span class="required-mark">*</span>' : ''}`;
+    const MasterDataQuickAdd = getMasterDataQuickAdd();
     const quickAddButton = MasterDataQuickAdd && typeof MasterDataQuickAdd.buildQuickAddButton === 'function'
       ? MasterDataQuickAdd.buildQuickAddButton(field.name, I18N)
       : '';
@@ -105,7 +109,9 @@ window.KedrixOnePracticeFormRenderer = (() => {
       return `<div ${wrapAttrs}>${labelHtml}<select id="dyn_${field.name}" name="${field.name}"><option value="">—</option>${fieldOptionEntries.map((option) => `<option value="${Utils.escapeHtml(option.value)}" ${currentValue === option.value ? 'selected' : ''}>${Utils.escapeHtml(option.label || option.value)}</option>`).join('')}</select></div>`;
     }
     if (field.type === 'checkbox-group') {
-      const currentValues = Array.isArray(currentValue) ? currentValue : [];
+      const currentValues = Array.isArray(currentValue)
+        ? currentValue
+        : String(currentValue || '').split(',').map((item) => item.trim()).filter(Boolean);
       return `<div ${wrapAttrs}><label>${label}</label><div class="checkbox-group">${(field.options || []).map((option) => `<label class="checkbox-chip"><input type="checkbox" name="${field.name}" value="${Utils.escapeHtml(option)}" ${currentValues.includes(option) ? 'checked' : ''} /> ${Utils.escapeHtml(I18N.t(option, option))}</label>`).join('')}</div></div>`;
     }
 

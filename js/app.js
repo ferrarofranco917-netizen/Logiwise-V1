@@ -29,7 +29,10 @@
   const PracticeSearchUI = window.KedrixOnePracticeSearchUI;
   const SeaSchemaCleanup = window.KedrixOneSeaSchemaCleanup;
   const ReferenceNormalizer = window.KedrixOnePracticeReferenceNormalizer;
-  const MasterDataQuickAdd = window.KedrixOneMasterDataQuickAdd;
+
+  function getMasterDataQuickAdd() {
+    return window.KedrixOneMasterDataQuickAdd;
+  }
 
   const state = Storage.load(() => Data.initialState());
   if (PracticeAttachments && typeof PracticeAttachments.normalizeAttachmentIndex === 'function') {
@@ -38,6 +41,7 @@
   if (DocumentCategories && typeof DocumentCategories.ensureStateOptions === 'function') {
     DocumentCategories.ensureStateOptions(state, I18N);
   }
+  const MasterDataQuickAdd = getMasterDataQuickAdd();
   if (MasterDataQuickAdd && typeof MasterDataQuickAdd.ensureModuleState === 'function') {
     MasterDataQuickAdd.ensureModuleState(state);
   }
@@ -235,6 +239,11 @@
     return labels;
   }
 
+  function normalizeCheckboxGroupValue(rawValue) {
+    if (Array.isArray(rawValue)) return rawValue.map((item) => String(item || '').trim()).filter(Boolean);
+    return String(rawValue || '').split(',').map((item) => item.trim()).filter(Boolean);
+  }
+
   function extractPracticeDynamicData(practice) {
     const base = practice && practice.dynamicData && typeof practice.dynamicData === 'object'
       ? { ...practice.dynamicData }
@@ -242,8 +251,22 @@
     const fields = getPracticeSchemaFields(practice?.practiceType || '');
     fields.forEach((field) => {
       if (!field || field.type === 'derived' || field.type === 'select-derived') return;
-      if (base[field.name] !== undefined && base[field.name] !== null && String(base[field.name]).trim() !== '') return;
+      const currentValue = base[field.name];
+      if (field.type === 'checkbox-group') {
+        const normalizedCurrent = normalizeCheckboxGroupValue(currentValue);
+        if (normalizedCurrent.length) {
+          base[field.name] = normalizedCurrent;
+          return;
+        }
+      } else if (currentValue !== undefined && currentValue !== null && String(currentValue).trim() !== '') {
+        return;
+      }
       const topLevelValue = practice?.[field.name];
+      if (field.type === 'checkbox-group') {
+        const normalizedTopLevel = normalizeCheckboxGroupValue(topLevelValue);
+        if (normalizedTopLevel.length) base[field.name] = normalizedTopLevel;
+        return;
+      }
       if (Array.isArray(topLevelValue) ? topLevelValue.length : String(topLevelValue || '').trim()) {
         base[field.name] = Array.isArray(topLevelValue) ? [...topLevelValue] : topLevelValue;
       }
@@ -1301,6 +1324,7 @@ function renderDocumentPreviewPanel() {
   }
 
   function bindMasterDataEvents() {
+    const MasterDataQuickAdd = getMasterDataQuickAdd();
     if (!MasterDataQuickAdd || typeof MasterDataQuickAdd.bind !== 'function') return;
     MasterDataQuickAdd.bind({
       state,
@@ -1489,6 +1513,7 @@ resetDocumentTypeOptions?.addEventListener('click', () => {
     }
 
     const quickAdd = event.target.closest('[data-quick-add-field]');
+    const MasterDataQuickAdd = getMasterDataQuickAdd();
     if (quickAdd && MasterDataQuickAdd && typeof MasterDataQuickAdd.prepareQuickAdd === 'function') {
       MasterDataQuickAdd.prepareQuickAdd(state, {
         fieldName: quickAdd.dataset.quickAddField,

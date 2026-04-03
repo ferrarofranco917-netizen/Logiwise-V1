@@ -21,7 +21,10 @@ window.KedrixOneTemplates = (() => {
   const PracticeVerification = window.KedrixOnePracticeVerification;
   const DocumentEngine = window.KedrixOneDocumentEngine;
   const DocumentCategories = window.KedrixOneDocumentCategories;
-  const MasterDataQuickAdd = window.KedrixOneMasterDataQuickAdd;
+
+  function getMasterDataQuickAdd() {
+    return window.KedrixOneMasterDataQuickAdd;
+  }
 
   function sidebar(modules, activeRoute, expandedModules) {
     const expanded = new Set(expandedModules || []);
@@ -266,7 +269,7 @@ window.KedrixOneTemplates = (() => {
               <div class="field" data-practice-dependent data-field-wrap="clientName">
                 <div class="field-label-row">
                   <label for="clientName">${U.escapeHtml(T.t('ui.clientEditable', 'Cliente (editabile)'))} <span class="required-mark">*</span></label>
-                  ${MasterDataQuickAdd && typeof MasterDataQuickAdd.buildQuickAddButton === 'function' ? MasterDataQuickAdd.buildQuickAddButton('clientName', T) : ''}
+                  ${(() => { const MasterDataQuickAdd = getMasterDataQuickAdd(); return MasterDataQuickAdd && typeof MasterDataQuickAdd.buildQuickAddButton === 'function' ? MasterDataQuickAdd.buildQuickAddButton('clientName', T) : ''; })()}
                 </div>
                 <input id="clientName" name="clientName" list="clientSuggestions" value="${U.escapeHtml(draft.clientName || '')}" autocomplete="off" ${draft.practiceType ? '' : 'disabled'} />
                 <datalist id="clientSuggestions">
@@ -668,6 +671,7 @@ function documents(state, module, searchResults = []) {
 
 
 function contacts(state, module) {
+  const MasterDataQuickAdd = getMasterDataQuickAdd();
   if (MasterDataQuickAdd && typeof MasterDataQuickAdd.renderPanel === 'function') {
     return MasterDataQuickAdd.renderPanel({ state, module, t: T, u: U });
   }
