@@ -163,6 +163,25 @@
     return removed;
   }
 
+  function markActivePracticeSessionDirty(isDirty = true) {
+    if (!PracticeWorkspace || typeof PracticeWorkspace.setActiveDirty !== 'function') return null;
+    return PracticeWorkspace.setActiveDirty(state, isDirty, { createEmptyDraft: createEmptyPracticeDraft });
+  }
+
+  async function confirmClosePracticeSession(sessionId) {
+    if (!PracticeWorkspace || typeof PracticeWorkspace.findSession !== 'function') return true;
+    const session = PracticeWorkspace.findSession(state, sessionId, { createEmptyDraft: createEmptyPracticeDraft });
+    if (!session || !session.isDirty) return true;
+    if (!AppFeedback || typeof AppFeedback.confirm !== 'function') return false;
+    return AppFeedback.confirm({
+      title: I18N.t('ui.workspaceDirtyCloseTitle', 'Chiudere la maschera con modifiche non salvate?'),
+      message: I18N.t('ui.workspaceDirtyCloseMessage', 'Questa maschera contiene modifiche non salvate. Se la chiudi adesso, le modifiche andranno perse.'),
+      confirmLabel: I18N.t('ui.workspaceDiscardMask', 'Chiudi senza salvare'),
+      cancelLabel: I18N.t('ui.workspaceKeepMask', 'Torna alla maschera'),
+      tone: 'warning'
+    });
+  }
+
   function resolveOptionText(source, fallback = '') {
     return PracticeFormRenderer && typeof PracticeFormRenderer.resolveOptionText === 'function'
       ? PracticeFormRenderer.resolveOptionText(source, fallback)
@@ -961,6 +980,7 @@
         if (shouldRefreshValidation) refreshValidationState();
       }
       syncDerivedPreviewFields();
+      if (options.markDirty !== false) markActivePracticeSessionDirty(true);
     }
 
     function bindDynamicPersistence() {
@@ -982,6 +1002,7 @@
             return nextValue;
           },
           save: () => {
+            markActivePracticeSessionDirty(true);
             save();
             refreshValidationState();
             refreshContainerIntegrityState();
@@ -1009,6 +1030,7 @@
             if (nextValue !== node.value) node.value = nextValue;
             draft.dynamicData[node.name] = nextValue;
           }
+          markActivePracticeSessionDirty(true);
           save();
           updateVerificationBannerState(draft);
           refreshValidationState();
@@ -1126,8 +1148,11 @@
         if (!result.ok && Array.isArray(result.errors) && result.errors.length) {
           state._practiceValidationErrors = result.errors;
           applyValidationState(result.errors);
-        } else if (result.ok && result.record && PracticeAttachments && typeof PracticeAttachments.syncRecordSummary === 'function') {
-          PracticeAttachments.syncRecordSummary(state, result.record);
+        } else if (result.ok) {
+          markActivePracticeSessionDirty(false);
+          if (result.record && PracticeAttachments && typeof PracticeAttachments.syncRecordSummary === 'function') {
+            PracticeAttachments.syncRecordSummary(state, result.record);
+          }
         }
         return;
       }
@@ -1225,6 +1250,7 @@
         toast(I18N.t('ui.practiceSaved', 'Pratica salvata correttamente'), 'success');
       }
 
+      markActivePracticeSessionDirty(false);
       if (PracticeAttachments && typeof PracticeAttachments.syncRecordSummary === 'function') {
         PracticeAttachments.syncRecordSummary(state, record);
       }
@@ -1615,7 +1641,7 @@ resetDocumentTypeOptions?.addEventListener('click', () => {
     updateNumberingPreview();
   }
 
-  document.addEventListener('click', (event) => {
+  document.addEventListener('click', async (event) => {
     const sessionSwitch = event.target.closest('[data-practice-session-switch]');
     if (sessionSwitch) {
       switchPracticeDraftSession(sessionSwitch.dataset.practiceSessionSwitch);
@@ -1628,6 +1654,8 @@ resetDocumentTypeOptions?.addEventListener('click', () => {
     const sessionClose = event.target.closest('[data-practice-session-close]');
     if (sessionClose) {
       event.stopPropagation();
+      const shouldClose = await confirmClosePracticeSession(sessionClose.dataset.practiceSessionClose);
+      if (!shouldClose) return;
       closePracticeDraftSession(sessionClose.dataset.practiceSessionClose);
       save();
       render();

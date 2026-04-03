@@ -256,7 +256,10 @@ window.KedrixOneTemplates = (() => {
                   <span class="practice-workspace-mask-title">${U.escapeHtml(summary.label || '—')}</span>
                   <span class="practice-workspace-mask-subtitle">${U.escapeHtml(summary.subtitle || '—')}</span>
                 </span>
-                <span class="badge info">${U.escapeHtml(summary.badge || '')}</span>
+                <span class="practice-workspace-badges">
+                  ${summary.isDirty ? `<span class="badge warning">${U.escapeHtml(summary.dirtyBadge || '')}</span>` : ''}
+                  <span class="badge info">${U.escapeHtml(summary.badge || '')}</span>
+                </span>
               </button>
               <button class="practice-workspace-close" type="button" data-practice-session-close="${U.escapeHtml(summary.id)}" aria-label="${U.escapeHtml(T.t('ui.workspaceCloseMask', 'Chiudi maschera'))}">×</button>
             </div>`).join('')}

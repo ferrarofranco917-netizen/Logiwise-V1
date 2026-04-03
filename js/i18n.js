@@ -975,9 +975,14 @@ Object.assign(dictionary.it.ui, {
   workspaceEditMask: 'Maschera pratica',
   workspaceDraftBadge: 'Bozza',
   workspaceEditBadge: 'In modifica',
+  workspaceDirtyBadge: 'Da salvare',
   workspaceCloseMask: 'Chiudi maschera',
   workspaceMaskClosed: 'Maschera chiusa',
-  workspaceMaskOpened: 'Nuova maschera aperta'
+  workspaceMaskOpened: 'Nuova maschera aperta',
+  workspaceDirtyCloseTitle: 'Chiudere la maschera con modifiche non salvate?',
+  workspaceDirtyCloseMessage: 'Questa maschera contiene modifiche non salvate. Se la chiudi adesso, le modifiche andranno perse.',
+  workspaceDiscardMask: 'Chiudi senza salvare',
+  workspaceKeepMask: 'Torna alla maschera'
 });
 
 Object.assign(dictionary.en.ui, {
@@ -988,9 +993,14 @@ Object.assign(dictionary.en.ui, {
   workspaceEditMask: 'Practice mask',
   workspaceDraftBadge: 'Draft',
   workspaceEditBadge: 'Editing',
+  workspaceDirtyBadge: 'Unsaved',
   workspaceCloseMask: 'Close mask',
   workspaceMaskClosed: 'Mask closed',
-  workspaceMaskOpened: 'New mask opened'
+  workspaceMaskOpened: 'New mask opened',
+  workspaceDirtyCloseTitle: 'Close mask with unsaved changes?',
+  workspaceDirtyCloseMessage: 'This mask contains unsaved changes. If you close it now, those changes will be lost.',
+  workspaceDiscardMask: 'Close without saving',
+  workspaceKeepMask: 'Keep this mask open'
 });
 
 

@@ -1724,6 +1724,14 @@ body.dialog-open {
   gap: 4px;
 }
 
+.practice-workspace-badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
 .practice-workspace-mask-title {
   font-size: 14px;
   font-weight: 700;
