@@ -1099,6 +1099,21 @@ Object.assign(dictionary.en.ui, {
 });
 
 
+
+Object.assign(dictionary.it.ui, {
+  practiceSearchEngineTitle: 'Motore ricerca pratiche',
+  practiceSearchEngineHint: 'Indicizzazione trasversale su numero pratica, cliente, container, booking, HBL/Polizza, AWB/HAWB/MAWB, CMR e riferimenti operativi.',
+  practiceSearchPlaceholder: 'Cerca per cliente, numero pratica, container, booking, HBL, Polizza, MAWB, HAWB, CMR...',
+  practiceSearchLiveHint: 'Ricerca live ordinata per rilevanza operativa.'
+});
+
+Object.assign(dictionary.en.ui, {
+  practiceSearchEngineTitle: 'Practice search engine',
+  practiceSearchEngineHint: 'Cross-index search on practice number, client, container, booking, HBL/Policy, AWB/HAWB/MAWB, CMR and operational references.',
+  practiceSearchPlaceholder: 'Search by client, practice number, container, booking, HBL, Policy, MAWB, HAWB, CMR...',
+  practiceSearchLiveHint: 'Live search ordered by operational relevance.'
+});
+
 Object.assign(dictionary.it.ui, {
   duplicatePractice: 'Duplica pratica',
   duplicatePracticeBannerKicker: 'Copia generata da pratica esistente',

@@ -52,7 +52,10 @@ window.KedrixOneDocumentCategories = (() => {
     (Array.isArray(rawOptions) ? rawOptions : []).forEach((entry) => {
       if (!entry || typeof entry !== 'object') return;
       const value = slugify(entry.value || entry.label);
-      const label = String(entry.label || '').trim();
+      const fallbackEntry = fallbackMap.get(value);
+      const label = fallbackEntry
+        ? fallbackEntry.label
+        : String(entry.label || '').trim();
       if (!value || !label || seen.has(value)) return;
       seen.add(value);
       result.push({ value, label });
