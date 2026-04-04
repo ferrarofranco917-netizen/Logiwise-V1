@@ -1488,6 +1488,45 @@ Object.assign(dictionary.en.ui, {
   practiceNotesArchitectureHint: 'Dedicated area for practice operational notes, kept separate but aligned with the active record.'
 });
 
+
+Object.assign(dictionary.it.ui, {
+  fieldRelationLinked: 'Directory attiva',
+  fieldRelationManual: 'Valore manuale',
+  fieldRelationClientLinked: 'Cliente collegato',
+  fieldRelationClientManualHint: 'Cliente non presente nell’anagrafica clienti',
+  fieldRelationMissingHint: 'Valore non presente nella directory operativa attiva',
+  practiceOverviewRelations: 'Campi relazionali',
+  practiceOverviewRelationsLinked: 'collegati',
+  practiceOverviewRelationsManual: 'manuali',
+  masterDataFamilyCustomsOffices: 'Dogane',
+  masterDataFamilyOrigins: 'Origini',
+  masterDataFamilyDestinations: 'Destinazioni',
+  masterDataFamilyArticleCodes: 'Codici articolo',
+  masterDataFamilyShippingCompanies: 'Compagnie marittime',
+  masterDataFamilyAirlines: 'Compagnie aeree',
+  masterDataFamilyCarriers: 'Vettori',
+  masterDataFamilyTransportUnitTypes: 'Tipologie unità'
+});
+
+Object.assign(dictionary.en.ui, {
+  fieldRelationLinked: 'Active directory',
+  fieldRelationManual: 'Manual value',
+  fieldRelationClientLinked: 'Linked client',
+  fieldRelationClientManualHint: 'Client not found in the client registry',
+  fieldRelationMissingHint: 'Value not found in the active operational directory',
+  practiceOverviewRelations: 'Relational fields',
+  practiceOverviewRelationsLinked: 'linked',
+  practiceOverviewRelationsManual: 'manual',
+  masterDataFamilyCustomsOffices: 'Customs offices',
+  masterDataFamilyOrigins: 'Origins',
+  masterDataFamilyDestinations: 'Destinations',
+  masterDataFamilyArticleCodes: 'Article codes',
+  masterDataFamilyShippingCompanies: 'Shipping companies',
+  masterDataFamilyAirlines: 'Airlines',
+  masterDataFamilyCarriers: 'Carriers',
+  masterDataFamilyTransportUnitTypes: 'Unit types'
+});
+
   return {
     dictionary,
     setLanguage,

@@ -70,6 +70,62 @@ window.KedrixOneMasterDataQuickAdd = (() => {
         valueLabel: t('ui.masterDataTaricCode', 'Codice TARIC'),
         supportsDescription: true,
         directoryKey: 'taricCodes'
+      },
+      customsOffice: {
+        key: 'customsOffice',
+        familyLabel: t('ui.masterDataFamilyCustomsOffices', 'Dogane'),
+        singleLabel: t('ui.customsOffice', 'Dogana'),
+        valueLabel: t('ui.customsOffice', 'Dogana'),
+        directoryKey: 'customsOffices'
+      },
+      origin: {
+        key: 'origin',
+        familyLabel: t('ui.masterDataFamilyOrigins', 'Origini'),
+        singleLabel: t('ui.originRef', 'Origine'),
+        valueLabel: t('ui.originRef', 'Origine'),
+        directoryKey: 'originDirectories'
+      },
+      destination: {
+        key: 'destination',
+        familyLabel: t('ui.masterDataFamilyDestinations', 'Destinazioni'),
+        singleLabel: t('ui.destinationRef', 'Destinazione'),
+        valueLabel: t('ui.destinationRef', 'Destinazione'),
+        directoryKey: 'destinationDirectories'
+      },
+      articleCode: {
+        key: 'articleCode',
+        familyLabel: t('ui.masterDataFamilyArticleCodes', 'Codici articolo'),
+        singleLabel: t('ui.articleCode', 'Codice articolo'),
+        valueLabel: t('ui.articleCode', 'Codice articolo'),
+        directoryKey: 'articleCodes'
+      },
+      shippingCompany: {
+        key: 'shippingCompany',
+        familyLabel: t('ui.masterDataFamilyShippingCompanies', 'Compagnie marittime'),
+        singleLabel: t('ui.shippingCompany', 'Compagnia marittima'),
+        valueLabel: t('ui.shippingCompany', 'Compagnia marittima'),
+        directoryKey: 'shippingCompanies'
+      },
+      airline: {
+        key: 'airline',
+        familyLabel: t('ui.masterDataFamilyAirlines', 'Compagnie aeree'),
+        singleLabel: t('ui.airline', 'Compagnia aerea'),
+        valueLabel: t('ui.airline', 'Compagnia aerea'),
+        directoryKey: 'airlines'
+      },
+      carrier: {
+        key: 'carrier',
+        familyLabel: t('ui.masterDataFamilyCarriers', 'Vettori'),
+        singleLabel: t('ui.carrier', 'Vettore'),
+        valueLabel: t('ui.carrier', 'Vettore'),
+        directoryKey: 'carriers'
+      },
+      transportUnitType: {
+        key: 'transportUnitType',
+        familyLabel: t('ui.masterDataFamilyTransportUnitTypes', 'Tipologie unità'),
+        singleLabel: t('ui.transportUnitType', 'Tipologia unità/trasporto'),
+        valueLabel: t('ui.transportUnitType', 'Tipologia unità/trasporto'),
+        directoryKey: 'transportUnitTypes'
       }
     };
   }
@@ -82,6 +138,14 @@ window.KedrixOneMasterDataQuickAdd = (() => {
     if (clean === 'vesselVoyage') return 'vessel';
     if (clean === 'shipper' || clean === 'sender') return 'sender';
     if (clean === 'taric') return 'taric';
+    if (clean === 'customsOffice') return 'customsOffice';
+    if (clean === 'originRef') return 'origin';
+    if (clean === 'destinationRef') return 'destination';
+    if (clean === 'articleCode') return 'articleCode';
+    if (clean === 'company') return 'shippingCompany';
+    if (clean === 'airline') return 'airline';
+    if (clean === 'carrier' || clean === 'transporter') return 'carrier';
+    if (clean === 'transportUnitType') return 'transportUnitType';
     return '';
   }
 
@@ -229,6 +293,25 @@ window.KedrixOneMasterDataQuickAdd = (() => {
           created: false,
           value: String(existingTaric.value || existingTaric.code || value).trim(),
           relatedId: String(existingTaric.value || existingTaric.code || value).trim()
+        };
+      }
+      directory.push({
+        value,
+        label: value,
+        description,
+        displayValue: description ? `${value} · ${description}` : value
+      });
+      return { ok: true, created: true, value, relatedId: value };
+    }
+
+    if (def.supportsDescription) {
+      const existingComplex = directory.find((item) => String((item && (item.value || item.code || item.name)) || '').trim().toUpperCase() === value.toUpperCase());
+      if (existingComplex) {
+        return {
+          ok: true,
+          created: false,
+          value: String(existingComplex.value || existingComplex.code || value).trim(),
+          relatedId: String(existingComplex.value || existingComplex.code || value).trim()
         };
       }
       directory.push({

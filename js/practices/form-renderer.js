@@ -6,6 +6,7 @@ window.KedrixOnePracticeFormRenderer = (() => {
   const PracticeSchemas = window.KedrixOnePracticeSchemas;
   const PracticeFormLayout = window.KedrixOnePracticeFormLayout;
   const PracticeOverview = window.KedrixOnePracticeOverview;
+  const PracticeFieldRelations = window.KedrixOnePracticeFieldRelations;
 
   function getMasterDataQuickAdd() {
     return window.KedrixOneMasterDataQuickAdd;
@@ -98,22 +99,29 @@ window.KedrixOnePracticeFormRenderer = (() => {
       : (currentRawValue || '');
 
     if (field.type === 'derived') {
-      return `<div ${wrapAttrs}><label>${label}</label><div class="derived-chip">${Utils.escapeHtml(draft.clientName || I18N.t('ui.clientRequired', 'Cliente'))}</div></div>`;
+      const relationMetaHtml = PracticeFieldRelations && typeof PracticeFieldRelations.renderFieldRelationMeta === 'function'
+        ? PracticeFieldRelations.renderFieldRelationMeta({ type, field, draft, companyConfig, i18n: I18N, utils: Utils })
+        : '';
+      return `<div ${wrapAttrs}><label>${label}</label><div class="derived-chip">${Utils.escapeHtml(draft.clientName || I18N.t('ui.clientRequired', 'Cliente'))}</div>${relationMetaHtml}</div>`;
     }
     if (field.type === 'select-derived') {
       return '';
     }
+    const relationMetaHtml = PracticeFieldRelations && typeof PracticeFieldRelations.renderFieldRelationMeta === 'function'
+      ? PracticeFieldRelations.renderFieldRelationMeta({ type, field, draft, companyConfig, i18n: I18N, utils: Utils })
+      : '';
+
     if (field.type === 'textarea') {
-      return `<div ${wrapAttrs}>${labelHtml}<textarea id="dyn_${field.name}" name="${field.name}" rows="4">${Utils.escapeHtml(currentValue || '')}</textarea></div>`;
+      return `<div ${wrapAttrs}>${labelHtml}<textarea id="dyn_${field.name}" name="${field.name}" rows="4">${Utils.escapeHtml(currentValue || '')}</textarea>${relationMetaHtml}</div>`;
     }
     if (field.type === 'select') {
-      return `<div ${wrapAttrs}>${labelHtml}<select id="dyn_${field.name}" name="${field.name}"><option value="">—</option>${fieldOptionEntries.map((option) => `<option value="${Utils.escapeHtml(option.value)}" ${currentValue === option.value ? 'selected' : ''}>${Utils.escapeHtml(option.label || option.value)}</option>`).join('')}</select></div>`;
+      return `<div ${wrapAttrs}>${labelHtml}<select id="dyn_${field.name}" name="${field.name}"><option value="">—</option>${fieldOptionEntries.map((option) => `<option value="${Utils.escapeHtml(option.value)}" ${currentValue === option.value ? 'selected' : ''}>${Utils.escapeHtml(option.label || option.value)}</option>`).join('')}</select>${relationMetaHtml}</div>`;
     }
     if (field.type === 'checkbox-group') {
       const currentValues = Array.isArray(currentValue)
         ? currentValue
         : String(currentValue || '').split(',').map((item) => item.trim()).filter(Boolean);
-      return `<div ${wrapAttrs}><label>${label}</label><div class="checkbox-group">${(field.options || []).map((option) => `<label class="checkbox-chip"><input type="checkbox" name="${field.name}" value="${Utils.escapeHtml(option)}" ${currentValues.includes(option) ? 'checked' : ''} /> ${Utils.escapeHtml(I18N.t(option, option))}</label>`).join('')}</div></div>`;
+      return `<div ${wrapAttrs}><label>${label}</label><div class="checkbox-group">${(field.options || []).map((option) => `<label class="checkbox-chip"><input type="checkbox" name="${field.name}" value="${Utils.escapeHtml(option)}" ${currentValues.includes(option) ? 'checked' : ''} /> ${Utils.escapeHtml(I18N.t(option, option))}</label>`).join('')}</div>${relationMetaHtml}</div>`;
     }
 
     const datalistId = fieldOptionEntries.length && field.type !== 'date' && field.type !== 'number' ? `dyn_list_${field.name}` : '';
@@ -152,7 +160,7 @@ window.KedrixOnePracticeFormRenderer = (() => {
     const hintHtml = fieldOptionEntries.length && datalistId && hintKey
       ? `<div class="field-hint">${Utils.escapeHtml(I18N.t(hintKey, hintFallback))}</div>`
       : '';
-    return `<div ${wrapAttrs}>${labelHtml}<input id="dyn_${field.name}" name="${field.name}" value="${Utils.escapeHtml(currentValue || '')}" type="${field.type === 'number' ? 'number' : field.type === 'date' ? 'date' : 'text'}" ${field.type === 'number' ? 'step="0.01" min="0"' : ''} ${datalistId ? `list="${datalistId}"` : ''} autocomplete="off" />${datalistHtml}${hintHtml}</div>`;
+    return `<div ${wrapAttrs}>${labelHtml}<input id="dyn_${field.name}" name="${field.name}" value="${Utils.escapeHtml(currentValue || '')}" type="${field.type === 'number' ? 'number' : field.type === 'date' ? 'date' : 'text'}" ${field.type === 'number' ? 'step="0.01" min="0"' : ''} ${datalistId ? `list="${datalistId}"` : ''} autocomplete="off" />${datalistHtml}${hintHtml}${relationMetaHtml}</div>`;
   }
 
   function renderDynamicFieldsHTML(type, tab, draft, companyConfig) {
@@ -177,7 +185,7 @@ window.KedrixOnePracticeFormRenderer = (() => {
     }).join('');
 
     const overviewHtml = tab === 'practice' && PracticeOverview && typeof PracticeOverview.render === 'function'
-      ? PracticeOverview.render({ draft, i18n: I18N, utils: Utils })
+      ? PracticeOverview.render({ draft, type, companyConfig, i18n: I18N, utils: Utils })
       : '';
 
     return `${overviewHtml}${sectionsHtml}`;

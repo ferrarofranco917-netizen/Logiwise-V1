@@ -20,6 +20,7 @@
   const PracticeSavePipeline = window.KedrixOnePracticeSavePipeline;
   const PracticeContainerIntegrity = window.KedrixOnePracticeContainerIntegrity;
   const PracticeWeightIntegrity = window.KedrixOnePracticeWeightIntegrity;
+  const PracticeFieldRelations = window.KedrixOnePracticeFieldRelations;
   const PracticeAttachments = window.KedrixOnePracticeAttachments;
   const DocumentEngine = window.KedrixOneDocumentEngine;
   const DocumentCategories = window.KedrixOneDocumentCategories;
@@ -943,6 +944,18 @@
       });
     }
 
+    function refreshFieldRelationState() {
+      if (!dynamicFields || !PracticeFieldRelations || typeof PracticeFieldRelations.applyFieldState !== 'function') return;
+      PracticeFieldRelations.applyFieldState({
+        root: dynamicFields,
+        type: draft.practiceType || '',
+        draft,
+        companyConfig: state.companyConfig,
+        i18n: I18N,
+        utils: Utils
+      });
+    }
+
     function renderDynamicPanels() {
       if (!dynamicFields) return;
       const activeTab = state.practiceTab || 'practice';
@@ -967,6 +980,7 @@
       bindDynamicPersistence();
       refreshContainerIntegrityState();
       refreshWeightIntegrityState();
+      refreshFieldRelationState();
     }
 
     function syncPracticeLock() {
@@ -1052,6 +1066,7 @@
             refreshValidationState();
             refreshContainerIntegrityState();
             refreshWeightIntegrityState();
+            refreshFieldRelationState();
           },
           updateVerificationBannerState
         });
@@ -1081,6 +1096,7 @@
           refreshValidationState();
           refreshContainerIntegrityState();
           refreshWeightIntegrityState();
+          refreshFieldRelationState();
         };
         node.addEventListener('input', () => persistNodeValue(false));
         node.addEventListener('change', () => persistNodeValue(true));
@@ -1133,6 +1149,7 @@
       const match = syncClientMatch(clientName.value || '');
       if (clientId) clientId.value = match ? match.id : '';
       persistIdentity();
+      refreshFieldRelationState();
     });
 
     practiceDate?.addEventListener('change', () => persistIdentity());

@@ -1,6 +1,8 @@
 window.KedrixOnePracticeOverview = (() => {
   'use strict';
 
+  const PracticeFieldRelations = window.KedrixOnePracticeFieldRelations;
+
   function escape(utils, value) {
     return utils && typeof utils.escapeHtml === 'function'
       ? utils.escapeHtml(String(value || ''))
@@ -29,8 +31,16 @@ window.KedrixOnePracticeOverview = (() => {
     return parts.map((item) => String(item || '').trim()).filter(Boolean).join(separator);
   }
 
-  function buildSummaryCards(draft, i18n) {
+  function buildSummaryCards(draft, type, companyConfig, i18n) {
     const practiceType = String(draft?.practiceType || '').trim();
+    const relationSummary = PracticeFieldRelations && typeof PracticeFieldRelations.buildCoverageSummary === 'function'
+      ? PracticeFieldRelations.buildCoverageSummary({ type: type || practiceType, draft, companyConfig })
+      : null;
+
+    const relationValue = relationSummary
+      ? `${relationSummary.linked}/${relationSummary.total} ${t(i18n, 'ui.practiceOverviewRelationsLinked', 'collegati')} · ${relationSummary.manual} ${t(i18n, 'ui.practiceOverviewRelationsManual', 'manuali')}`
+      : '';
+
     const cards = [
       {
         key: 'parties',
@@ -80,6 +90,11 @@ window.KedrixOnePracticeOverview = (() => {
         key: 'notes',
         label: t(i18n, 'ui.practiceOverviewNotes', 'Nota rapida'),
         value: String(getDynamicValue(draft, ['internalNotes', 'additionalReference', 'tags']) || '').trim()
+      },
+      {
+        key: 'relations',
+        label: t(i18n, 'ui.practiceOverviewRelations', 'Campi relazionali'),
+        value: relationValue
       }
     ];
 
@@ -121,7 +136,7 @@ window.KedrixOnePracticeOverview = (() => {
 
     const reference = String(draft.generatedReference || '').trim() || '—';
     const clientName = String(draft.clientName || '').trim() || t(i18n, 'ui.clientRequired', 'Cliente');
-    const cards = buildSummaryCards(draft, i18n);
+    const cards = buildSummaryCards(draft, options.type, options.companyConfig, i18n);
     const badges = buildBadges(draft, i18n);
 
     return `
