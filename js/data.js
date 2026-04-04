@@ -65,6 +65,17 @@ window.KedrixOneData = (() => {
           'practices/richiesta-fondi',
           'practices/delivery-order'
         ],
+        integrations: {
+          vatAutofill: {
+            provider: 'custom-endpoint',
+            endpointUrl: '',
+            apiKeyHeader: 'x-api-key',
+            apiKey: '',
+            countryDefault: 'IT',
+            applyMode: 'replace-all',
+            requestTimeoutMs: 8000
+          }
+        },
         documents: {
           documentTypeOptions: [
             { value: 'generic', label: 'Allegato operativo' },

@@ -267,6 +267,10 @@ window.KedrixOneMasterDataEntities = (() => {
       sdiCode: cleanText(record.sdiCode || ''),
       notes: cleanText(record.notes || ''),
       active: record.active !== false,
+      vatLookupSource: cleanText(record.vatLookupSource || ''),
+      vatLookupStatus: cleanText(record.vatLookupStatus || ''),
+      vatLookupAt: cleanText(record.vatLookupAt || ''),
+      vatLookupVat: cleanText(record.vatLookupVat || ''),
       numberingRule: record.numberingRule && typeof record.numberingRule === 'object' ? { ...record.numberingRule } : undefined,
       displayValue: cleanText(record.displayValue || buildEntityDisplayValue(record))
     };
@@ -316,7 +320,11 @@ window.KedrixOneMasterDataEntities = (() => {
       pec: '',
       sdiCode: '',
       notes: '',
-      active: true
+      active: true,
+      vatLookupSource: '',
+      vatLookupStatus: '',
+      vatLookupAt: '',
+      vatLookupVat: ''
     };
   }
 
@@ -337,7 +345,7 @@ window.KedrixOneMasterDataEntities = (() => {
       { name: 'value', label: companyLabel, required: true, full: true },
       { name: 'shortName', label: t(i18n, 'ui.masterDataShortName', 'Nome breve') },
       { name: 'code', label: t(i18n, 'ui.masterDataInternalCode', 'Codice interno') },
-      { name: 'vatNumber', label: t(i18n, 'ui.masterDataVatNumber', 'Partita IVA') },
+      { name: 'vatNumber', label: t(i18n, 'ui.masterDataVatNumber', 'Partita IVA'), lookupAction: 'vat-autofill' },
       { name: 'taxCode', label: t(i18n, 'ui.masterDataTaxCode', 'Codice fiscale') },
       { name: 'address', label: t(i18n, 'ui.masterDataAddress', 'Indirizzo'), full: true },
       { name: 'zipCode', label: t(i18n, 'ui.masterDataZipCode', 'CAP') },
@@ -406,7 +414,11 @@ window.KedrixOneMasterDataEntities = (() => {
       pec: payload.pec,
       sdiCode: payload.sdiCode,
       notes: payload.notes,
-      active: payload.active !== false
+      active: payload.active !== false,
+      vatLookupSource: payload.vatLookupSource,
+      vatLookupStatus: payload.vatLookupStatus,
+      vatLookupAt: payload.vatLookupAt,
+      vatLookupVat: payload.vatLookupVat
     });
     if (!normalized || !normalized.name) return { ok: false, reason: 'missing-value' };
 
@@ -435,6 +447,10 @@ window.KedrixOneMasterDataEntities = (() => {
         sdiCode: normalized.sdiCode,
         notes: normalized.notes,
         active: normalized.active,
+        vatLookupSource: normalized.vatLookupSource,
+        vatLookupStatus: normalized.vatLookupStatus,
+        vatLookupAt: normalized.vatLookupAt,
+        vatLookupVat: normalized.vatLookupVat,
         numberingRule: {
           prefix: normalized.code || '',
           separator: '-',
@@ -477,6 +493,10 @@ window.KedrixOneMasterDataEntities = (() => {
       sdiCode: normalized.sdiCode,
       notes: normalized.notes,
       active: normalized.active,
+      vatLookupSource: normalized.vatLookupSource,
+      vatLookupStatus: normalized.vatLookupStatus,
+      vatLookupAt: normalized.vatLookupAt,
+      vatLookupVat: normalized.vatLookupVat,
       displayValue: buildEntityDisplayValue(normalized)
     };
     store.push(record);
@@ -587,6 +607,18 @@ window.KedrixOneMasterDataEntities = (() => {
     }) || null;
   }
 
+  function findStructuredEntityRecordByVat(stateOrConfig, vatNumber, entityKey = '') {
+    const cleanVat = cleanUpper(String(vatNumber || '').replace(/[^A-Z0-9]/g, ''));
+    if (!cleanVat) return null;
+    const defs = allDefinitions();
+    const keys = entityKey ? [entityKey] : Object.values(defs).filter((def) => def && def.structured).map((def) => def.key);
+    for (const key of keys) {
+      const record = findStructuredEntityRecordByValue(stateOrConfig, key, cleanVat);
+      if (record && cleanUpper(String(record.vatNumber || '').replace(/[^A-Z0-9]/g, '')) === cleanVat) return record;
+    }
+    return null;
+  }
+
   function syncDraftRelationField({ state, draft, fieldName, value }) {
     const entityKey = resolveEntityKeyForField(fieldName);
     if (!entityKey || !draft) return null;
@@ -635,6 +667,8 @@ window.KedrixOneMasterDataEntities = (() => {
     saveBusinessEntity,
     syncDraftRelationField,
     getLinkedRecordFromDraft,
-    buildEntityDisplayValue
+    buildEntityDisplayValue,
+    normalizeBusinessRecord,
+    findStructuredEntityRecordByVat
   };
 })();

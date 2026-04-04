@@ -2,6 +2,7 @@ window.KedrixOneMasterDataQuickAdd = (() => {
   'use strict';
 
   const MasterDataEntities = window.KedrixOneMasterDataEntities || null;
+  const VatAutofill = window.KedrixOneVatAutofill || null;
 
   function ensureModuleState(state) {
     if (!state || typeof state !== 'object') return { activeEntity: 'client', quickAddContext: null, formDrafts: {} };
@@ -169,7 +170,18 @@ window.KedrixOneMasterDataQuickAdd = (() => {
       .replace(/'/g, '&#39;');
   }
 
-  function renderEntryFormFields({ activeDef, formDraft, t }) {
+  function syncDraftFromForm(form, draft) {
+    if (!form || !draft) return draft;
+    const formData = new FormData(form);
+    Array.from(form.querySelectorAll('[name]')).forEach((node) => {
+      if (!node.name) return;
+      if (node.type === 'checkbox') draft[node.name] = Boolean(node.checked);
+      else draft[node.name] = String(formData.get(node.name) || '').trim();
+    });
+    return draft;
+  }
+
+  function renderEntryFormFields({ state, activeDef, formDraft, t }) {
     const structuredFields = MasterDataEntities && typeof MasterDataEntities.getFormFields === 'function'
       ? MasterDataEntities.getFormFields(activeDef.key, t)
       : [];
@@ -183,6 +195,12 @@ window.KedrixOneMasterDataQuickAdd = (() => {
         if (field.type === 'checkbox') {
           return `<div class="field ${field.full ? 'full' : ''}"><label class="checkbox-chip master-data-checkbox"><input id="${fieldId}" name="${field.name}" type="checkbox" ${formDraft[field.name] !== false ? 'checked' : ''} /> ${escapeHtml(field.label)}</label></div>`;
         }
+        if (field.lookupAction === 'vat-autofill') {
+          const lookupStatus = VatAutofill && typeof VatAutofill.renderLookupStatus === 'function'
+            ? VatAutofill.renderLookupStatus(formDraft, t)
+            : '';
+          return `<div class="field ${field.full ? 'full' : ''} master-data-lookup-field"><label for="${fieldId}">${escapeHtml(field.label)}${requiredMark}</label><div class="master-data-lookup-row"><input id="${fieldId}" name="${field.name}" type="text" value="${escapeHtml(formDraft[field.name] || '')}" autocomplete="off" /><button class="btn secondary master-data-lookup-button" id="masterDataVatLookupButton" type="button">${escapeHtml(t.t('ui.masterDataVatLookupAction', 'Recupera dati'))}</button></div>${lookupStatus}</div>`;
+        }
         return `<div class="field ${field.full ? 'full' : ''}"><label for="${fieldId}">${escapeHtml(field.label)}${requiredMark}</label><input id="${fieldId}" name="${field.name}" type="text" value="${escapeHtml(formDraft[field.name] || '')}" autocomplete="off" /></div>`;
       }).join('');
       return `<div class="form-grid two master-data-entity-grid">${blocks}</div>`;
@@ -193,6 +211,7 @@ window.KedrixOneMasterDataQuickAdd = (() => {
     const currentCity = escapeHtml(formDraft.city || '');
     return `<div class="form-grid two"><div class="field ${activeDef.supportsDescription ? '' : (activeDef.supportsCity ? '' : 'full')}"><label for="masterDataValue">${escapeHtml(activeDef.valueLabel)}</label><input id="masterDataValue" name="value" type="text" value="${currentValue}" autocomplete="off" /></div>${activeDef.supportsDescription ? `<div class="field"><label for="masterDataDescription">${escapeHtml(t.t('ui.masterDataDescription', 'Descrizione'))}</label><input id="masterDataDescription" name="description" type="text" value="${currentDescription}" autocomplete="off" /></div>` : ''}${activeDef.supportsCity ? `<div class="field"><label for="masterDataCity">${escapeHtml(t.t('ui.city', 'Città'))}</label><input id="masterDataCity" name="city" type="text" value="${currentCity}" autocomplete="off" /></div>` : ''}</div>`;
   }
+
 
   function renderPanel({ state, module, t }) {
     const defs = getEntityDefinitions(t);
@@ -232,7 +251,7 @@ window.KedrixOneMasterDataQuickAdd = (() => {
           </div>
 
           <form id="masterDataEntryForm" class="master-data-form-stack">
-            ${renderEntryFormFields({ activeDef, formDraft, t })}
+            ${renderEntryFormFields({ state, activeDef, formDraft, t })}
             <div class="form-actions master-data-actions">
               <button class="btn" type="submit">${escapeHtml(t.t('ui.masterDataSaveEntry', 'Salva anagrafica'))}</button>
               ${quickAddContext ? `<button class="btn secondary" id="masterDataReturnButton" type="button">${escapeHtml(t.t('ui.masterDataBackToPractice', 'Torna alla pratica'))}</button>` : ''}
@@ -262,7 +281,9 @@ window.KedrixOneMasterDataQuickAdd = (() => {
             </table>
           </div>
         </article>
-      </section>`;
+      </section>
+
+      ${activeDef.structured && !quickAddContext && VatAutofill && typeof VatAutofill.renderConfigPanel === 'function' ? VatAutofill.renderConfigPanel(state, t) : ''}`;
   }
 
   function bind({ state, root, save, render, navigate, toast, buildCurrentPracticeReference, i18n }) {
@@ -270,6 +291,7 @@ window.KedrixOneMasterDataQuickAdd = (() => {
     const familySelect = root.querySelector('#masterDataFamilySelect');
     const form = root.querySelector('#masterDataEntryForm');
     const returnButton = root.querySelector('#masterDataReturnButton');
+    const vatLookupButton = root.querySelector('#masterDataVatLookupButton');
     const activeEntity = moduleState.quickAddContext?.entityKey || moduleState.activeEntity || 'client';
 
     familySelect?.addEventListener('change', (event) => {
@@ -285,17 +307,46 @@ window.KedrixOneMasterDataQuickAdd = (() => {
       navigate(context?.returnRoute || 'practices');
     });
 
+    if (VatAutofill && typeof VatAutofill.bindConfigPanel === 'function') {
+      VatAutofill.bindConfigPanel({ state, root, save, render, toast, i18n });
+    }
+
+    vatLookupButton?.addEventListener('click', async () => {
+      const targetEntity = moduleState.quickAddContext?.entityKey || activeEntity;
+      const currentDraft = getFormDraft(state, targetEntity);
+      syncDraftFromForm(form, currentDraft);
+      vatLookupButton.disabled = true;
+      vatLookupButton.classList.add('is-loading');
+      const result = VatAutofill && typeof VatAutofill.lookupByVatNumber === 'function'
+        ? await VatAutofill.lookupByVatNumber({ state, entityKey: targetEntity, vatNumber: currentDraft.vatNumber || '' })
+        : { ok: false, lookupStatus: 'lookup-error' };
+
+      if (result && result.ok && result.found && VatAutofill && typeof VatAutofill.applyLookupToDraft === 'function') {
+        const config = VatAutofill.ensureConfig(state);
+        VatAutofill.applyLookupToDraft(currentDraft, result, config);
+      } else if (VatAutofill && typeof VatAutofill.setDraftLookupMeta === 'function') {
+        VatAutofill.setDraftLookupMeta(currentDraft, {
+          vatLookupStatus: result.lookupStatus || 'lookup-error',
+          vatLookupSource: result.source || '',
+          vatLookupAt: new Date().toISOString(),
+          vatLookupVat: result.normalizedVat ? result.normalizedVat.formatted : String(currentDraft.vatNumber || '').trim()
+        });
+      }
+
+      save();
+      render();
+      toast(
+        VatAutofill && typeof VatAutofill.messageForLookupResult === 'function' ? VatAutofill.messageForLookupResult(result, i18n) : i18n.t('ui.masterDataVatLookupError', 'Recupero dati non riuscito.'),
+        VatAutofill && typeof VatAutofill.toneForLookupResult === 'function' ? VatAutofill.toneForLookupResult(result) : 'warning'
+      );
+    });
+
     form?.addEventListener('submit', (event) => {
       event.preventDefault();
-      const formData = new FormData(form);
       const targetEntity = moduleState.quickAddContext?.entityKey || activeEntity;
       const currentDraft = getFormDraft(state, targetEntity);
 
-      Array.from(form.querySelectorAll('[name]')).forEach((node) => {
-        if (!node.name) return;
-        if (node.type === 'checkbox') currentDraft[node.name] = Boolean(node.checked);
-        else currentDraft[node.name] = String(formData.get(node.name) || '').trim();
-      });
+      syncDraftFromForm(form, currentDraft);
 
       const result = addEntry(state, targetEntity, currentDraft, i18n);
       if (!result.ok) {
