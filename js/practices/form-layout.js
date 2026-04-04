@@ -6,35 +6,41 @@ window.KedrixOnePracticeFormLayout = (() => {
 
   const sectionCatalog = {
     practice: {
-      counterparties: {
-        titleKey: 'ui.sectionCounterparties',
-        titleFallback: 'Controparti',
-        descriptionKey: 'ui.sectionCounterpartiesHint',
-        descriptionFallback: 'Soggetti principali della pratica e riferimenti cliente.'
+      operationalIdentity: {
+        titleKey: 'ui.sectionOperationalIdentity',
+        titleFallback: 'Identità operativa',
+        descriptionKey: 'ui.sectionOperationalIdentityHint',
+        descriptionFallback: 'Riferimenti chiave della pratica: numero documentale, quotazione base e agganci operativi.'
       },
-      routing: {
-        titleKey: 'ui.sectionRouting',
-        titleFallback: 'Routing / Instradamento',
-        descriptionKey: 'ui.sectionRoutingHint',
-        descriptionFallback: 'Compagnia, porti, aeroporti, terminal e percorso operativo.'
+      linkedParties: {
+        titleKey: 'ui.sectionLinkedParties',
+        titleFallback: 'Soggetti collegati',
+        descriptionKey: 'ui.sectionLinkedPartiesHint',
+        descriptionFallback: 'Cliente, importatore, mittente, destinatario e controparti principali della pratica.'
       },
-      documentary: {
-        titleKey: 'ui.sectionDocumentary',
-        titleFallback: 'Documentale',
-        descriptionKey: 'ui.sectionDocumentaryHint',
-        descriptionFallback: 'Booking, polizze, fatture, packing list e riferimenti documento.'
+      transportUnit: {
+        titleKey: 'ui.sectionTransportUnit',
+        titleFallback: 'Trasporto / unità',
+        descriptionKey: 'ui.sectionTransportUnitHint',
+        descriptionFallback: 'Compagnia, vettore, terminal, viaggio e riferimenti esecutivi del trasporto.'
       },
-      customs: {
-        titleKey: 'ui.sectionCustoms',
-        titleFallback: 'Zona dogana',
-        descriptionKey: 'ui.sectionCustomsHint',
-        descriptionFallback: 'Dogana, data dogana e punti di lavorazione doganale.'
+      logisticsNodes: {
+        titleKey: 'ui.sectionLogisticsNodes',
+        titleFallback: 'Nodi logistici',
+        descriptionKey: 'ui.sectionLogisticsNodesHint',
+        descriptionFallback: 'Origine, destinazione, porti, aeroporti, terminal e snodi fisici della spedizione.'
       },
-      operations: {
-        titleKey: 'ui.sectionOperations',
-        titleFallback: 'Zona operativa',
-        descriptionKey: 'ui.sectionOperationsHint',
-        descriptionFallback: 'Dati economici, terminali, trasporto, deposito e collegamenti operativi.'
+      customsEconomics: {
+        titleKey: 'ui.sectionCustomsEconomics',
+        titleFallback: 'Dogana + economico essenziale',
+        descriptionKey: 'ui.sectionCustomsEconomicsHint',
+        descriptionFallback: 'Dogana, Incoterm, fattura estera, importi e dati economici essenziali da tenere in overview.'
+      },
+      operationalFlow: {
+        titleKey: 'ui.sectionOperationalFlow',
+        titleFallback: 'Nota rapida operativa',
+        descriptionKey: 'ui.sectionOperationalFlowHint',
+        descriptionFallback: 'Memo rapidi, collegamenti, riferimenti aggiuntivi e indicatori utili alla gestione operativa.'
       }
     },
     detail: {
@@ -76,11 +82,12 @@ window.KedrixOnePracticeFormLayout = (() => {
   const assignmentMap = {
     sea_import: {
       practice: {
-        counterparties: ['importer', 'clientContact', 'clientAgency', 'client', 'consignee', 'sender', 'correspondent'],
-        routing: ['company', 'portLoading', 'portDischarge', 'originRef', 'destinationRef', 'terminal', 'terminalPickup', 'terminalDelivery', 'vesselVoyage', 'arrivalDate', 'unloadingDate'],
-        documentary: ['booking', 'policyNumber', 'policyOriginals', 'policyCopies', 'hbl', 'baseQuotation', 'insurance', 'foreignInvoice', 'invoiceAmount', 'invoiceCurrency', 'packingList', 'incoterm'],
-        customs: ['customsOffice', 'customsDate', 'performedDate'],
-        operations: ['vesselExchangeRate', 'vesselExchangeCurrency', 'freightAmount', 'freightCurrency', 'fumigation', 'transporter', 'deliveryCity', 'additionalReference', 'bolla', 'appraisalCession', 'salesOwner', 'additionalFigures', 'deposit', 'linkedTo', 'tags']
+        operationalIdentity: ['booking', 'policyNumber', 'policyOriginals', 'policyCopies', 'hbl', 'baseQuotation', 'clientContact', 'clientAgency'],
+        linkedParties: ['importer', 'client', 'consignee', 'sender', 'correspondent'],
+        transportUnit: ['company', 'vesselVoyage', 'arrivalDate', 'terminal', 'terminalPickup', 'terminalDelivery', 'transporter', 'deliveryCity'],
+        logisticsNodes: ['portLoading', 'portDischarge', 'originRef', 'destinationRef', 'unloadingDate', 'deposit', 'linkedTo'],
+        customsEconomics: ['customsOffice', 'customsDate', 'performedDate', 'incoterm', 'foreignInvoice', 'invoiceAmount', 'invoiceCurrency', 'freightAmount', 'freightCurrency', 'vesselExchangeRate', 'vesselExchangeCurrency', 'insurance', 'fumigation'],
+        operationalFlow: ['salesOwner', 'additionalReference', 'bolla', 'appraisalCession', 'additionalFigures', 'tags']
       },
       detail: {
         goods: ['articleCode', 'taric', 'goodsDescription', 'packageType', 'packageCount'],
@@ -92,11 +99,12 @@ window.KedrixOnePracticeFormLayout = (() => {
     },
     sea_export: {
       practice: {
-        counterparties: ['shipper', 'clientContact', 'clientAgency', 'client', 'consignee', 'correspondent'],
-        routing: ['company', 'portLoading', 'portDischarge', 'originRef', 'destinationRef', 'terminal', 'terminalPickup', 'terminalDelivery', 'vesselVoyage', 'departureDate', 'unloadingDate'],
-        documentary: ['booking', 'policyNumber', 'policyOriginals', 'policyCopies', 'hbl', 'baseQuotation', 'insurance', 'foreignInvoice', 'invoiceAmount', 'invoiceCurrency', 'packingList', 'incoterm'],
-        customs: ['customsOffice', 'customsDate', 'performedDate'],
-        operations: ['vesselExchangeRate', 'vesselExchangeCurrency', 'freightAmount', 'freightCurrency', 'fumigation', 'transporter', 'deliveryCity', 'additionalReference', 'bolla', 'appraisalCession', 'salesOwner', 'additionalFigures', 'deposit', 'linkedTo', 'tags']
+        operationalIdentity: ['booking', 'policyNumber', 'policyOriginals', 'policyCopies', 'hbl', 'baseQuotation', 'clientContact', 'clientAgency'],
+        linkedParties: ['shipper', 'client', 'consignee', 'correspondent'],
+        transportUnit: ['company', 'vesselVoyage', 'departureDate', 'terminal', 'terminalPickup', 'terminalDelivery', 'transporter', 'deliveryCity'],
+        logisticsNodes: ['portLoading', 'portDischarge', 'originRef', 'destinationRef', 'unloadingDate', 'deposit', 'linkedTo'],
+        customsEconomics: ['customsOffice', 'customsDate', 'performedDate', 'incoterm', 'foreignInvoice', 'invoiceAmount', 'invoiceCurrency', 'freightAmount', 'freightCurrency', 'vesselExchangeRate', 'vesselExchangeCurrency', 'insurance', 'fumigation'],
+        operationalFlow: ['salesOwner', 'additionalReference', 'bolla', 'appraisalCession', 'additionalFigures', 'tags']
       },
       detail: {
         goods: ['articleCode', 'taric', 'goodsDescription', 'packageType', 'packageCount'],
@@ -108,11 +116,12 @@ window.KedrixOnePracticeFormLayout = (() => {
     },
     air_import: {
       practice: {
-        counterparties: ['importer', 'client', 'consignee'],
-        routing: ['airline', 'airportDeparture', 'airportDestination', 'arrivalDate'],
-        documentary: ['booking', 'mawb', 'hawb', 'baseQuotation', 'foreignInvoice', 'invoiceAmount', 'invoiceCurrency', 'packingList', 'incoterm'],
-        customs: ['customsOffice', 'customsDate'],
-        operations: []
+        operationalIdentity: ['booking', 'mawb', 'hawb', 'baseQuotation', 'packingList'],
+        linkedParties: ['importer', 'client', 'consignee'],
+        transportUnit: ['airline', 'arrivalDate'],
+        logisticsNodes: ['airportDeparture', 'airportDestination'],
+        customsEconomics: ['customsOffice', 'customsDate', 'incoterm', 'foreignInvoice', 'invoiceAmount', 'invoiceCurrency'],
+        operationalFlow: []
       },
       detail: {
         goods: ['articleCode', 'taric', 'goodsDescription', 'packageType', 'packageCount', 'originDest'],
@@ -124,11 +133,12 @@ window.KedrixOnePracticeFormLayout = (() => {
     },
     air_export: {
       practice: {
-        counterparties: ['shipper', 'client', 'consignee'],
-        routing: ['airline', 'airportDeparture', 'airportDestination', 'departureDate'],
-        documentary: ['booking', 'mawb', 'hawb', 'baseQuotation', 'foreignInvoice', 'invoiceAmount', 'invoiceCurrency', 'packingList', 'incoterm'],
-        customs: ['customsOffice', 'customsDate'],
-        operations: []
+        operationalIdentity: ['booking', 'mawb', 'hawb', 'baseQuotation', 'packingList'],
+        linkedParties: ['shipper', 'client', 'consignee'],
+        transportUnit: ['airline', 'departureDate'],
+        logisticsNodes: ['airportDeparture', 'airportDestination'],
+        customsEconomics: ['customsOffice', 'customsDate', 'incoterm', 'foreignInvoice', 'invoiceAmount', 'invoiceCurrency'],
+        operationalFlow: []
       },
       detail: {
         goods: ['articleCode', 'taric', 'goodsDescription', 'packageType', 'packageCount', 'originDest'],
@@ -140,11 +150,12 @@ window.KedrixOnePracticeFormLayout = (() => {
     },
     road_import: {
       practice: {
-        counterparties: ['shipper', 'client', 'consignee'],
-        routing: ['carrier', 'originDest', 'pickupDate', 'deliveryDate', 'vehicleType', 'plateDriver', 'pickupPlace', 'deliveryPlace'],
-        documentary: ['cmr', 'incoterm'],
-        customs: [],
-        operations: []
+        operationalIdentity: ['cmr'],
+        linkedParties: ['shipper', 'client', 'consignee'],
+        transportUnit: ['carrier', 'vehicleType', 'plateDriver'],
+        logisticsNodes: ['originDest', 'pickupPlace', 'deliveryPlace', 'pickupDate', 'deliveryDate'],
+        customsEconomics: ['incoterm'],
+        operationalFlow: []
       },
       detail: {
         goods: ['articleCode', 'taric', 'goodsDescription', 'packageCount'],
@@ -156,11 +167,12 @@ window.KedrixOnePracticeFormLayout = (() => {
     },
     road_export: {
       practice: {
-        counterparties: ['shipper', 'client', 'consignee'],
-        routing: ['carrier', 'originDest', 'pickupDate', 'deliveryDate', 'vehicleType', 'plateDriver', 'pickupPlace', 'deliveryPlace'],
-        documentary: ['cmr', 'incoterm'],
-        customs: [],
-        operations: []
+        operationalIdentity: ['cmr'],
+        linkedParties: ['shipper', 'client', 'consignee'],
+        transportUnit: ['carrier', 'vehicleType', 'plateDriver'],
+        logisticsNodes: ['originDest', 'pickupPlace', 'deliveryPlace', 'pickupDate', 'deliveryDate'],
+        customsEconomics: ['incoterm'],
+        operationalFlow: []
       },
       detail: {
         goods: ['articleCode', 'taric', 'goodsDescription', 'packageCount'],
@@ -172,11 +184,12 @@ window.KedrixOnePracticeFormLayout = (() => {
     },
     warehouse: {
       practice: {
-        counterparties: ['client', 'warehouseContact'],
-        routing: ['originDest', 'movementDirection', 'deposit', 'linkedTo', 'plateDriver'],
-        documentary: ['lots', 'baseQuotation'],
-        customs: ['customsOffice'],
-        operations: []
+        operationalIdentity: ['lots', 'baseQuotation'],
+        linkedParties: ['client', 'warehouseContact'],
+        transportUnit: ['movementDirection', 'plateDriver'],
+        logisticsNodes: ['originDest', 'deposit', 'linkedTo'],
+        customsEconomics: ['customsOffice'],
+        operationalFlow: []
       },
       detail: {
         goods: ['articleCode', 'taric', 'goodsDescription', 'packageCount'],

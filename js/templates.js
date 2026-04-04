@@ -187,8 +187,20 @@ window.KedrixOneTemplates = (() => {
     });
     const currentTabKey = state.practiceTab || 'practice';
     const currentTab = tabs.find((tab) => tab.key === currentTabKey) || tabs[0];
-    const dynamicPanelTitle = currentTabKey === 'attachments' ? T.t('ui.attachmentsPanelShellTitle', fallbackByLanguage('Gestione allegati', 'Attachment management')) : T.t('ui.dynamicPreview', 'Anteprima schema');
-    const dynamicPanelSubtitle = currentTabKey === 'attachments' ? T.t('ui.attachmentsPanelShellSubtitle', fallbackByLanguage('Import, elenco, apertura e rimozione controllata degli allegati collegati alla pratica.', 'Import, list, open and remove attachments linked to the current practice in a controlled way.')) : T.t('ui.dynamicSchemaIntro', '');
+    const dynamicPanelTitle = currentTabKey === 'attachments'
+      ? T.t('ui.attachmentsPanelShellTitle', fallbackByLanguage('Gestione allegati', 'Attachment management'))
+      : currentTabKey === 'practice'
+        ? T.t('ui.practiceArchitectureTitle', fallbackByLanguage('Architettura operativa pratica', 'Practice operational architecture'))
+        : currentTabKey === 'detail'
+          ? T.t('ui.practiceDetailArchitectureTitle', fallbackByLanguage('Dettaglio specialistico', 'Specialist detail'))
+          : T.t('ui.practiceNotesArchitectureTitle', fallbackByLanguage('Note pratica', 'Practice notes'));
+    const dynamicPanelSubtitle = currentTabKey === 'attachments'
+      ? T.t('ui.attachmentsPanelShellSubtitle', fallbackByLanguage('Import, elenco, apertura e rimozione controllata degli allegati collegati alla pratica.', 'Import, list, open and remove attachments linked to the current practice in a controlled way.'))
+      : currentTabKey === 'practice'
+        ? T.t('ui.practiceArchitectureHint', fallbackByLanguage('Overview operativa a blocchi: identità, soggetti collegati, trasporto, nodi logistici, dogana ed elementi economici essenziali.', 'Block-based operational overview: identity, linked parties, transport, logistics nodes, customs and essential economics.'))
+        : currentTabKey === 'detail'
+          ? T.t('ui.practiceDetailArchitectureHint', fallbackByLanguage("Campi tecnici e specialistici separati dall'overview della pratica per mantenere ordine e leggibilità.", 'Technical and specialist fields separated from the main practice overview to preserve order and readability.'))
+          : T.t('ui.practiceNotesArchitectureHint', fallbackByLanguage('Area dedicata alle note operative della pratica, mantenuta separata ma sempre coerente con il record attivo.', 'Dedicated area for practice operational notes, kept separate but aligned with the active record.'));
     const selectedType = practiceTypes.find((item) => item.value === draft.practiceType) || null;
     const categoryOptions = draft.practiceType ? PracticeSchemas.getCategoryOptions(draft.practiceType) : [];
     const searchQuery = state.practiceSearchQuery || '';

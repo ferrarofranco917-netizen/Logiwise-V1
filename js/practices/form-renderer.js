@@ -5,6 +5,7 @@ window.KedrixOnePracticeFormRenderer = (() => {
   const I18N = window.KedrixOneI18N;
   const PracticeSchemas = window.KedrixOnePracticeSchemas;
   const PracticeFormLayout = window.KedrixOnePracticeFormLayout;
+  const PracticeOverview = window.KedrixOnePracticeOverview;
 
   function getMasterDataQuickAdd() {
     return window.KedrixOneMasterDataQuickAdd;
@@ -165,7 +166,7 @@ window.KedrixOnePracticeFormRenderer = (() => {
       return `<div class="empty-text">${Utils.escapeHtml(I18N.t('ui.noDataYet', 'Nessun dato'))}</div>`;
     }
 
-    return groupFieldsBySection(tab, fields).map((section) => {
+    const sectionsHtml = groupFieldsBySection(tab, fields).map((section) => {
       const meta = PracticeFormLayout && typeof PracticeFormLayout.getSectionMeta === 'function'
         ? PracticeFormLayout.getSectionMeta(tab, section.key)
         : { title: '', description: '' };
@@ -174,6 +175,12 @@ window.KedrixOnePracticeFormRenderer = (() => {
         : '';
       return `<section class="dynamic-field-section" data-section-key="${Utils.escapeHtml(section.key)}">${headerHtml}<div class="dynamic-section-grid">${section.fields.map((field) => renderFieldHTML(type, tab, draft, companyConfig, field)).join('')}</div></section>`;
     }).join('');
+
+    const overviewHtml = tab === 'practice' && PracticeOverview && typeof PracticeOverview.render === 'function'
+      ? PracticeOverview.render({ draft, i18n: I18N, utils: Utils })
+      : '';
+
+    return `${overviewHtml}${sectionsHtml}`;
   }
 
   return {

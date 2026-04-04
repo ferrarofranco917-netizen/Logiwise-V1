@@ -1441,3 +1441,61 @@ Object.assign(dictionary.en.ui, {
     submoduleDescription
   };
 })();
+
+Object.assign(dictionary.it.ui, {
+  sectionOperationalIdentity: 'Identità operativa',
+  sectionOperationalIdentityHint: 'Riferimenti chiave della pratica: numero documentale, quotazione base e agganci operativi.',
+  sectionLinkedParties: 'Soggetti collegati',
+  sectionLinkedPartiesHint: 'Cliente, importatore, mittente, destinatario e controparti principali della pratica.',
+  sectionTransportUnit: 'Trasporto / unità',
+  sectionTransportUnitHint: 'Compagnia, vettore, terminal, viaggio e riferimenti esecutivi del trasporto.',
+  sectionLogisticsNodes: 'Nodi logistici',
+  sectionLogisticsNodesHint: 'Origine, destinazione, porti, aeroporti, terminal e snodi fisici della spedizione.',
+  sectionCustomsEconomics: 'Dogana + economico essenziale',
+  sectionCustomsEconomicsHint: 'Dogana, Incoterm, fattura estera, importi e dati economici essenziali da tenere in overview.',
+  sectionOperationalFlow: 'Nota rapida operativa',
+  sectionOperationalFlowHint: 'Memo rapidi, collegamenti, riferimenti aggiuntivi e indicatori utili alla gestione operativa.',
+  practiceOverviewKicker: 'Overview operativa',
+  practiceOverviewParties: 'Soggetti collegati',
+  practiceOverviewRoute: 'Nodi logistici',
+  practiceOverviewTransport: 'Trasporto / unità',
+  practiceOverviewCustomsEconomics: 'Dogana + economico',
+  practiceOverviewDocuments: 'Rif. documentali',
+  practiceOverviewNotes: 'Nota rapida',
+  practiceOverviewNoData: 'Nessun dato rilevante ancora inserito',
+  practiceArchitectureTitle: 'Architettura operativa pratica',
+  practiceArchitectureHint: 'Overview operativa a blocchi: identità, soggetti collegati, trasporto, nodi logistici, dogana ed elementi economici essenziali.',
+  practiceDetailArchitectureTitle: 'Dettaglio specialistico',
+  practiceDetailArchitectureHint: 'Campi tecnici e specialistici separati dall\'overview della pratica per mantenere ordine e leggibilità.',
+  practiceNotesArchitectureTitle: 'Note pratica',
+  practiceNotesArchitectureHint: 'Area dedicata alle note operative della pratica, mantenuta separata ma sempre coerente con il record attivo.'
+});
+
+Object.assign(dictionary.en.ui, {
+  sectionOperationalIdentity: 'Operational identity',
+  sectionOperationalIdentityHint: 'Key references of the practice: documentary number, base quotation and operational anchors.',
+  sectionLinkedParties: 'Linked parties',
+  sectionLinkedPartiesHint: 'Client, importer, sender, consignee and main counterparties connected to the practice.',
+  sectionTransportUnit: 'Transport / unit',
+  sectionTransportUnitHint: 'Carrier, terminal, voyage and execution references of the transport flow.',
+  sectionLogisticsNodes: 'Logistics nodes',
+  sectionLogisticsNodesHint: 'Origin, destination, ports, airports, terminals and physical nodes of the shipment.',
+  sectionCustomsEconomics: 'Customs + essential economics',
+  sectionCustomsEconomicsHint: 'Customs office, Incoterm, foreign invoice, amounts and essential economic data kept in overview.',
+  sectionOperationalFlow: 'Quick operational note',
+  sectionOperationalFlowHint: 'Quick memos, links, extra references and indicators useful for daily operations.',
+  practiceOverviewKicker: 'Operational overview',
+  practiceOverviewParties: 'Linked parties',
+  practiceOverviewRoute: 'Logistics nodes',
+  practiceOverviewTransport: 'Transport / unit',
+  practiceOverviewCustomsEconomics: 'Customs + economics',
+  practiceOverviewDocuments: 'Document refs',
+  practiceOverviewNotes: 'Quick note',
+  practiceOverviewNoData: 'No relevant data entered yet',
+  practiceArchitectureTitle: 'Practice operational architecture',
+  practiceArchitectureHint: 'Block-based operational overview: identity, linked parties, transport, logistics nodes, customs and essential economics.',
+  practiceDetailArchitectureTitle: 'Specialist detail',
+  practiceDetailArchitectureHint: 'Technical and specialist fields separated from the main practice overview to preserve order and readability.',
+  practiceNotesArchitectureTitle: 'Practice notes',
+  practiceNotesArchitectureHint: 'Dedicated area for practice operational notes, kept separate but aligned with the active record.'
+});
