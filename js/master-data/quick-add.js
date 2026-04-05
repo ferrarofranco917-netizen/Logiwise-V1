@@ -308,7 +308,7 @@ window.KedrixOneMasterDataQuickAdd = (() => {
       ${activeDef.structured && !quickAddContext && VatAutofill && typeof VatAutofill.renderConfigPanel === 'function' ? VatAutofill.renderConfigPanel(state, t) : ''}`;
   }
 
-  function bind({ state, root, save, render, navigate, toast, buildCurrentPracticeReference, restorePracticeContext, i18n }) {
+  function bind({ state, root, save, render, navigate, toast, buildCurrentPracticeReference, restorePracticeContext, markPracticeDirty, i18n }) {
     const moduleState = ensureModuleState(state);
     const familySelect = root.querySelector('#masterDataFamilySelect');
     const searchInput = root.querySelector('#masterDataSearchInput');
@@ -419,6 +419,7 @@ window.KedrixOneMasterDataQuickAdd = (() => {
       const context = moduleState.quickAddContext;
       if (context) {
         applyEntryToDraft(state, context, result);
+        if (typeof markPracticeDirty === 'function') markPracticeDirty(true);
         if (context.entityKey === 'client' && typeof buildCurrentPracticeReference === 'function' && state.draftPractice) {
           state.draftPractice.generatedReference = buildCurrentPracticeReference();
         }

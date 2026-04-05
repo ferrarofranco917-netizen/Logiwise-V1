@@ -832,6 +832,17 @@
   function navigate(route, options = {}) {
     const normalized = safeRoute(route);
     const changed = normalized !== state.currentRoute;
+
+    if (normalized !== 'practices') {
+      state.pendingPracticeFieldFocus = null;
+      if (typeof state._persistActivePracticeDraft === 'function') state._persistActivePracticeDraft = null;
+    }
+
+    if (normalized !== 'master-data' && state.masterDataModule && state.masterDataModule.quickAddContext && options.preserveQuickAddContext !== true) {
+      const returnRoute = String(state.masterDataModule.quickAddContext.returnRoute || 'practices').trim() || 'practices';
+      if (normalized !== returnRoute) state.masterDataModule.quickAddContext = null;
+    }
+
     state.currentRoute = normalized;
     ensureCurrentModuleExpanded();
     save();
@@ -1068,28 +1079,64 @@
       if (options.markDirty !== false) markActivePracticeSessionDirty(true);
     }
 
+    function normalizeDynamicFieldValue(fieldName, rawValue, node) {
+      let nextValue = rawValue;
+      if (draft.practiceType && typeof PracticeSchemas.getField === 'function' && typeof PracticeSchemas.normalizeSuggestedValue === 'function') {
+        const field = PracticeSchemas.getField(draft.practiceType, fieldName);
+        nextValue = PracticeSchemas.normalizeSuggestedValue(draft.practiceType, field, rawValue, state.companyConfig);
+      }
+      if (PracticeContainerIntegrity && typeof PracticeContainerIntegrity.normalizeFieldValue === 'function') {
+        nextValue = PracticeContainerIntegrity.normalizeFieldValue(fieldName, nextValue, draft);
+      }
+      const MasterDataEntities = window.KedrixOneMasterDataEntities;
+      if (MasterDataEntities && typeof MasterDataEntities.syncDraftRelationField === 'function') {
+        MasterDataEntities.syncDraftRelationField({ state, draft, fieldName, value: nextValue });
+      }
+      if (!Array.isArray(nextValue) && node && nextValue !== node.value) node.value = nextValue;
+      return nextValue;
+    }
+
+    function flushVisibleDynamicFields(options = {}) {
+      if (!dynamicFields || (state.practiceTab || 'practice') === 'attachments') return;
+      const normalize = options.normalize !== false;
+      const processedCheckboxGroups = new Set();
+      dynamicFields.querySelectorAll('input[name], select[name], textarea[name]').forEach((node) => {
+        if (!node.name) return;
+        if (node.type === 'checkbox') {
+          if (processedCheckboxGroups.has(node.name)) return;
+          processedCheckboxGroups.add(node.name);
+          draft.dynamicData[node.name] = Array.from(dynamicFields.querySelectorAll(`[name="${node.name}"]:checked`)).map((item) => item.value);
+          return;
+        }
+        const rawValue = node.value;
+        draft.dynamicData[node.name] = normalize ? normalizeDynamicFieldValue(node.name, rawValue, node) : rawValue;
+      });
+    }
+
+    state._persistActivePracticeDraft = (options = {}) => {
+      if (state.currentRoute !== 'practices') return false;
+      persistIdentity({
+        refreshValidation: options.refreshValidation !== false,
+        markDirty: false
+      });
+      flushVisibleDynamicFields({ normalize: options.normalize !== false });
+      if (options.markDirty !== false) markActivePracticeSessionDirty(true);
+      save();
+      updateVerificationBannerState(draft);
+      if (options.refreshValidation !== false) refreshValidationState();
+      refreshContainerIntegrityState();
+      refreshWeightIntegrityState();
+      refreshFieldRelationState();
+      return true;
+    };
+
     function bindDynamicPersistence() {
       if (!dynamicFields) return;
       if (PracticePersistence && typeof PracticePersistence.bindDynamicFieldPersistence === 'function') {
         PracticePersistence.bindDynamicFieldPersistence({
           root: dynamicFields,
           draft,
-          normalizeValue: (fieldName, rawValue, node) => {
-            let nextValue = rawValue;
-            if (draft.practiceType && typeof PracticeSchemas.getField === 'function' && typeof PracticeSchemas.normalizeSuggestedValue === 'function') {
-              const field = PracticeSchemas.getField(draft.practiceType, fieldName);
-              nextValue = PracticeSchemas.normalizeSuggestedValue(draft.practiceType, field, rawValue, state.companyConfig);
-            }
-            if (PracticeContainerIntegrity && typeof PracticeContainerIntegrity.normalizeFieldValue === 'function') {
-              nextValue = PracticeContainerIntegrity.normalizeFieldValue(fieldName, nextValue, draft);
-            }
-            const MasterDataEntities = window.KedrixOneMasterDataEntities;
-            if (MasterDataEntities && typeof MasterDataEntities.syncDraftRelationField === 'function') {
-              MasterDataEntities.syncDraftRelationField({ state, draft, fieldName, value: nextValue });
-            }
-            if (!Array.isArray(nextValue) && node && nextValue !== node.value) node.value = nextValue;
-            return nextValue;
-          },
+          normalizeValue: normalizeDynamicFieldValue,
           save: () => {
             markActivePracticeSessionDirty(true);
             save();
@@ -1110,14 +1157,7 @@
             draft.dynamicData[node.name] = Array.from(dynamicFields.querySelectorAll(`[name="${node.name}"]:checked`)).map((item) => item.value);
           } else {
             let nextValue = node.value;
-            if (normalize && draft.practiceType && typeof PracticeSchemas.getField === 'function' && typeof PracticeSchemas.normalizeSuggestedValue === 'function') {
-              const field = PracticeSchemas.getField(draft.practiceType, node.name);
-              nextValue = PracticeSchemas.normalizeSuggestedValue(draft.practiceType, field, nextValue, state.companyConfig);
-            }
-            if (PracticeContainerIntegrity && typeof PracticeContainerIntegrity.normalizeFieldValue === 'function') {
-              nextValue = PracticeContainerIntegrity.normalizeFieldValue(node.name, nextValue, draft);
-            }
-            if (nextValue !== node.value) node.value = nextValue;
+            if (normalize) nextValue = normalizeDynamicFieldValue(node.name, nextValue, node);
             draft.dynamicData[node.name] = nextValue;
           }
           markActivePracticeSessionDirty(true);
@@ -1188,6 +1228,10 @@
 
     main.querySelectorAll('[data-practice-tab]').forEach((button) => {
       button.addEventListener('click', () => {
+        if (typeof state._persistActivePracticeDraft === 'function') {
+          state._persistActivePracticeDraft({ markDirty: true, refreshValidation: false, normalize: true });
+        }
+        state.pendingPracticeFieldFocus = null;
         state.practiceTab = button.dataset.practiceTab;
         setActivePracticeSessionTab(state.practiceTab);
         save();
@@ -1622,6 +1666,7 @@ function renderDocumentPreviewPanel() {
           state.pendingPracticeFieldFocus = null;
         }
       },
+      markPracticeDirty: (isDirty = true) => markActivePracticeSessionDirty(isDirty),
       i18n: I18N
     });
   }
@@ -1824,6 +1869,9 @@ resetDocumentTypeOptions?.addEventListener('click', () => {
     const quickAdd = event.target.closest('[data-quick-add-field]');
     const MasterDataQuickAdd = getMasterDataQuickAdd();
     if (quickAdd && MasterDataQuickAdd && typeof MasterDataQuickAdd.prepareQuickAdd === 'function') {
+      if (typeof state._persistActivePracticeDraft === 'function') {
+        state._persistActivePracticeDraft({ markDirty: true, refreshValidation: false, normalize: true });
+      }
       const fieldName = String(quickAdd.dataset.quickAddField || '').trim();
       const quickAddContext = MasterDataQuickAdd.prepareQuickAdd(state, {
         fieldName,
@@ -1839,7 +1887,7 @@ resetDocumentTypeOptions?.addEventListener('click', () => {
         return;
       }
       save();
-      navigate('master-data');
+      navigate('master-data', { preserveQuickAddContext: true });
       return;
     }
 
