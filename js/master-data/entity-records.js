@@ -267,6 +267,7 @@ window.KedrixOneMasterDataEntities = (() => {
     const def = defs[entityKey];
     if (!def || !def.recordStoreKey) return [];
     const companyConfig = stateOrConfig && stateOrConfig.companyConfig ? stateOrConfig.companyConfig : stateOrConfig;
+    if (!companyConfig || typeof companyConfig !== 'object') return [];
     ensurePracticeConfig(companyConfig);
     if (!Array.isArray(companyConfig.masterDataRecords[def.recordStoreKey])) {
       companyConfig.masterDataRecords[def.recordStoreKey] = [];

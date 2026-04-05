@@ -31,10 +31,10 @@ window.KedrixOnePracticeOverview = (() => {
     return parts.map((item) => String(item || '').trim()).filter(Boolean).join(separator);
   }
 
-  function buildSummaryCards(draft, type, companyConfig, i18n) {
+  function buildSummaryCards(state, draft, type, companyConfig, i18n) {
     const practiceType = String(draft?.practiceType || '').trim();
     const relationSummary = PracticeFieldRelations && typeof PracticeFieldRelations.buildCoverageSummary === 'function'
-      ? PracticeFieldRelations.buildCoverageSummary({ type: type || practiceType, draft, companyConfig })
+      ? PracticeFieldRelations.buildCoverageSummary({ state, type: type || practiceType, draft, companyConfig })
       : null;
 
     const relationValue = relationSummary
@@ -136,7 +136,7 @@ window.KedrixOnePracticeOverview = (() => {
 
     const reference = String(draft.generatedReference || '').trim() || '—';
     const clientName = String(draft.clientName || '').trim() || t(i18n, 'ui.clientRequired', 'Cliente');
-    const cards = buildSummaryCards(draft, options.type, options.companyConfig, i18n);
+    const cards = buildSummaryCards(options.state || null, draft, options.type, options.companyConfig, i18n);
     const badges = buildBadges(draft, i18n);
 
     return `

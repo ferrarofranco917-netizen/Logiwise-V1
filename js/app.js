@@ -645,7 +645,7 @@
       return PracticeAttachments.renderPanelHTML({ state, draft, i18n: I18N, utils: Utils });
     }
     return PracticeFormRenderer && typeof PracticeFormRenderer.renderDynamicFieldsHTML === 'function'
-      ? PracticeFormRenderer.renderDynamicFieldsHTML(type, tab, draft, state.companyConfig)
+      ? PracticeFormRenderer.renderDynamicFieldsHTML(type, tab, draft, state.companyConfig, state)
       : `<div class="empty-text">${Utils.escapeHtml(I18N.t('ui.noDataYet', 'Nessun dato'))}</div>`;
   }
 
