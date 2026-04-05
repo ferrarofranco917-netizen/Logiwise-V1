@@ -7,7 +7,13 @@
   const Modules = window.KedrixOneModules;
   const Licensing = window.KedrixOneLicensing;
   const Templates = window.KedrixOneTemplates;
-  const I18N = window.KedrixOneI18N;
+  const I18N = window.KedrixOneI18N || {
+    t: (key, fallback) => fallback || key,
+    getLanguage: () => document.documentElement.lang || 'it',
+    setLanguage: (lang) => {
+      document.documentElement.lang = lang || 'it';
+    }
+  };
   const PracticeSchemas = window.KedrixOnePracticeSchemas;
   const SearchIndex = window.KedrixOneSearchIndex;
   const PracticeVerification = window.KedrixOnePracticeVerification;

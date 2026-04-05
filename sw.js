@@ -1,4 +1,4 @@
-const CACHE = 'kedrix-one-step6b1-doc-engine-v1';
+const CACHE = 'kedrix-one-stepw-i18n-load-hotfix-v1';
 const FILES = [
   './',
   './index.html',
