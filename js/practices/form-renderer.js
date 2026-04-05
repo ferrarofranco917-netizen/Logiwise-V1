@@ -78,12 +78,17 @@ window.KedrixOnePracticeFormRenderer = (() => {
 
   function renderFieldHTML(type, tab, draft, companyConfig, state, field) {
     const label = `${Utils.escapeHtml(I18N.t(field.labelKey, field.name))}${field.required ? ' <span class="required-mark">*</span>' : ''}`;
+    const resolvedFieldName = field.type === 'derived' && field.name === 'client' ? 'clientName' : field.name;
     const MasterDataQuickAdd = getMasterDataQuickAdd();
     const quickAddButton = MasterDataQuickAdd && typeof MasterDataQuickAdd.buildQuickAddButton === 'function'
-      ? MasterDataQuickAdd.buildQuickAddButton(field.name, I18N)
+      ? MasterDataQuickAdd.buildQuickAddButton(resolvedFieldName, I18N)
       : '';
-    const labelHtml = quickAddButton
-      ? `<div class="field-label-row"><label for="dyn_${field.name}">${label}</label>${quickAddButton}</div>`
+    const openLinkedButton = MasterDataQuickAdd && typeof MasterDataQuickAdd.buildOpenLinkedButton === 'function'
+      ? MasterDataQuickAdd.buildOpenLinkedButton({ state, draft, fieldName: resolvedFieldName, i18n: I18N })
+      : '';
+    const fieldActionsHtml = [openLinkedButton, quickAddButton].filter(Boolean).join('');
+    const labelHtml = fieldActionsHtml
+      ? `<div class="field-label-row"><label for="dyn_${field.name}">${label}</label><div class="field-label-actions">${fieldActionsHtml}</div></div>`
       : `<label for="dyn_${field.name}">${label}</label>`;
     const wrapClass = `field${field.full ? ' full' : ''}`;
     const wrapAttrs = `class="${wrapClass}" data-field-wrap="${Utils.escapeHtml(field.name)}" data-field-tab="${Utils.escapeHtml(tab)}"`;

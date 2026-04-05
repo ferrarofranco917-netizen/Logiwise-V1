@@ -1736,21 +1736,41 @@ body.dialog-open {
   gap: 10px;
 }
 
-.field-inline-action.quick-add-button {
+.field-label-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.field-inline-action.quick-add-button,
+.field-inline-action.open-linked-button {
   min-width: 32px;
   height: 32px;
   border-radius: 10px;
   border: 1px solid rgba(148, 163, 184, 0.35);
-  background: rgba(14, 165, 233, 0.12);
   color: #cfefff;
-  font-size: 18px;
   line-height: 1;
   font-weight: 700;
   cursor: pointer;
 }
 
+.field-inline-action.quick-add-button {
+  background: rgba(14, 165, 233, 0.12);
+  font-size: 18px;
+}
+
+.field-inline-action.open-linked-button {
+  background: rgba(148, 163, 184, 0.12);
+  font-size: 16px;
+}
+
 .field-inline-action.quick-add-button:hover {
   background: rgba(14, 165, 233, 0.22);
+}
+
+.field-inline-action.open-linked-button:hover {
+  background: rgba(148, 163, 184, 0.2);
 }
 
 .master-data-shell {

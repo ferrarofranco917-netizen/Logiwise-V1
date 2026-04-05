@@ -1891,6 +1891,30 @@ resetDocumentTypeOptions?.addEventListener('click', () => {
       return;
     }
 
+    const openLinked = event.target.closest('[data-open-linked-field]');
+    if (openLinked && MasterDataQuickAdd && typeof MasterDataQuickAdd.openLinkedRecordFromPractice === 'function') {
+      if (typeof state._persistActivePracticeDraft === 'function') {
+        state._persistActivePracticeDraft({ markDirty: true, refreshValidation: false, normalize: true });
+      }
+      const fieldName = String(openLinked.dataset.openLinkedField || '').trim();
+      const openLinkedContext = MasterDataQuickAdd.openLinkedRecordFromPractice(state, {
+        fieldName,
+        returnRoute: currentRoute(),
+        returnTab: state.practiceTab || 'practice',
+        returnSessionId: String(state.practiceWorkspace?.activeSessionId || '').trim(),
+        returnFocusField: fieldName,
+        returnFocusTab: fieldName === 'clientName' ? 'identity' : (state.practiceTab || 'practice'),
+        practiceReference: String(state.draftPractice?.generatedReference || state.draftPractice?.editingPracticeId || '').trim()
+      });
+      if (!openLinkedContext) {
+        toast(I18N.t('ui.openLinkedRecordUnavailable', 'Nessuna anagrafica collegata da aprire per questo campo.'), 'warning');
+        return;
+      }
+      save();
+      navigate('master-data', { preserveQuickAddContext: true });
+      return;
+    }
+
     const action = event.target.closest('[data-action]');
     if (!action) return;
 

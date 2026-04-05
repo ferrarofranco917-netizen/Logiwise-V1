@@ -26,9 +26,15 @@ window.KedrixOneMasterDataQuickAdd = (() => {
       : {};
   }
 
+  function normalizePracticeFieldName(fieldName) {
+    const clean = String(fieldName || '').trim();
+    return clean === 'client' ? 'clientName' : clean;
+  }
+
   function resolveEntityKeyForField(fieldName) {
+    const normalizedFieldName = normalizePracticeFieldName(fieldName);
     return MasterDataEntities && typeof MasterDataEntities.resolveEntityKeyForField === 'function'
-      ? MasterDataEntities.resolveEntityKeyForField(fieldName)
+      ? MasterDataEntities.resolveEntityKeyForField(normalizedFieldName)
       : '';
   }
 
@@ -72,7 +78,8 @@ window.KedrixOneMasterDataQuickAdd = (() => {
   }
 
   function prepareQuickAdd(state, context = {}) {
-    const entityKey = context.entityKey || resolveEntityKeyForField(context.fieldName);
+    const normalizedFieldName = normalizePracticeFieldName(context.fieldName);
+    const entityKey = context.entityKey || resolveEntityKeyForField(normalizedFieldName);
     if (!entityKey) return null;
     const moduleState = ensureModuleState(state);
     moduleState.activeEntity = entityKey;
@@ -83,11 +90,11 @@ window.KedrixOneMasterDataQuickAdd = (() => {
       : { id: '', value: '', description: '', city: '' };
     moduleState.quickAddContext = {
       entityKey,
-      fieldName: String(context.fieldName || '').trim(),
+      fieldName: normalizedFieldName,
       returnRoute: String(context.returnRoute || 'practices').trim() || 'practices',
       returnTab: String(context.returnTab || 'practice').trim() || 'practice',
       returnSessionId: String(context.returnSessionId || '').trim(),
-      returnFocusField: String(context.returnFocusField || context.fieldName || '').trim(),
+      returnFocusField: normalizePracticeFieldName(context.returnFocusField || normalizedFieldName || ''),
       returnFocusTab: String(context.returnFocusTab || context.returnTab || 'practice').trim() || 'practice',
       practiceReference: String(context.practiceReference || '').trim()
     };
@@ -104,12 +111,13 @@ window.KedrixOneMasterDataQuickAdd = (() => {
     const draft = state.draftPractice || (state.draftPractice = { dynamicData: {}, linkedEntities: {} });
     if (!draft.dynamicData || typeof draft.dynamicData !== 'object') draft.dynamicData = {};
     if (!draft.linkedEntities || typeof draft.linkedEntities !== 'object') draft.linkedEntities = {};
+    const normalizedFieldName = normalizePracticeFieldName(context.fieldName);
 
-    if (MasterDataEntities && typeof MasterDataEntities.applyLinkedRecordToDraft === 'function' && context.fieldName) {
+    if (MasterDataEntities && typeof MasterDataEntities.applyLinkedRecordToDraft === 'function' && normalizedFieldName) {
       MasterDataEntities.applyLinkedRecordToDraft({
         state,
         draft,
-        fieldName: context.fieldName,
+        fieldName: normalizedFieldName,
         entityKey: context.entityKey,
         record: result.record || null,
         value: result.value || ''
@@ -117,30 +125,45 @@ window.KedrixOneMasterDataQuickAdd = (() => {
       return;
     }
 
-    if (context.entityKey === 'client' || context.fieldName === 'clientName') {
+    if (context.entityKey === 'client' || normalizedFieldName === 'clientName') {
       draft.clientName = result.value;
       draft.clientId = result.relatedId || '';
       return;
     }
 
-    if (context.fieldName) {
-      draft.dynamicData[context.fieldName] = result.value;
+    if (normalizedFieldName) {
+      draft.dynamicData[normalizedFieldName] = result.value;
       if (MasterDataEntities && typeof MasterDataEntities.getRelationFieldName === 'function') {
-        const relationFieldName = MasterDataEntities.getRelationFieldName(context.fieldName);
+        const relationFieldName = MasterDataEntities.getRelationFieldName(normalizedFieldName);
         if (relationFieldName) draft.dynamicData[relationFieldName] = result.relatedId || '';
       }
     }
   }
 
   function buildQuickAddButton(fieldName, i18n) {
-    const entityKey = resolveEntityKeyForField(fieldName);
+    const normalizedFieldName = normalizePracticeFieldName(fieldName);
+    const entityKey = resolveEntityKeyForField(normalizedFieldName);
     if (!entityKey) return '';
     const defs = getEntityDefinitions(i18n);
     const def = defs[entityKey];
     const title = i18n && typeof i18n.t === 'function'
       ? i18n.t('ui.quickAddButtonTitle', `Aggiungi rapidamente in ${def.familyLabel}`)
       : `Aggiungi rapidamente in ${def.familyLabel}`;
-    return `<button type="button" class="field-inline-action quick-add-button" data-quick-add-field="${fieldName}" title="${escapeHtml(title)}" aria-label="${escapeHtml(title)}">+</button>`;
+    return `<button type="button" class="field-inline-action quick-add-button" data-quick-add-field="${normalizedFieldName}" title="${escapeHtml(title)}" aria-label="${escapeHtml(title)}">+</button>`;
+  }
+
+  function buildOpenLinkedButton({ state, draft, fieldName, i18n }) {
+    const normalizedFieldName = normalizePracticeFieldName(fieldName);
+    const entityKey = resolveEntityKeyForField(normalizedFieldName);
+    if (!entityKey || !MasterDataEntities || typeof MasterDataEntities.getLinkedRecordFromDraft !== 'function') return '';
+    const linkedRecord = MasterDataEntities.getLinkedRecordFromDraft({ state, draft, fieldName: normalizedFieldName });
+    if (!linkedRecord || !linkedRecord.id) return '';
+    const defs = getEntityDefinitions(i18n);
+    const def = defs[entityKey];
+    const title = i18n && typeof i18n.t === 'function'
+      ? i18n.t('ui.openLinkedRecordButtonTitle', `Apri la scheda collegata in ${def.familyLabel}`)
+      : `Apri la scheda collegata in ${def.familyLabel}`;
+    return `<button type="button" class="field-inline-action open-linked-button" data-open-linked-field="${normalizedFieldName}" title="${escapeHtml(title)}" aria-label="${escapeHtml(title)}">↗</button>`;
   }
 
   function escapeHtml(value) {
@@ -462,12 +485,42 @@ window.KedrixOneMasterDataQuickAdd = (() => {
     });
   }
 
+
+  function openLinkedRecordFromPractice(state, context = {}) {
+    const normalizedFieldName = normalizePracticeFieldName(context.fieldName);
+    const entityKey = context.entityKey || resolveEntityKeyForField(normalizedFieldName);
+    if (!entityKey || !MasterDataEntities || typeof MasterDataEntities.getLinkedRecordFromDraft !== 'function') return null;
+    const draft = state && state.draftPractice ? state.draftPractice : null;
+    const linkedRecord = MasterDataEntities.getLinkedRecordFromDraft({ state, draft, fieldName: normalizedFieldName });
+    if (!linkedRecord || !linkedRecord.id) return null;
+    const moduleState = ensureModuleState(state);
+    moduleState.activeEntity = entityKey;
+    moduleState.searchQuery = '';
+    moduleState.selectedRecordId = String(linkedRecord.id || '').trim();
+    moduleState.formDrafts[entityKey] = MasterDataEntities && typeof MasterDataEntities.createFormDraft === 'function'
+      ? MasterDataEntities.createFormDraft(entityKey, linkedRecord)
+      : { id: '', value: '', description: '', city: '' };
+    moduleState.quickAddContext = {
+      entityKey,
+      fieldName: normalizedFieldName,
+      returnRoute: String(context.returnRoute || 'practices').trim() || 'practices',
+      returnTab: String(context.returnTab || 'practice').trim() || 'practice',
+      returnSessionId: String(context.returnSessionId || '').trim(),
+      returnFocusField: normalizePracticeFieldName(context.returnFocusField || normalizedFieldName || ''),
+      returnFocusTab: String(context.returnFocusTab || context.returnTab || 'practice').trim() || 'practice',
+      practiceReference: String(context.practiceReference || '').trim()
+    };
+    return moduleState.quickAddContext;
+  }
+
   return {
     ensureModuleState,
     resolveEntityKeyForField,
     supportsQuickAdd,
     buildQuickAddButton,
+    buildOpenLinkedButton,
     prepareQuickAdd,
+    openLinkedRecordFromPractice,
     clearQuickAdd,
     renderPanel,
     bind
